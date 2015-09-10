@@ -19,8 +19,8 @@
         _t = this;
         this.entityID = entityID;
         this.properties = Entities.getEntityProperties(entityID);
-          this.simulatedEntities = [];
-  this.rules = {};
+        this.simulatedEntities = [];
+        this.rules = {};
     }
 
     // Attach a flocking rule.
@@ -46,12 +46,12 @@
         // @param entityId: the entity
         // @param hasOwnership (optional): signifies if we're allowed to delete this entity or
         //      not (true => yes, false => no). Defaults to false.
-     
-        var ZERO_VECTOR ={
-            x:0,
-            y:0,
-            z:0
-        }
+
+    var ZERO_VECTOR = {
+        x: 0,
+        y: 0,
+        z: 0
+    }
 
     Flock.prototype.attachEntity = function(entityId, hasOwnership) {
             var properties = Entities.getEntityProperties(entityId);
@@ -90,20 +90,25 @@
         // Run the simulation.
         // Should be called every frame update / as fast as possible.
     Flock.prototype.simulate = function(dt) {
+       
         var entities = _t.simulatedEntities;
 
-         var N = entities.length;
+        var N = entities.length;
 
         // Calculate flock center (averaged positions)
-        var center = {x:0,y:0,z:0};
+        var center = {
+            x: 0,
+            y: 0,
+            z: 0
+        };
 
         entities.forEach(function(entity) {
-            Vec3.sum(center,entity.position)
-            
+            Vec3.sum(center, entity.position)
+
         })
 
-        Vec3.multiply(center,1/N)
-     
+        Vec3.multiply(center, 1 / N)
+
 
         // Get position + velocity arrays
         var positions = entities.map(function(entity) {
@@ -115,6 +120,8 @@
         var rules = Object.keys(_t.rules).map(function(k) {
             return _t.rules[k];
         });
+
+
         var flock = {
             center: center,
             position: positions,
@@ -136,19 +143,19 @@
             // Clamp velocity to max speed
             var currentSpeed = Vec3.length(entity.velocity);
             if (currentSpeed > this.MAX_SPEED) {
-                Vec3.multiply(entity.velocty,_t.MAX_SPEED/currentSpeed);
-              
+                Vec3.multiply(entity.velocty, _t.MAX_SPEED / currentSpeed);
+
             }
 
             // Update position w/ velocity
-            var velocityClone = Vec3.multiply(entity.velocity,dt);
-            var entityPosition = Vec3.sum(entity.position,velocityClone)
+            var velocityClone = Vec3.multiply(entity.velocity, dt);
+            var entityPosition = Vec3.sum(entity.position, velocityClone)
 
 
 
             Entities.editEntity(entity.entityId, {
-                position:entityPosition,
-                velocity:velocityClone
+                position: entityPosition,
+                velocity: velocityClone
             });
         }, this);
     }
@@ -172,7 +179,7 @@
     // });
 
 
-// Basic usage (needs to be tested!)
+    // Basic usage (needs to be tested!)
 
     var flock = new Flock();
 
@@ -186,9 +193,15 @@
                     y: 1,
                     z: 1
                 },
+                position: {
+                    x: MyAvatar.position.x + (i * 2),
+                    y: MyAvatar.position.y + (i * 2),
+                    z: MyAvatar.position.z + (i * 2),
+                },
                 color: {
-                    red: 255,
-                    green: 255,
+
+                    red: 0,
+                    green: 0,
                     blue: 255
                 }
             }), true);
