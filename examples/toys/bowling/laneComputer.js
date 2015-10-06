@@ -11,10 +11,11 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 /*global MyAvatar, Entities, AnimationCache, SoundCache, Scene, Camera, Overlays, Audio, HMD, AvatarList, AvatarManager, Controller, UndoStack, Window, Account, GlobalServices, Script, ScriptDiscoveryService, LODManager, Menu, Vec3, Quat, AudioDevice, Paths, Clipboard, Settings, XMLHttpRequest, randFloat, randInt */
 
-Script.include("../../utilities.js");
-Script.include("../../libraries/utils.js");
 
 (function() {
+    Script.include("../../utilities.js");
+    Script.include("../../libraries/utils.js");
+
     //bowling game scoring in JS by @hontas
     Script.include('https://raw.githubusercontent.com/hontas/bowling-game-kata/master/js/bowlingGame.js');
     var _t;
@@ -40,17 +41,17 @@ Script.include("../../libraries/utils.js");
         x: 0,
         y: 0.5,
         z: 0
-    }), Vec3.multiply(0.5, Quat.getFront(Camera.getOrientation())));
+    }), Vec3.multiply(3, Quat.getFront(Camera.getOrientation())));
 
     var HEAD_PIN_POSITION = center;
 
     var ROLL_DETECTOR_SCRIPT = Script.resolvePath('rollDetector.js');
 
     var ROLL_DETECTOR_LOCATION = {
-            x: 0,
-            y: 0,
-            z: 0
-        }; //back of lane 
+        x: 0,
+        y: 0,
+        z: 0
+    }; //back of lane 
 
     var LANE_MEASUREMENTS = {
         foulLineToFirstApproachDots: 3.6576,
@@ -83,6 +84,7 @@ Script.include("../../libraries/utils.js");
 
     LaneComputer.prototype = {
         ball: null,
+        pinsExist: false,
         pins: [],
         pinEntities: [],
         ballRack: null,
@@ -129,13 +131,14 @@ Script.include("../../libraries/utils.js");
             return;
         },
         setPins: function(firstTime) {
+            print('SET PINS')
             var a = PIN_MEASUREMENTS.halfBetween;
             var b = PIN_MEASUREMENTS.betweenPins;
 
             var x = HEAD_PIN_POSITION.x;
             var z = HEAD_PIN_POSITION.z;
-            print('ab' + a + b);
-            print('xz' + x + z);
+            // print('ab' + a + b);
+            // print('xz' + x + z);
             var pinPositions = [];
             pinPositions[0] = [x, z];
             pinPositions[1] = [x - a, z + b];
@@ -156,7 +159,7 @@ Script.include("../../libraries/utils.js");
                     z: pinPositions[i][1]
                 };
 
-                print('PIN POSITION ' + i + " :: " + JSON.stringify(pinPosition));
+                // print('PIN POSITION ' + i + " :: " + JSON.stringify(pinPosition));
                 this.pins[i].position = pinPosition;
 
                 if (firstTime) {
@@ -181,10 +184,12 @@ Script.include("../../libraries/utils.js");
 
         },
         spawnPins: function() {
+            print('SPAWN PINS')
             var i;
             for (i = 0; i < 10; i++) {
                 this.pins.push(new Pin());
             }
+            this.setPins(true);
         },
         spawnBowlingBallRack: function() {
             Entities.addEntity({
@@ -224,7 +229,7 @@ Script.include("../../libraries/utils.js");
         // },
         countKnockedOverPins: function() {
             var knockedOver = 0;
-            var i= 0;
+            var i = 0;
             for (i = 0; i < this.pins.length; i++) {
                 var properties = Entities.getEntityProperties(this.pins[i]);
                 var orientation = properties.orientation
@@ -269,11 +274,10 @@ Script.include("../../libraries/utils.js");
             }
         },
         init: function() {
+            print('INIT BOWLING')
             this.spawnPins();
-            this.setPins(true);
-          //  this.spawnBowlingBall();
-        },
-
+            //  this.spawnBowlingBall();
+        }
     }
 
     function Pin() {
@@ -281,6 +285,7 @@ Script.include("../../libraries/utils.js");
     }
 
     Pin.prototype = {
+        name: 'Bowling Pin',
         type: 'Model',
         modelURL: BOWLING_PIN_URL,
         shapeType: 'compound',
@@ -293,10 +298,4 @@ Script.include("../../libraries/utils.js");
     }
 
     return new LaneComputer();
-
 });
-
-// would be sweet:
-// tweening the pin reset
-// multiple players per game
-// lane shaders

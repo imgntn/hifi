@@ -14,22 +14,25 @@
 Script.include("../../utilities.js");
 Script.include("../../libraries/utils.js");
 
-var laneComputerModel = 'http://hifi-public.s3.amazonaws.com/james/bowling/models/laneComputer/computer.fbx?' + randInt(0, 10000);
-var scriptURL =Script.resolvePath("laneComputer.js");
+var scriptURL = Script.resolvePath("laneComputer.js");
 var center = Vec3.sum(MyAvatar.position, Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
 
 var laneComputer = Entities.addEntity({
+    name: 'Bowling Lane Computer',
     type: "Box",
-  //  modelURL: laneComputerModel,
     position: center,
     dimensions: {
         x: 1,
         y: 1,
         z: 1
     },
+    color:{
+        red:0,
+        green:255,
+        blue:0
+    },
     collisionsWillMove: false,
-    script: scriptURL,
-    visible:false
+    script: scriptURL
 });
 
 function cleanup() {
