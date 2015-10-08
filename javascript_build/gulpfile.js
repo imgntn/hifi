@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var insert = require('gulp-insert');
-var fs = require('fs');
+// var fs = require('fs');
 
 var jsLintGlobals = require('./jsLintGlobals');
 var linterGlobals = [jsLintGlobals.hifi_API, jsLintGlobals.hifi_utilites];
@@ -21,7 +21,7 @@ gulp.task('addFilePath', function() {
     gulp.src('../examples/**/*.js')
         .pipe(insert.transform(function(contents, file) {
             var filename = '// local file: ' + file.path + '\n';
-            return filename + contents;
+            return filename + liccontents;
         }))
         .pipe(gulp.dest('tempjs'));
 });
@@ -47,13 +47,13 @@ gulp.task('addAuthorCopyright', function() {
         .pipe(gulp.dest('tempjs'));
 });
 
-gulp.task('createEntityTemplate',function(){
+gulp.task('createEntityTemplate', function() {
     fs.writeFileSync('templates/entityScript.js', headerTemplate + entityTemplate);
 })
 
-gulp.task('createACTemplate',function(){
-    fs.writeFileSync('templates/AC.js', headerTemplate + entityTemplate);
+gulp.task('createACTemplate', function() {
+    fs.writeFileSync('templates/ACScript.js', headerTemplate + ACTemplate);
 })
-gulp.task('createClientTemplate',function(){
-    fs.writeFileSync('templates/clientScript.js', headerTemplate + entityTemplate);
+gulp.task('createClientTemplate', function() {
+    fs.writeFileSync('templates/clientScript.js', headerTemplate + clientTemplate);
 })

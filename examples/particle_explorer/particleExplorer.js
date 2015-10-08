@@ -13,7 +13,6 @@
 //
 //  next version: 2 way bindings, integrate with edit.js
 //
-/*global print, WebWindow, MyAvatar, Entities, AnimationCache, SoundCache, Scene, Camera, Overlays, HMD, AvatarList, AvatarManager, Controller, UndoStack, Window, Account, GlobalServices, Script, ScriptDiscoveryService, LODManager, Menu, Vec3, Quat, AudioDevice, Paths, Clipboard, Settings, XMLHttpRequest, randFloat, randInt */
 
 var box,
     sphere,

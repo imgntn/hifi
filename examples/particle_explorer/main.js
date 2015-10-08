@@ -9,7 +9,6 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
-/*global window, alert, EventBridge, dat, convertBinaryToBoolean, listenForSettingsUpdates,createVec3Folder,createQuatFolder,writeVec3ToInterface,writeDataToInterface*/
 
 var Settings = function() {
     this.exportSettings = function() {

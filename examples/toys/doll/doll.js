@@ -10,7 +10,6 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 //  Known issues:  If you pass the doll between hands, animation can get into a weird state.  We want to prevent the animation from starting again when you switch hands, but when you switch mid-animation your hand at release is still the first hand and not the current hand.
-/*global MyAvatar, Entities, AnimationCache, SoundCache, Scene, Camera, Overlays, Audio, HMD, AvatarList, AvatarManager, Controller, UndoStack, Window, Account, GlobalServices, Script, ScriptDiscoveryService, LODManager, Menu, Vec3, Quat, AudioDevice, Paths, Clipboard, Settings, XMLHttpRequest, randFloat, randInt */
 
 (function() {
     Script.include("../../utilities.js");
