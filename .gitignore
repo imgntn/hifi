@@ -48,5 +48,5 @@ TAGS
 *.swp
 
 #ignore node.js modules
-node_modules/
-tempjs/
+javascript_build/node_modules/
+javascript_build/tempjs/
