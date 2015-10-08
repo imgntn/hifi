@@ -46,3 +46,7 @@ gvr-interface/libs/*
 # ignore files for various dev environments
 TAGS
 *.swp
+
+#ignore node.js modules
+node_modules/
+tempjs/
