@@ -1,5 +1,6 @@
 var gulp = require('gulp');
 var insert = require('gulp-insert');
+var deleteLines = require('gulp-delete-lines');
 // var fs = require('fs');
 
 var jsLintGlobals = require('./jsLintGlobals');
@@ -9,9 +10,13 @@ var linterGlobalString = "/*global " + linterGlobals.join(",") + "*/" + '\n';
 var jsLicense = require('./jsLicense');
 var jsAuthorCopyright = require('./jsLicense');
 
-gulp.task('addLinterGlobals', function() {
-    console.log('adding linter globals');
+gulp.task('updateLinterGlobals', function() {
     gulp.src('../examples/**/*.js')
+        .pipe(deleteLines({
+            'filters': [
+                /\/{1}\*{1}(global)/
+            ]
+        }))
         .pipe(insert.prepend(linterGlobalString))
         .pipe(gulp.dest('tempjs'));
 });
