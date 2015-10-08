@@ -1,3 +1,4 @@
+/*global MyAvatar, Entities, AnimationCache, SoundCache, Scene, Camera, Overlays, HMD, AvatarList, AvatarManager, Controller, UndoStack, Window, Account, GlobalServices, Script, ScriptDiscoveryService, LODManager, Menu, Vec3, Quat, AudioDevice, Audio, Paths, Clipboard, Settings, XMLHttpRequest, EventBridge, WebWindow,*/
 var entities = Entities.findEntities(MyAvatar.position, 10000);
 var URL = "https://s3.amazonaws.com/hifi-public/models/props/chess/";
 

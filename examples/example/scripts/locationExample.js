@@ -1,3 +1,4 @@
+/*global MyAvatar, Entities, AnimationCache, SoundCache, Scene, Camera, Overlays, HMD, AvatarList, AvatarManager, Controller, UndoStack, Window, Account, GlobalServices, Script, ScriptDiscoveryService, LODManager, Menu, Vec3, Quat, AudioDevice, Audio, Paths, Clipboard, Settings, XMLHttpRequest, EventBridge, WebWindow,*/
 var goto = Window.prompt("Where would you like to go? (ex. @username, #location, 1.0,500.3,100.2)");
 var url = "hifi://" + goto;
 print("Going to: " + url);
