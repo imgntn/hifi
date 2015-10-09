@@ -21,8 +21,13 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
 	y: 0.5,
 	z: 0
 }), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
-var baseStartPosition = {}
-var baseStartPosition = center;
+var baseStartPosition = {
+	x:546.10,
+	y:495.34,
+	z:506.50
+};
+
+//var baseStartPosition = center;
 
 function createXylophoneBase() {
 	var properties = {
@@ -73,6 +78,8 @@ var keyInfo = [{
 
 
 function createXyloPhoneKeys() {
+
+	var rotation = Quat.fromPitchYawRollDegrees(0,0,0);
 	keyInfo.forEach(function(xyloKey, index) {
 		var position = Vec3.sum(baseStartPosition, Vec3.multiply(index, KEY_SPACING));
 		print('INDEX::: ' + index);
@@ -87,13 +94,21 @@ function createXyloPhoneKeys() {
 				z: xyloKey.keyLength
 			},
 			position: position,
+			rotation:rotation,
 			color: {
 				red: 0,
 				green: 0,
 				blue: 255
 			},
-			restitution: 0.1,
+			restitution: 1,
 			collisionsWillMove: false,
+			gravity:{
+				x:0,
+				y:-9.8,
+				z:0
+			},
+			linearDamping:1,
+			angularDamping:1,
 			collisionSoundURL: SOUND_BASE_URL + xyloKey.note + ".L.wav"
 		};
 
@@ -116,7 +131,7 @@ function createMallets() {
 			y: 0.04,
 			z: 0.04
 		},
-		restitution: 0.1,
+		restitution: 1,
 		collisionsWillMove: true,
 		position: baseStartPosition,
 		shapeType: 'compound',
