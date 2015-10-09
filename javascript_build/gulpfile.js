@@ -1,71 +1,48 @@
 var gulp = require('gulp');
-var insert = require('gulp-insert');
-var deleteLines = require('gulp-delete-lines');
-var fs = require('fs');
 
-//we store our globals in an easy to access file.  join them together to make a string.
+var gulp = require('gulp'),
+    eslint = require('gulp-eslint');
+
 var jsLintGlobals = require('./jsLintGlobals');
-var linterGlobals = [jsLintGlobals.hifi_API, jsLintGlobals.hifi_utilites];
-var linterGlobalString = "/*global " + linterGlobals.join(",") + "*/" + '\n';
+var linterGlobals = [jsLintGlobals.hifi_API, jsLintGlobals.hifi_utilities];
 
-//gulp task to delete and then add globals
-gulp.task('updateLinterGlobals', function() {
-    gulp.src('../examples/**/*.js')
-        //regex that matches /*global and deletes
-        .pipe(deleteLines({
-            'filters': [
-                /\/{1}\*{1}(global)/
-            ]
-        }))
-        //add the global
-        .pipe(insert.prepend(linterGlobalString))
-        //send it to the destination
-        .pipe(gulp.dest('../examples'));
-});
+var API_GLOBALS = jsLintGlobals.hifi_API.split(",");
+var UTILITY_GLOBALS = jsLintGlobals.hifi_utilities.split(",");
 
-//for the future, we will compose a header file from the file name, license, author, copyright, etc
-var jsLicense = require('./jsLicense');
-var jsAuthorCopyright = require('./jsLicense');
+var linterOptions = {
+    globals: {},
+};
 
-gulp.task('addFilePath', function() {
-    console.log('adding file path ');
-    gulp.src('../examples/**/*.js')
-        .pipe(insert.transform(function(contents, file) {
-            var filename = '// local file: ' + file.path + '\n';
-            return filename + liccontents;
-        }))
-        .pipe(gulp.dest('../examples'));
-});
-
-gulp.task('addLicense', function() {
-    console.log('adding license');
-    gulp.src('../examples/**/*.js')
-        .pipe(insert.transform(function(contents, file) {
-            var license = jsLicense.apache2 + '\n';
-            return license + contents;
-        }))
-        .pipe(gulp.dest('../examples'));
-});
-
-gulp.task('addAuthorCopyright', function() {
-    console.log('adding author and copyright');
-    gulp.src('../examples/**/*.js')
-        .pipe(insert.transform(function(contents, file) {
-            var author = jsAuthorCopyright.author + '\n';
-            var copyright = jsAuthorCopyright.copyRight + '\n';
-            return author + copyright + contents;
-        }))
-        .pipe(gulp.dest('../examples'));
-});
-
-//we will use the header template plus some object templates to create easy to use templates for users to start from
-gulp.task('createEntityTemplate', function() {
-    fs.writeFileSync('templates/entityScript.js', headerTemplate + entityTemplate);
+UTILITY_GLOBALS.forEach(function(key) {
+    linterOptions.globals[key] = false;
 })
 
-gulp.task('createACTemplate', function() {
-    fs.writeFileSync('templates/ACScript.js', headerTemplate + ACTemplate);
-})
-gulp.task('createClientTemplate', function() {
-    fs.writeFileSync('templates/clientScript.js', headerTemplate + clientTemplate);
-})
+API_GLOBALS.forEach(function(key) {
+    linterOptions.globals[key] = false;
+});
+
+console.log('linterOptions.globals', linterOptions.globals)
+
+gulp.task('watch', function() {
+    gulp.watch('../examples/**/*.js')
+    .on('change', function(file) {
+        console.log('JS changed' + ' (' + file.path + ')');
+    });
+});
+
+gulp.task('lint', function() {
+    return gulp.src(['../examples/**/*.js'])
+        // eslint() attaches the lint output to the eslint property
+        // of the file object so it can be used by other modules.
+        .pipe(eslint(linterOptions))
+        // eslint.format() outputs the lint results to the console.
+        // Alternatively use eslint.formatEach() (see Docs).
+        .pipe(eslint.format())
+        // To have the process exit with an error code (1) on
+        // lint error, return the stream and pipe to failAfterError last.
+        .pipe(eslint.failAfterError());
+});
+
+gulp.task('default', ['lint'], function() {
+    // This will only run if the lint task is successful...
+});

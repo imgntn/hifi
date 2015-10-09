@@ -1,0 +1,107 @@
+;;; First, get emacs 23.2 or later.
+(setq-default tab-width 4)  ; or whatever the local standard is so that you don't get gratuitous diffs on each other's edited code.
+(setq-default indent-tabs-mode nil)
+;;; See http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/
+;;; and newer info at http://www.emacswiki.org/emacs/FlymakeJavaScript
+;;; One way to install (with Emacs 24):
+(if (>= emacs-major-version 24) ; On my mac, the built-in emacs (used for git commits) is 22 and has not been set up for the following.
+    (progn 
+	  (require 'package)
+      (add-to-list 'package-archives
+                   '("melpa" . "http://melpa.milkbox.net/packages/") t)
+      (package-initialize)
+      (setq url-http-attempt-keepalives nil)
+	  ;; One-time manual setup of autoconfig and flymake-jslint: 
+	  ;; M-x list-packages 
+	  ;; search for the two packages and mark for installation with i, and execute with x. 
+	  (require 'auto-complete-config)
+	  (ac-config-default)
+	  (global-auto-complete-mode t)
+	  (require 'flymake-jslint)
+	  (require 'flymake-cursor)
+	  (add-hook 'js-mode-hook 'flymake-jslint-load)
+	  )
+)
+;;; code folding
+(add-hook 'js-mode-hook
+          (lambda ()
+            ;; Scan the file for nested code blocks
+            (imenu-add-menubar-index)
+            ;; Activate the folding mode
+            (hs-minor-mode t)))
+(global-set-key (kbd "<f6>") 'hs-toggle-hiding)
+(global-set-key (kbd "<f7>") 'hs-hide-level)
+(global-set-key (kbd "<f8>") 'hs-show-all)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; First, get emacs 23.2 or later.
+;; (setq-default tab-width 4)
+
+;; (require 'package) ;; You might already have this line
+;; (add-to-list 'package-archives
+;;              '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+;; (package-initialize)
+
+;; ;;; See http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/
+
+;; ;;; Auto complete
+;; ; Load the default configuration
+;; (require 'auto-complete-config)
+;; ; Make sure we can find the dictionaries
+;; (add-to-list 'ac-dictionary-directories "~/.emacs.d/elpa/auto-complete-1.5.0/dict")
+;; ; Use dictionaries by default
+;; (setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
+;; (global-auto-complete-mode t)
+;; ; Start auto-completion after 2 characters of a word
+;; (setq ac-auto-start 2)
+;; ; case sensitivity is important when finding matches
+;; (setq ac-ignore-case nil)
+
+;;; To get node (in the old days. More recently I've just been using nodejs.org install):
+;;; install git, https://github.com/creationix/nvm
+;;; Once, do:
+;;; . ~/.nvm/nvm.sh
+;;; nvm sync
+;;; nvm install stable  # takes quite a while....
+;;; curl http://npmjs.org/install.sh | sh
+;;;
+;;; cd wherever you have lintnode, below.
+;;; npm install express connect-form haml underscore
+;;; and install lintnode and flymake-cursor.el as defined below.
+;;;
+;;; ... and then you can put into your .profile (if you're using nvm above):
+;;; . ~/.nvm/nvm.sh
+;;; nvm use stable
+;;;
+;;; *** On OSX: Alas, the above is not good enough. On Mac, you must open emacs with
+;;;    open /Applications/Emacs.app
+;;; from a terminal rather than from the finder. Otherwise, you don't get node.
+
+;; (add-to-list 'load-path "~/.emacs.d/lintnode")
+;; (require 'flymake-jslint)
+;; ;; Make sure we can find the lintnode executable
+;; (setq lintnode-location "~/.emacs.d/lintnode")
+;; ;; JSLint can be... opinionated
+;; (setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
+;; (setq lintnode-jslint-set "")
+;; ;; Start the server when we first open a js file and start checking
+;; (add-hook 'js-mode-hook 
+;; 		  (lambda () 
+;; 			(lintnode-hook)))
+;; ;;; autostart doesn't work well, so start lintnode now, even before visiting a .js file.
+;; (lintnode-start)
+;; ;;; I put http://www.emacswiki.org/emacs/flymake-cursor.el directly into lintnode dir.
+;; (require 'flymake-cursor)
+
+;;; Code folding
+;; (add-hook 'js-mode-hook
+;;           (lambda ()
+;;             ;; Scan the file for nested code blocks
+;;             (imenu-add-menubar-index)
+;;             ;; Activate the folding mode
+;;             (hs-minor-mode t)))
+;; (global-set-key (kbd "<f6>") 'hs-toggle-hiding)
+;; (global-set-key (kbd "<f7>") 'hs-hide-level)
+;; (global-set-key (kbd "<f8>") 'hs-show-all)
+
