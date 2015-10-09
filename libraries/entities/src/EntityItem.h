@@ -179,8 +179,9 @@ public:
 
     virtual int readEntitySubclassDataFromBuffer(const unsigned char* data, int bytesLeftToRead,
                                                 ReadBitstreamToTreeParams& args,
-                                                EntityPropertyFlags& propertyFlags, bool overwriteLocalData)
-                                                { return 0; }
+                                                EntityPropertyFlags& propertyFlags, bool overwriteLocalData,
+                                                bool& somethingChanged)
+                                                { somethingChanged = false; return 0; }
 
     virtual bool addToScene(EntityItemPointer self, std::shared_ptr<render::Scene> scene,
                             render::PendingChanges& pendingChanges) { return false; } // by default entity items don't add to scene
@@ -334,7 +335,7 @@ public:
     bool getCollisionsWillMove() const { return _collisionsWillMove; }
     void setCollisionsWillMove(bool value) { _collisionsWillMove = value; }
 
-    virtual bool shouldBePhysical() const { return !_ignoreForCollisions; }
+    virtual bool shouldBePhysical() const { return false; }
 
     bool getLocked() const { return _locked; }
     void setLocked(bool value) { _locked = value; }
@@ -508,17 +509,21 @@ protected:
     bool addActionInternal(EntitySimulation* simulation, EntityActionPointer action);
     bool removeActionInternal(const QUuid& actionID, EntitySimulation* simulation = nullptr);
     void deserializeActionsInternal();
-    QByteArray serializeActions(bool& success) const;
+    void serializeActions(bool& success, QByteArray& result) const;
     QHash<QUuid, EntityActionPointer> _objectActions;
 
     static int _maxActionsDataSize;
     mutable QByteArray _allActionsDataCache;
+
     // when an entity-server starts up, EntityItem::setActionData is called before the entity-tree is
     // ready.  This means we can't find our EntityItemPointer or add the action to the simulation.  These
     // are used to keep track of and work around this situation.
     void checkWaitingToRemove(EntitySimulation* simulation = nullptr);
     mutable QSet<QUuid> _actionsToRemove;
     mutable bool _actionDataDirty = false;
+    // _previouslyDeletedActions is used to avoid an action being re-added due to server round-trip lag
+    static quint64 _rememberDeletedActionTime;
+    mutable QHash<QUuid, quint64> _previouslyDeletedActions;
 };
 
 #endif // hifi_EntityItem_h

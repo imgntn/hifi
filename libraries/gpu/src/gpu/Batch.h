@@ -187,6 +187,7 @@ public:
     void setProjectionTransform(const Mat4& proj);
     // Viewport is xy = low left corner in framebuffer, zw = width height of the viewport, expressed in pixels
     void setViewportTransform(const Vec4i& viewport);
+    void setDepthRangeTransform(float nearDepth, float farDepth);
 
     // Pipeline Stage
     void setPipeline(const PipelinePointer& pipeline);
@@ -246,6 +247,26 @@ public:
     void _glUniform4iv(int location, int count, const int* value);
     void _glUniformMatrix4fv(int location, int count, unsigned char transpose, const float* value);
 
+    void _glUniform(int location, int v0) {
+        _glUniform1i(location, v0);
+    }
+
+    void _glUniform(int location, float v0) {
+        _glUniform1f(location, v0);
+    }
+
+    void _glUniform(int location, const glm::vec2& v) {
+        _glUniform2f(location, v.x, v.y);
+    }
+
+    void _glUniform(int location, const glm::vec3& v) {
+        _glUniform3f(location, v.x, v.y, v.z);
+    }
+
+    void _glUniform(int location, const glm::vec4& v) {
+        _glUniform4f(location, v.x, v.y, v.z, v.w);
+    }
+
     void _glColor4f(float red, float green, float blue, float alpha);
 
     enum Command {
@@ -265,6 +286,7 @@ public:
         COMMAND_setViewTransform,
         COMMAND_setProjectionTransform,
         COMMAND_setViewportTransform,
+        COMMAND_setDepthRangeTransform,
 
         COMMAND_setPipeline,
         COMMAND_setStateBlendFactor,

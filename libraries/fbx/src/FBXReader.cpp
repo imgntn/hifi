@@ -264,78 +264,6 @@ void appendModelIDs(const QString& parentID, const QMultiHash<QString, QString>&
     }
 }
 
-
-gpu::BufferPointer FBXMeshPart::getMergedTriangles() const {
-    // if we've been asked for our triangulation of the original quads, but we don't yet have them
-    // then create them now.
-    if (!mergedTrianglesAvailable) {
-        mergedTrianglesAvailable = true;
-
-        mergedTrianglesIndicesBuffer = std::make_shared<gpu::Buffer>();
-
-        // QVector<int> quadIndices; // original indices from the FBX mesh
-        QVector<quint32> mergedTrianglesIndices; // triangle versions of quads converted when first needed
-        const int INDICES_PER_ORIGINAL_TRIANGLE = 3;
-        const int INDICES_PER_ORIGINAL_QUAD = 4;
-        const int INDICES_PER_TRIANGULATED_QUAD = 6;
-        int numberOfQuads = quadIndices.size() / INDICES_PER_ORIGINAL_QUAD;
-        int numberOfTriangles = triangleIndices.size() / INDICES_PER_ORIGINAL_TRIANGLE;
-        int mergedNumberOfIndices = (numberOfQuads * INDICES_PER_TRIANGULATED_QUAD) + triangleIndices.size();
-
-        // resized our merged indices to be enough room for our triangulated quads and our original triangles        
-        mergedTrianglesIndices.resize(mergedNumberOfIndices);
-        
-        int originalIndex = 0;
-        int triangulatedIndex = 0;
-
-        // triangulate our quads
-        for (int fromQuad = 0; fromQuad < numberOfQuads; fromQuad++) {
-            int i0 = quadIndices[originalIndex + 0];
-            int i1 = quadIndices[originalIndex + 1];
-            int i2 = quadIndices[originalIndex + 2];
-            int i3 = quadIndices[originalIndex + 3];
-            
-            // Sam's recommended triangle slices
-            // Triangle tri1 = { v0, v1, v3 };
-            // Triangle tri2 = { v1, v2, v3 };
-            // NOTE: Random guy on the internet's recommended triangle slices
-            // Triangle tri1 = { v0, v1, v2 };
-            // Triangle tri2 = { v2, v3, v0 };
-            
-            mergedTrianglesIndices[triangulatedIndex + 0] = i0;
-            mergedTrianglesIndices[triangulatedIndex + 1] = i1;
-            mergedTrianglesIndices[triangulatedIndex + 2] = i3;
-
-            mergedTrianglesIndices[triangulatedIndex + 3] = i1;
-            mergedTrianglesIndices[triangulatedIndex + 4] = i2;
-            mergedTrianglesIndices[triangulatedIndex + 5] = i3;
-            
-            originalIndex += INDICES_PER_ORIGINAL_QUAD;
-            triangulatedIndex += INDICES_PER_TRIANGULATED_QUAD;
-        }
-
-        // add our original triangs
-        originalIndex = 0;
-        for (int fromTriangle = 0; fromTriangle < numberOfTriangles; fromTriangle++) {
-            int i0 = triangleIndices[originalIndex + 0];
-            int i1 = triangleIndices[originalIndex + 1];
-            int i2 = triangleIndices[originalIndex + 2];
-
-            mergedTrianglesIndices[triangulatedIndex + 0] = i0;
-            mergedTrianglesIndices[triangulatedIndex + 1] = i1;
-            mergedTrianglesIndices[triangulatedIndex + 2] = i2;
-
-            originalIndex += INDICES_PER_ORIGINAL_TRIANGLE;
-            triangulatedIndex += INDICES_PER_ORIGINAL_TRIANGLE;
-        }
-
-        mergedTrianglesIndicesCount = mergedNumberOfIndices;
-        mergedTrianglesIndicesBuffer->append(mergedNumberOfIndices * sizeof(quint32), (gpu::Byte*)mergedTrianglesIndices.data());
-
-    }
-    return mergedTrianglesIndicesBuffer;
-}
-
 FBXBlendshape extractBlendshape(const FBXNode& object) {
     FBXBlendshape blendshape;
     foreach (const FBXNode& data, object.children) {
@@ -530,6 +458,7 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
     QHash<QString, QString> typeFlags;
 
     QHash<QString, QString> localRotations;
+    QHash<QString, QString> localTranslations;
     QHash<QString, QString> xComponents;
     QHash<QString, QString> yComponents;
     QHash<QString, QString> zComponents;
@@ -1112,16 +1041,16 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
                             normalTextures.insert(getID(connection.properties, 2), getID(connection.properties, 1));
                         } else if (type.contains("specular") || type.contains("reflection")) {
                             specularTextures.insert(getID(connection.properties, 2), getID(connection.properties, 1));    
-                            
+
                         } else if (type == "lcl rotation") {
                             localRotations.insert(getID(connection.properties, 2), getID(connection.properties, 1));
-                            
+                        } else if (type == "lcl translation") {
+                            localTranslations.insert(getID(connection.properties, 2), getID(connection.properties, 1));
+
                         } else if (type == "d|x") {
                             xComponents.insert(getID(connection.properties, 2), getID(connection.properties, 1));
-                        
                         } else if (type == "d|y") {
                             yComponents.insert(getID(connection.properties, 2), getID(connection.properties, 1));
-                            
                         } else if (type == "d|z") {
                             zComponents.insert(getID(connection.properties, 2), getID(connection.properties, 1));
 
@@ -1232,6 +1161,7 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
     for (int i = 0; i < frameCount; i++) {
         FBXAnimationFrame frame;
         frame.rotations.resize(modelIDs.size());
+        frame.translations.resize(modelIDs.size());
         geometry.animationFrames.append(frame);
     }
     
@@ -1255,7 +1185,7 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
             joint.freeLineage.append(index);
         }
         joint.freeLineage.remove(lastFreeIndex + 1, joint.freeLineage.size() - lastFreeIndex - 1);
-        joint.translation = model.translation;
+        joint.translation = model.translation; // these are usually in centimeters
         joint.preTransform = model.preTransform;
         joint.preRotation = model.preRotation;
         joint.rotation = model.rotation;
@@ -1280,7 +1210,7 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
         }
         joint.inverseBindRotation = joint.inverseDefaultRotation;
         joint.name = model.name;
-        
+
         foreach (const QString& childID, _connectionChildMap.values(modelID)) {
             QString type = typeFlags.value(childID);
             if (!type.isEmpty()) {
@@ -1293,17 +1223,29 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
 
         geometry.joints.append(joint);
         geometry.jointIndices.insert(model.name, geometry.joints.size());
-        
+
         QString rotationID = localRotations.value(modelID);
-        AnimationCurve xCurve = animationCurves.value(xComponents.value(rotationID));
-        AnimationCurve yCurve = animationCurves.value(yComponents.value(rotationID));
-        AnimationCurve zCurve = animationCurves.value(zComponents.value(rotationID));
-        glm::vec3 defaultValues = glm::degrees(safeEulerAngles(joint.rotation));
+        AnimationCurve xRotCurve = animationCurves.value(xComponents.value(rotationID));
+        AnimationCurve yRotCurve = animationCurves.value(yComponents.value(rotationID));
+        AnimationCurve zRotCurve = animationCurves.value(zComponents.value(rotationID));
+
+        QString translationID = localTranslations.value(modelID);
+        AnimationCurve xPosCurve = animationCurves.value(xComponents.value(translationID));
+        AnimationCurve yPosCurve = animationCurves.value(yComponents.value(translationID));
+        AnimationCurve zPosCurve = animationCurves.value(zComponents.value(translationID));
+
+        glm::vec3 defaultRotValues = glm::degrees(safeEulerAngles(joint.rotation));
+        glm::vec3 defaultPosValues = joint.translation;
+
         for (int i = 0; i < frameCount; i++) {
             geometry.animationFrames[i].rotations[jointIndex] = glm::quat(glm::radians(glm::vec3(
-                xCurve.values.isEmpty() ? defaultValues.x : xCurve.values.at(i % xCurve.values.size()),
-                yCurve.values.isEmpty() ? defaultValues.y : yCurve.values.at(i % yCurve.values.size()),
-                zCurve.values.isEmpty() ? defaultValues.z : zCurve.values.at(i % zCurve.values.size()))));
+                xRotCurve.values.isEmpty() ? defaultRotValues.x : xRotCurve.values.at(i % xRotCurve.values.size()),
+                yRotCurve.values.isEmpty() ? defaultRotValues.y : yRotCurve.values.at(i % yRotCurve.values.size()),
+                zRotCurve.values.isEmpty() ? defaultRotValues.z : zRotCurve.values.at(i % zRotCurve.values.size()))));
+            geometry.animationFrames[i].translations[jointIndex] = glm::vec3(
+                xPosCurve.values.isEmpty() ? defaultPosValues.x : xPosCurve.values.at(i % xPosCurve.values.size()),
+                yPosCurve.values.isEmpty() ? defaultPosValues.y : yPosCurve.values.at(i % yPosCurve.values.size()),
+                zPosCurve.values.isEmpty() ? defaultPosValues.z : zPosCurve.values.at(i % zPosCurve.values.size()));
         }
     }
 
@@ -1570,10 +1512,8 @@ FBXGeometry* FBXReader::extractFBXGeometry(const QVariantHash& mapping, const QS
         }
         extracted.mesh.isEye = (maxJointIndex == geometry.leftEyeJointIndex || maxJointIndex == geometry.rightEyeJointIndex);
 
-#       if USE_MODEL_MESH
-        buildModelMesh(extracted, url);
-#       endif
-        
+        buildModelMesh(extracted.mesh, url);
+
         if (extracted.mesh.isEye) {
             if (maxJointIndex == geometry.leftEyeJointIndex) {
                 geometry.leftEyeSize = extracted.mesh.meshExtents.largestDimension() * offsetScale;

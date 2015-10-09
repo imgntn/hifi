@@ -35,6 +35,7 @@ GLBackend::CommandCall GLBackend::_commandCalls[Batch::NUM_COMMANDS] =
     (&::gpu::GLBackend::do_setViewTransform),
     (&::gpu::GLBackend::do_setProjectionTransform),
     (&::gpu::GLBackend::do_setViewportTransform),
+    (&::gpu::GLBackend::do_setDepthRangeTransform),
 
     (&::gpu::GLBackend::do_setPipeline),
     (&::gpu::GLBackend::do_setStateBlendFactor),
@@ -132,20 +133,26 @@ void GLBackend::renderPassTransfer(Batch& batch) {
     const size_t numCommands = batch.getCommands().size();
     const Batch::Commands::value_type* command = batch.getCommands().data();
     const Batch::CommandOffsets::value_type* offset = batch.getCommandOffsets().data();
-    
-    for (auto& cached : batch._buffers._items) {
-        if (cached._data) {
-            syncGPUObject(*cached._data);
+
+    { // Sync all the buffers
+        PROFILE_RANGE("syncGPUBuffer");
+
+        for (auto& cached : batch._buffers._items) {
+            if (cached._data) {
+                syncGPUObject(*cached._data);
+            }
         }
     }
-    // Reset the transform buffers
-    _transform._cameras.resize(0);
-    _transform._cameraOffsets.clear();
-    _transform._objects.resize(0);
-    _transform._objectOffsets.clear();
 
-    for (_commandIndex = 0; _commandIndex < numCommands; ++_commandIndex) {
-        switch (*command) {
+    { // Sync all the buffers
+        PROFILE_RANGE("syncCPUTransform");
+        _transform._cameras.resize(0);
+        _transform._cameraOffsets.clear();
+        _transform._objects.resize(0);
+        _transform._objectOffsets.clear();
+
+        for (_commandIndex = 0; _commandIndex < numCommands; ++_commandIndex) {
+            switch (*command) {
             case Batch::COMMAND_draw:
             case Batch::COMMAND_drawIndexed:
             case Batch::COMMAND_drawInstanced:
@@ -164,11 +171,16 @@ void GLBackend::renderPassTransfer(Batch& batch) {
 
             default:
                 break;
+            }
+            command++;
+            offset++;
         }
-        command++;
-        offset++;
     }
-    _transform.transfer();
+
+    { // Sync the transform buffers
+        PROFILE_RANGE("syncGPUTransform");
+        _transform.transfer();
+    }
 }
 
 void GLBackend::renderPassDraw(Batch& batch) {
@@ -308,8 +320,11 @@ void GLBackend::do_drawIndexed(Batch& batch, uint32 paramOffset) {
     uint32 startIndex = batch._params[paramOffset + 0]._uint;
 
     GLenum glType = _elementTypeToGLType[_input._indexBufferType];
+    
+    auto typeByteSize = TYPE_SIZE[_input._indexBufferType];
+    GLvoid* indexBufferByteOffset = reinterpret_cast<GLvoid*>(startIndex * typeByteSize + _input._indexBufferOffset);
 
-    glDrawElements(mode, numIndices, glType, reinterpret_cast<GLvoid*>(startIndex + _input._indexBufferOffset));
+    glDrawElements(mode, numIndices, glType, indexBufferByteOffset);
     (void) CHECK_GL_ERROR();
 }
 
@@ -342,10 +357,13 @@ void GLBackend::do_drawIndexedInstanced(Batch& batch, uint32 paramOffset) {
     uint32 startInstance = batch._params[paramOffset + 0]._uint;
     GLenum glType = _elementTypeToGLType[_input._indexBufferType];
 
+    auto typeByteSize = TYPE_SIZE[_input._indexBufferType];
+    GLvoid* indexBufferByteOffset = reinterpret_cast<GLvoid*>(startIndex * typeByteSize + _input._indexBufferOffset);
+    
 #if (GPU_INPUT_PROFILE == GPU_CORE_43)
-    glDrawElementsInstancedBaseVertexBaseInstance(mode, numIndices, glType, reinterpret_cast<GLvoid*>(startIndex + _input._indexBufferOffset), numInstances, 0, startInstance);
+    glDrawElementsInstancedBaseVertexBaseInstance(mode, numIndices, glType, indexBufferByteOffset, numInstances, 0, startInstance);
 #else
-    glDrawElementsInstanced(mode, numIndices, glType, reinterpret_cast<GLvoid*>(startIndex + _input._indexBufferOffset), numInstances);
+    glDrawElementsInstanced(mode, numIndices, glType, indexBufferByteOffset, numInstances);
     Q_UNUSED(startInstance); 
 #endif
     (void)CHECK_GL_ERROR();
@@ -378,7 +396,7 @@ void GLBackend::do_multiDrawIndexedIndirect(Batch& batch, uint32 paramOffset) {
     uint commandCount = batch._params[paramOffset + 0]._uint;
     GLenum mode = _primitiveToGLmode[(Primitive)batch._params[paramOffset + 1]._uint];
     GLenum indexType = _elementTypeToGLType[_input._indexBufferType];
-
+  
     glMultiDrawElementsIndirect(mode, indexType, reinterpret_cast<GLvoid*>(_input._indirectBufferOffset), commandCount, _input._indirectBufferStride);
 #else
     // FIXME implement the slow path
