@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "dependencies": {
-    "gulp-delete-lines": "0.0.7",
+    "gulp": "^3.9.0",
     "gulp-eslint": "^1.0.0"
   },
   "devDependencies": {},
