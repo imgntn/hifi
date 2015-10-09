@@ -1,7 +1,7 @@
 var SOUND_BASE_URL = 'http://hifi-public.s3.amazonaws.com/sounds/Xylophone/Xyl_';
 var XYLOPHONE_MODEL_URL = 'http://hifi-public.s3.amazonaws.com/models/xylophone/xylophone.fbx';
 var MALLET_MODEL_URL = 'http://hifi-public.s3.amazonaws.com/models/xylophone/mallet.fbx';
-
+var MALLET_COLLISION_HULL_URL = 'http://hifi-public.s3.amazonaws.com/models/xylophone/mallet_collision_hull.obj';
 var xylophoneSounds = [];
 var keyEntities = [];
 var KEY_SPACING = {
@@ -119,7 +119,8 @@ function createMallets() {
 		restitution: 0.1,
 		collisionsWillMove: true,
 		position: baseStartPosition,
-		shapeType: 'box'
+		shapeType: 'compound',
+		compoundShapeURL: MALLET_COLLISION_HULL_URL
 	}
 
 	var firstMallet = Entities.addEntity(properties);
