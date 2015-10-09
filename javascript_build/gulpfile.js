@@ -4,7 +4,6 @@ var gulp = require('gulp'),
     eslint = require('gulp-eslint');
 
 var jsLintGlobals = require('./jsLintGlobals');
-var linterGlobals = [jsLintGlobals.hifi_API, jsLintGlobals.hifi_utilities];
 
 var API_GLOBALS = jsLintGlobals.hifi_API.split(",");
 var UTILITY_GLOBALS = jsLintGlobals.hifi_utilities.split(",");
