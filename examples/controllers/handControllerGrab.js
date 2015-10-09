@@ -704,7 +704,7 @@ function MyController(hand, triggerAction) {
                     y: 0,
                     z: 0
                 },
-                ignoreForCollisions: true
+                ignoreForCollisions: false
             });
         }
         setEntityCustomData(GRAB_USER_DATA_KEY, entityID, data);

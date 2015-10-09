@@ -1,119 +1,131 @@
-var XYLOHPONE_USER_DATA_KEY = 'hifi_xylophone';
+var SOUND_BASE_URL = 'http://hifi-public.s3.amazonaws.com/sounds/Xylophone/Xyl_';
+var XYLOPHONE_MODEL_URL = 'http://hifi-public.s3.amazonaws.com/models/xylophone/xylophone.fbx';
+var MALLET_MODEL_URL = 'http://hifi-public.s3.amazonaws.com/models/xylophone/mallet.fbx';
 
-var COLORS = [
-	//red
-	//orange
-	//yellow
-	//teal
-	//green
-	//lightblue
-	//darkblue
-	//purple
-
-]
-
-var MALLET_MODEL_URL = '';
+var xylophoneSounds = [];
 var keyEntities = [];
+var KEY_SPACING = {
+	x: 0.08,
+	y: 0,
+	z: 0
+};
+
 var mallets = [];
 var xylophoneBase;
-//todo:  position the base in front of you facing you 
-var baseStartPosition={};
+
+//load the xylpophone base model
+//make keys
+//make mallets
+var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
+	x: 0,
+	y: 0.5,
+	z: 0
+}), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
+var baseStartPosition = {}
+var baseStartPosition = center;
+
+function createXylophoneBase() {
+	var properties = {
+		type: 'Model',
+		modelURL: XYLOPHONE_MODEL_URL,
+		dimensions: {
+			x: 0.64,
+			y: 0.09,
+			z: 0.34,
+		},
+		collisionsWillMove: false,
+		gravity: {
+			x: 0,
+			y: -9.8,
+			z: 0
+		},
+		position: baseStartPosition,
+	}
+
+	xylophoneBase = Entities.addEntity(properties);
+}
+
+var keyInfo = [{
+	note: 'C2',
+	keyLength: 0.3556,
+}, {
+	note: 'CSharp2',
+	keyLength: 0.3429,
+}, {
+	note: 'D2',
+	keyLength: 0.3302,
+}, {
+	note: 'DSharp2',
+	keyLength: 0.3175,
+}, {
+	note: 'DSharp2', // should be e
+	keyLength: 0.3048,
+}, {
+	note: 'F2',
+	keyLength: 0.2921,
+}, {
+	note: 'FSharp2',
+	keyLength: 0.2794,
+}, {
+	note: 'G2',
+	keyLength: 0.2667,
+}]
+
+
+function createXyloPhoneKeys() {
+	keyInfo.forEach(function(xyloKey, index) {
+		var position = Vec3.sum(baseStartPosition, Vec3.multiply(index, KEY_SPACING));
+		print('INDEX::: ' + index);
+		print('POSITION:::' + JSON.stringify(position))
+		var properties = {
+			type: 'Box',
+			shapeType: 'Box',
+			name: 'Xylophone Key ' + xyloKey.note,
+			dimensions: {
+				x: 0.0508,
+				y: 0.0254,
+				z: xyloKey.keyLength
+			},
+			position: position,
+			color: {
+				red: 0,
+				green: 0,
+				blue: 255
+			},
+			restitution: 0.1,
+			collisionsWillMove: false,
+			collisionSoundURL: SOUND_BASE_URL + xyloKey.note + ".L.wav"
+		};
+
+		//print('PROPS::'+JSON.stringify(properties))
+
+		var xyloPhoneKey = Entities.addEntity(properties);
+		keyEntities.push(xyloPhoneKey);
+
+	})
+}
 
 function createMallets() {
 
 	var properties = {
 		type: 'Model',
-		name:'hifi_Xylophone_mallet',
+		name: 'Xylophone Mallet',
 		modelURL: MALLET_MODEL_URL,
 		dimensions: {
-			x: 0.025,
-			y: 0.315,
-			z: 0.0254
-		}
+			x: 0.46,
+			y: 0.04,
+			z: 0.04
+		},
+		restitution: 0.1,
+		collisionsWillMove: true,
+		position: baseStartPosition,
+		shapeType: 'box'
 	}
-
 
 	var firstMallet = Entities.addEntity(properties);
-	var secondMalley = Entities.addEntity(properties);
+	// var secondMallet = Entities.addEntity(properties);
 	mallets.push(firstMallet);
-	mallets.push(secondMallet);
-}
-
-
-function createXyloPhoneKeys() {
-	keyInfo.forEach(function(xyloKey, index) {
-
-		XYLOPHONE_SOUNDS.push(SoundCache.getSound(SOUND_BASE_URL + xyloKey[index].note + "_sound.wav"));
-		var properties = {
-			name: 'Xylophone Key' + xyloKey[index].note,
-			dimensions: {
-				x: 0.0508,
-				y: 0.0254,
-				z: xyloKey[index].keyLength
-			},
-			position:{
-				//add key width plus a little bit to the spacing.
-			}
-			color: COLORS[index],
-			collisionsWillMove: false,
-			script: XYLOPHONE_KEY_SCRIPT
-
-		}
-		var xyloPhoneKey = Entities.addEntity(properties);
-		keyEntities.push(xyloPhoneKey);
-		setEntityCustomData(XYLOPHONE_USERDATA_KEY, xyloPhoneKey, xyloKey[index].note);
-
-
-
-	})
-}
-
-
-var keyInfo = [{
-	note: 'c1',
-	keyLength: 0.3556,
-}, {
-	note: 'd1',
-	keyLength: 0.3429,
-}, {
-	note: 'e1',
-	keyLength: 0.3302,
-}, {
-	note: 'f1',
-	keyLength: 0.3175,
-}, {
-	note: 'g1',
-	keyLength: 0.3048,
-}, {
-	note: 'a1',
-	keyLength: 0.2921,
-}, {
-	note: 'b1',
-	keyLength: 0.2794,
-}, {
-	note: 'c2',
-	keyLength: 0.2667,
-}]
-
-function createXylophoneBase (){
-	var properties ={
-		type:'model',
-		modelURL:'',
-		dimensions:{
-			x:0,
-			y:0,
-			z:0,
-		},
-		collisionsWillMove:false,
-		gravity:{
-			x:0,
-			y:-9.8,
-			z:0
-		}
-		position: baseStartPosition,
-		// rotation:
-	}
-var xylophoneBase = Entities.addEntity(properties);
+	//	mallets.push(secondMallet);
 }
 
 function cleanup() {
@@ -123,4 +135,11 @@ function cleanup() {
 	while (keyEntities.length > 0) {
 		Entities.deleteEntity(keyEntities.pop());
 	}
+
+	Entities.deleteEntity(xylophoneBase)
 }
+
+Script.scriptEnding.connect(cleanup);
+// createXylophoneBase();
+createMallets();
+createXyloPhoneKeys();
