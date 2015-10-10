@@ -70,5 +70,6 @@
     }
 
     Entities.deletingEntity.connect(deleteInterval);
+
     return new Recorder();
-})
+});
