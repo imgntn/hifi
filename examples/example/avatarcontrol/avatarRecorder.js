@@ -24,7 +24,6 @@ var recorderInterval = Script.setInterval(function() {
         sendBatchToEndpoint(batch);
         batchCount = 0;
     }
-    Stats.forceUpdateStats();
     batch.push(getAvatarData());
     batchCount++;
 }, RECORD_EVERY);
@@ -47,6 +46,5 @@ function sendBatchToEndpoint(batch) {
 function deleteInterval() {
     Script.clearInterval(recorderInterval);
 }
-
 
 Script.scriptEnding.connect(deleteInterval)
