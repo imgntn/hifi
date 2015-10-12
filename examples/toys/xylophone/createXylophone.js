@@ -157,7 +157,7 @@ function createMallets() {
                 resetMe: true
             },
             grabbableKey: {
-                invertSolidWhileHeld: true
+                invertSolidWhileHeld: false
             }
         })
     }

@@ -104,7 +104,6 @@ EntityItemPointer ParticleEffectEntityItem::factory(const EntityItemID& entityID
 ParticleEffectEntityItem::ParticleEffectEntityItem(const EntityItemID& entityItemID, const EntityItemProperties& properties) :
     EntityItem(entityItemID),
     _lastSimulated(usecTimestampNow()),
-    _isEmitting(true),
     _particleLifetimes(DEFAULT_MAX_PARTICLES, 0.0f),
     _particlePositions(DEFAULT_MAX_PARTICLES, glm::vec3(0.0f, 0.0f, 0.0f)),
     _particleVelocities(DEFAULT_MAX_PARTICLES, glm::vec3(0.0f, 0.0f, 0.0f)),
@@ -663,7 +662,7 @@ void ParticleEffectEntityItem::stepSimulation(float deltaTime) {
     }
 
     // emit new particles, but only if we are emmitting
-    if (isEmittingParticles() && _emitRate > 0.0f && _lifespan > 0.0f && _polarStart <= _polarFinish) {
+    if (getIsEmitting() && _emitRate > 0.0f && _lifespan > 0.0f && _polarStart <= _polarFinish) {
 
         float timeLeftInFrame = deltaTime;
         while (_timeUntilNextEmit < timeLeftInFrame) {
