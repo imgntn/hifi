@@ -24,6 +24,7 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     y: 0.5,
     z: 0
 }), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
+
 var baseStartPosition = {
     x: 546.10,
     y: 495.34,
@@ -149,7 +150,16 @@ function createMallets() {
         },
         restitution: 0,
         collisionsWillMove: true,
-        position: baseStartPosition,
+        position: {
+            x:baseStartPosition.x,
+            y:baseStartPosition.y+0.25,
+            z:baseStartPosition.z
+        },
+        velocity:{
+            x:0,
+            y:-0.01,
+            z:0
+        },
         shapeType: 'compound',
         compoundShapeURL: MALLET_COLLISION_HULL_URL,
         userData: JSON.stringify({
