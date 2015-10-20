@@ -17,6 +17,8 @@
 #include "AtmospherePropertyGroup.h"
 #include "EntityItem.h"
 #include "EntityTree.h"
+#include "SkyboxPropertyGroup.h"
+#include "StagePropertyGroup.h"
 
 class ZoneEntityItem : public EntityItem {
 public:
@@ -43,7 +45,8 @@ public:
 
     virtual int readEntitySubclassDataFromBuffer(const unsigned char* data, int bytesLeftToRead, 
                                                 ReadBitstreamToTreeParams& args,
-                                                EntityPropertyFlags& propertyFlags, bool overwriteLocalData);
+                                                EntityPropertyFlags& propertyFlags, bool overwriteLocalData,
+                                                bool& somethingChanged);
 
     xColor getKeyLightColor() const { xColor color = { _keyLightColor[RED_INDEX], _keyLightColor[GREEN_INDEX], _keyLightColor[BLUE_INDEX] }; return color; }
     void setKeyLightColor(const xColor& value) {

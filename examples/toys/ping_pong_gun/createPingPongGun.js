@@ -25,14 +25,15 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
 var pingPongGun = Entities.addEntity({
     type: "Model",
     modelURL: MODEL_URL,
-    shapeType: 'compound',
-    compoundShapeURL: COLLISION_HULL_URL,
+    shapeType:'box',
+    // shapeType: 'compound',
+    // compoundShapeURL: COLLISION_HULL_URL,
     script: scriptURL,
     position: center,
     dimensions: {
-        x:0.67,
-        y: 0.14,
-        z: 0.09
+        x: 0.08,
+        y: 0.21,
+        z: 0.47
     },
     collisionsWillMove: true,
 });

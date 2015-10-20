@@ -14,13 +14,12 @@
 
 #include <ByteCountCoding.h>
 
-#include "PolyLineEntityItem.h"
-#include "EntityTree.h"
 #include "EntitiesLogging.h"
+#include "EntityItemProperties.h"
+#include "EntityTree.h"
 #include "EntityTreeElement.h"
 #include "OctreeConstants.h"
-
-
+#include "PolyLineEntityItem.h"
 
 const float PolyLineEntityItem::DEFAULT_LINE_WIDTH = 0.1f;
 const int PolyLineEntityItem::MAX_POINTS_PER_LINE = 70;
@@ -184,8 +183,10 @@ bool PolyLineEntityItem::setLinePoints(const QVector<glm::vec3>& points) {
 
 int PolyLineEntityItem::readEntitySubclassDataFromBuffer(const unsigned char* data, int bytesLeftToRead,
                                                          ReadBitstreamToTreeParams& args,
-                                                         EntityPropertyFlags& propertyFlags, bool overwriteLocalData) {
-                                                         QWriteLocker lock(&_quadReadWriteLock);
+                                                         EntityPropertyFlags& propertyFlags, bool overwriteLocalData,
+                                                         bool& somethingChanged) {
+
+    QWriteLocker lock(&_quadReadWriteLock);
     int bytesRead = 0;
     const unsigned char* dataAt = data;
 

@@ -135,7 +135,7 @@ void SkeletonModel::updateRig(float deltaTime, glm::mat4 parentTransform) {
             headParams.isInHMD = true;
 
             // get HMD position from sensor space into world space, and back into model space
-            AnimPose avatarToWorld(glm::vec3(1), myAvatar->getOrientation(), myAvatar->getPosition());
+            AnimPose avatarToWorld(glm::vec3(1.0f), myAvatar->getOrientation(), myAvatar->getPosition());
             glm::mat4 worldToAvatar = glm::inverse((glm::mat4)avatarToWorld);
             glm::mat4 worldHMDMat = myAvatar->getSensorToWorldMatrix() * myAvatar->getHMDSensorMatrix();
             glm::mat4 hmdMat = worldToAvatar * worldHMDMat;
@@ -229,6 +229,12 @@ void SkeletonModel::simulate(float deltaTime, bool fullUpdate) {
 
     Model::simulate(deltaTime, fullUpdate);
 
+    // let rig compute the model offset
+    glm::vec3 modelOffset;
+    if (_rig->getModelOffset(modelOffset)) {
+        setOffset(modelOffset);
+    }
+
     if (!isActive() || !_owningAvatar->isMyAvatar()) {
         return; // only simulate for own avatar
     }
@@ -245,12 +251,6 @@ void SkeletonModel::simulate(float deltaTime, bool fullUpdate) {
     int leftPalmIndex, rightPalmIndex;
     Hand* hand = _owningAvatar->getHand();
     hand->getLeftRightPalmIndices(leftPalmIndex, rightPalmIndex);
-
-    // let rig compute the model offset
-    glm::vec3 modelOffset;
-    if (_rig->getModelOffset(modelOffset)) {
-        setOffset(modelOffset);
-    }
 
     // Don't Relax toward hand positions when in animGraph mode.
     if (!_rig->getEnableAnimGraph()) {

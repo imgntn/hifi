@@ -482,7 +482,7 @@ void EntityTreeRenderer::deleteReleasedModels() {
 }
 
 RayToEntityIntersectionResult EntityTreeRenderer::findRayIntersectionWorker(const PickRay& ray, Octree::lockType lockType,
-                                                                                    bool precisionPicking) {
+                                                                                    bool precisionPicking, const QVector<QUuid>& entityIdsToInclude) {
     RayToEntityIntersectionResult result;
     if (_tree) {
         EntityTreePointer entityTree = std::static_pointer_cast<EntityTree>(_tree);
@@ -490,7 +490,7 @@ RayToEntityIntersectionResult EntityTreeRenderer::findRayIntersectionWorker(cons
         OctreeElementPointer element;
         EntityItemPointer intersectedEntity = NULL;
         result.intersects = entityTree->findRayIntersection(ray.origin, ray.direction, element, result.distance, 
-                                                            result.face, result.surfaceNormal, 
+                                                            result.face, result.surfaceNormal, entityIdsToInclude,
                                                             (void**)&intersectedEntity, lockType, &result.accurate,
                                                             precisionPicking);
         if (result.intersects && intersectedEntity) {
@@ -704,7 +704,9 @@ void EntityTreeRenderer::checkAndCallPreload(const EntityItemID& entityID, const
     if (_tree && !_shuttingDown) {
         EntityItemPointer entity = getTree()->findEntityByEntityItemID(entityID);
         if (entity && !entity->getScript().isEmpty()) {
-            _entitiesScriptEngine->loadEntityScript(entityID, entity->getScript(), reload);
+            QString scriptUrl = entity->getScript();
+            scriptUrl = ResourceManager::normalizeURL(scriptUrl);
+            _entitiesScriptEngine->loadEntityScript(entityID, scriptUrl, reload);
         }
     }
 }

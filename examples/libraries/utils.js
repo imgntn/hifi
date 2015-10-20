@@ -79,13 +79,21 @@ getEntityUserData = function(id) {
 // Non-destructively modify the user data of an entity.
 setEntityCustomData = function(customKey, id, data) {
     var userData = getEntityUserData(id);
-    userData[customKey] = data;
+    if (data == null) {
+        delete userData[customKey];
+    } else {
+        userData[customKey] = data;
+    }
     setEntityUserData(id, userData);
 }
 
 getEntityCustomData = function(customKey, id, defaultValue) {
     var userData = getEntityUserData(id);
-    return userData[customKey] ? userData[customKey] : defaultValue;
+    if (undefined != userData[customKey]) {
+        return userData[customKey];
+    } else {
+        return defaultValue;
+    }
 }
 
 mergeObjects = function(proto, custom) {
@@ -243,5 +251,23 @@ orientationOf = function(vector) {
     yaw = Quat.angleAxis(Math.atan2(direction.x, direction.z) * RAD_TO_DEG, Y_AXIS);
     pitch = Quat.angleAxis(Math.asin(-direction.y) * RAD_TO_DEG, X_AXIS);
     return Quat.multiply(yaw, pitch);
+}
+
+randFloat = function(low, high) {
+    return low + Math.random() * (high - low);
+}
+
+
+randInt = function(low, high) {
+    return Math.floor(randFloat(low, high));
+}
+
+hexToRgb = function(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        red: parseInt(result[1], 16),
+        green: parseInt(result[2], 16),
+        blue: parseInt(result[3], 16)
+    } : null;
 }
 

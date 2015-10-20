@@ -17,6 +17,7 @@
 #include <Rig.h>
 
 #include "Avatar.h"
+#include "AtRestDetector.h"
 
 class ModelItemID;
 
@@ -57,7 +58,7 @@ public:
     AudioListenerMode getAudioListenerModeCamera() const { return FROM_CAMERA; }
     AudioListenerMode getAudioListenerModeCustom() const { return CUSTOM; }
 
-    void reset();
+    void reset(bool andReload = false);
     void update(float deltaTime);
     void preRender(RenderArgs* renderArgs);
 
@@ -198,15 +199,6 @@ public slots:
 
     Q_INVOKABLE void updateMotionBehaviorFromMenu();
 
-    glm::vec3 getLeftPalmPosition();
-    glm::vec3 getLeftPalmVelocity();
-    glm::vec3 getLeftPalmAngularVelocity();
-    glm::quat getLeftPalmRotation();
-    glm::vec3 getRightPalmPosition();
-    glm::vec3 getRightPalmVelocity();
-    glm::vec3 getRightPalmAngularVelocity();
-    glm::quat getRightPalmRotation();
-
     void clearReferential();
     bool setModelReferential(const QUuid& id);
     bool setJointReferential(const QUuid& id, int jointIndex);
@@ -270,6 +262,10 @@ private:
     const RecorderPointer getRecorder() const { return _recorder; }
     const PlayerPointer getPlayer() const { return _player; }
 
+    void beginStraighteningLean();
+    bool shouldBeginStraighteningLean() const;
+    void processStraighteningLean(float deltaTime);
+
     bool cameraInsideHead() const;
 
     // These are made private for MyAvatar so that you will use the "use" methods instead
@@ -282,8 +278,6 @@ private:
     // results are in sensor space
     glm::mat4 deriveBodyFromHMDSensor() const;
 
-    glm::vec3 _gravity;
-
     float _driveKeys[MAX_DRIVE_KEYS];
     bool _wasPushing;
     bool _isPushing;
@@ -291,7 +285,6 @@ private:
 
     float _boomLength;
 
-    float _trapDuration; // seconds that avatar has been trapped by collisions
     glm::vec3 _thrust;  // impulse accumulator for outside sources
 
     glm::vec3 _keyboardMotorVelocity; // target local-frame velocity of avatar (keyboard)
@@ -363,10 +356,13 @@ private:
     glm::vec3 _customListenPosition;
     glm::quat _customListenOrientation;
 
-    bool _straightingLean = false;
-    float _straightingLeanAlpha = 0.0f;
+    bool _straighteningLean = false;
+    float _straighteningLeanAlpha = 0.0f;
 
     quint64 _lastUpdateFromHMDTime = usecTimestampNow();
+    AtRestDetector _hmdAtRestDetector;
+    glm::vec3 _lastPosition;
+    bool _lastIsMoving = false;
 };
 
 QScriptValue audioListenModeToScriptValue(QScriptEngine* engine, const AudioListenerMode& audioListenerMode);

@@ -37,22 +37,17 @@ void SetupDeferred::run(const SceneContextPointer& sceneContext, const RenderCon
     RenderArgs* args = renderContext->args;
     gpu::doInBatch(args->_context, [=](gpu::Batch& batch) {
 
-        auto primaryFboStencil = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferStencilColor();
         auto primaryFbo = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferDepthColor();
 
         batch.enableStereo(false);
         batch.setViewportTransform(args->_viewport);
         batch.setStateScissorRect(args->_viewport);
 
-        batch.setFramebuffer(primaryFboStencil);
-        batch.clearFramebuffer(
-            gpu::Framebuffer::BUFFER_STENCIL,
-            vec4(vec3(0), 1), 1.0, 0.0, true);
-
         batch.setFramebuffer(primaryFbo);
         batch.clearFramebuffer(
             gpu::Framebuffer::BUFFER_COLOR0 |
-            gpu::Framebuffer::BUFFER_DEPTH,
+            gpu::Framebuffer::BUFFER_DEPTH |
+            gpu::Framebuffer::BUFFER_STENCIL,
             vec4(vec3(0), 1), 1.0, 0.0, true);
     });
 }
@@ -81,7 +76,7 @@ RenderDeferredTask::RenderDeferredTask() : Task() {
             }
         )
     )));
-    _jobs.push_back(Job(new CullItems::JobModel("CullOpaque", _jobs.back().getOutput())));
+    _jobs.push_back(Job(new CullItemsOpaque::JobModel("CullOpaque", _jobs.back().getOutput())));
     _jobs.push_back(Job(new DepthSortItems::JobModel("DepthSortOpaque", _jobs.back().getOutput())));
     auto& renderedOpaques = _jobs.back().getOutput();
     _jobs.push_back(Job(new DrawOpaqueDeferred::JobModel("DrawOpaqueDeferred", _jobs.back().getOutput())));
@@ -110,7 +105,9 @@ RenderDeferredTask::RenderDeferredTask() : Task() {
             }
          )
      )));
-    _jobs.push_back(Job(new CullItems::JobModel("CullTransparent", _jobs.back().getOutput())));
+    _jobs.push_back(Job(new CullItemsTransparent::JobModel("CullTransparent", _jobs.back().getOutput())));
+
+
     _jobs.push_back(Job(new DepthSortItems::JobModel("DepthSortTransparent", _jobs.back().getOutput(), DepthSortItems(false))));
     _jobs.push_back(Job(new DrawTransparentDeferred::JobModel("TransparentDeferred", _jobs.back().getOutput())));
     
@@ -313,7 +310,8 @@ const gpu::PipelinePointer& DrawStencilDeferred::getOpaquePipeline() {
         gpu::Shader::makeProgram((*program));
 
         auto state = std::make_shared<gpu::State>();
-        state->setStencilTest(true, 0xFF, gpu::State::StencilTest(STENCIL_OPAQUE, 0xFF, gpu::ALWAYS, gpu::State::STENCIL_OP_REPLACE, gpu::State::STENCIL_OP_REPLACE, gpu::State::STENCIL_OP_REPLACE));
+        state->setDepthTest(true, false, gpu::LESS_EQUAL);
+        state->setStencilTest(true, 0xFF, gpu::State::StencilTest(STENCIL_OPAQUE, 0xFF, gpu::ALWAYS, gpu::State::STENCIL_OP_REPLACE, gpu::State::STENCIL_OP_KEEP, gpu::State::STENCIL_OP_REPLACE)); 
         state->setColorWriteMask(0);
 
         _opaquePipeline.reset(gpu::Pipeline::create(program, state));
@@ -330,9 +328,8 @@ void DrawStencilDeferred::run(const SceneContextPointer& sceneContext, const Ren
     doInBatch(args->_context, [=](gpu::Batch& batch) {
         args->_batch = &batch;
 
-        auto primaryFboColorDepthStencil = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferStencilColor();
-        auto primaryDepth = DependencyManager::get<FramebufferCache>()->getPrimaryDepthTexture();
-   
+        auto primaryFboColorDepthStencil = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferDepthColor();
+
         batch.enableStereo(false);
 
         batch.setFramebuffer(primaryFboColorDepthStencil);
@@ -340,7 +337,6 @@ void DrawStencilDeferred::run(const SceneContextPointer& sceneContext, const Ren
         batch.setStateScissorRect(args->_viewport);
 
         batch.setPipeline(getOpaquePipeline());
-        batch.setResourceTexture(0, primaryDepth);
 
         batch.draw(gpu::TRIANGLE_STRIP, 4);
         batch.setResourceTexture(0, nullptr);
@@ -367,12 +363,12 @@ void DrawBackgroundDeferred::run(const SceneContextPointer& sceneContext, const 
     doInBatch(args->_context, [=](gpu::Batch& batch) {
         args->_batch = &batch;
 
-        auto primaryFboColorStencil = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferStencilColor();
+        auto primaryFboColorDepthStencil = DependencyManager::get<FramebufferCache>()->getPrimaryFramebufferDepthColor();
         auto primaryFboFull = DependencyManager::get<FramebufferCache>()->getPrimaryFramebuffer();
 
         batch.enableSkybox(true);
 
-        batch.setFramebuffer(primaryFboColorStencil);
+        batch.setFramebuffer(primaryFboColorDepthStencil);
 
         batch.setViewportTransform(args->_viewport);
         batch.setStateScissorRect(args->_viewport);
