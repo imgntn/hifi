@@ -29,7 +29,7 @@ EntityItemPointer RenderableModelEntityItem::factory(const EntityItemID& entityI
 RenderableModelEntityItem::RenderableModelEntityItem(const EntityItemID& entityItemID,
                                                      const EntityItemProperties& properties) :
     ModelEntityItem(entityItemID, properties),
-    _dimensionsInitialized { properties.dimensionsChanged() }
+    _dimensionsInitialized(properties.getDimensionsInitialized())
 {
 }
 
@@ -298,18 +298,23 @@ void RenderableModelEntityItem::render(RenderArgs* args) {
                 }
 
                 bool movingOrAnimating = isMoving() || isAnimatingSomething();
-                if ((movingOrAnimating || _needsInitialSimulation) && _model->isActive() && _dimensionsInitialized) {
+                if ((movingOrAnimating ||
+                     _needsInitialSimulation ||
+                     _model->getTranslation() != getPosition() ||
+                     _model->getRotation() != getRotation() ||
+                     _model->getRegistrationPoint() != getRegistrationPoint())
+                    && _model->isActive() && _dimensionsInitialized) {
                     _model->setScaleToFit(true, getDimensions());
                     _model->setSnapModelToRegistrationPoint(true, getRegistrationPoint());
                     _model->setRotation(getRotation());
                     _model->setTranslation(getPosition());
-                    
+
                     // make sure to simulate so everything gets set up correctly for rendering
                     {
                         PerformanceTimer perfTimer("_model->simulate");
                         _model->simulate(0.0f);
                     }
-                    
+
                     _needsInitialSimulation = false;
                 }
             }
