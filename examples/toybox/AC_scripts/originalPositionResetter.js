@@ -32,7 +32,7 @@ var MINIMUM_MOVE_LENGTH = 0.05;
 var totalTime = 0;
 var lastUpdate = 0;
 var UPDATE_INTERVAL = 1 / 5; // 5fps
-
+var ballResetCount = 0;
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName) {
         var ids = Entities.findEntities(searchOrigin, 50);
@@ -107,7 +107,7 @@ var Resetter = {
         }
     },
     testBallDistanceFromStart: function(balls) {
-        var resetCount = 0;
+        ballResetCount=0;
         balls.forEach(function(ball, index) {
             var properties = Entities.getEntityProperties(ball, ["position", "userData"]);
             var currentPosition = properties.position;
@@ -122,7 +122,9 @@ var Resetter = {
                     var newPosition = Entities.getEntityProperties(ball, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
-                        if (resetCount === balls.length) {
+                        ballResetCount++;
+                        print('BALL RESET COUNT:::'+ballResetCount);
+                        if (ballResetCount === balls.length) {
                             this.deleteObjects(balls);
                             this.createBasketBalls();
                         }
