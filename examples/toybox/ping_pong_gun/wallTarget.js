@@ -41,7 +41,7 @@
             if (this.hasPlayedSound === false) {
                 this.audioInjector = Audio.playSound(this.hitSound, {
                     position: position,
-                    volume: 0.5
+                    volume: 0.25
                 });
 
                 this.hasPlayedSound = true;

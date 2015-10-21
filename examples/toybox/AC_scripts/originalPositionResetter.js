@@ -35,7 +35,7 @@ var UPDATE_INTERVAL = 1 / 5; // 5fps
 
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName) {
-        var ids = Entities.findEntities(searchOrigin, 5);
+        var ids = Entities.findEntities(searchOrigin, 50);
         var objects = [];
         var i;
         var entityID;
@@ -111,9 +111,12 @@ var Resetter = {
         balls.forEach(function(ball, index) {
             var properties = Entities.getEntityProperties(ball, ["position", "userData"]);
             var currentPosition = properties.position;
-            var originalPosition = properties.userData.originalPositionKey.originalPosition;
+            var userData = JSON.parse(properties.userData);
+            var originalPosition = userData["originalPositionKey"].originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
+            print('DISTANCE 1:::' + length);
+
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(ball, "position").position;
@@ -129,19 +132,23 @@ var Resetter = {
         });
     },
     testTargetDistanceFromStart: function(targets) {
+        print('testing targets')
         targets.forEach(function(target, index) {
             var properties = Entities.getEntityProperties(target, ["position", "userData"]);
             var currentPosition = properties.position;
-            var originalPosition = properties.userData.originalPositionKey.originalPosition;
+            var userData = JSON.parse(properties.userData);
+            var originalPosition = userData.originalPositionKey.originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
+            print('DISTANCE 2:::' + length);
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(target, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
-
+                        print('DELETING TARGET NOT MOVING')
                         Entities.deleteEntity(target);
+                        print('SHOULD CREATE TARGET');
 
                         var targetProperties = {
                             name: 'Hifi-Target',
@@ -161,7 +168,9 @@ var Resetter = {
                                 grabbableKey: {
                                     grabbable: false
                                 },
-                                originalPositionKey: originalPosition
+                                originalPositionKey: {
+                                    originalPosition: originalPosition
+                                }
 
                             })
                         };
@@ -201,6 +210,14 @@ function update(deltaTime) {
             z: 509.74
         }, "Hifi-Target");
 
+        if (balls.length !== NUMBER_OF_BALLS) {
+            if (balls.length !== 0) {
+                Resetter.deleteObjects(balls)
+            }
+            Resetter.createBasketBalls();
+        }
+        print('FOUND BALLS::' + balls.length);
+        print('FOUND TARGETS::' + targets.length);
         if (balls.length !== 0) {
             Resetter.testBallDistanceFromStart(balls);
         }
