@@ -125,8 +125,8 @@ var Resetter = {
                         ballResetCount++;
                         print('BALL RESET COUNT:::'+ballResetCount);
                         if (ballResetCount === balls.length) {
-                            this.deleteObjects(balls);
-                            this.createBasketBalls();
+                            Resetter.deleteObjects(balls);
+                            Resetter.createBasketBalls();
                         }
                     }
                 }, 200);
