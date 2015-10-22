@@ -61,6 +61,7 @@ var Resetter = {
             y: 494.84,
             z: 475.06
         };
+
         var i;
         var ballPosition;
         var collidingBall;
@@ -115,15 +116,12 @@ var Resetter = {
             var originalPosition = userData["originalPositionKey"].originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
-            print('DISTANCE 1:::' + length);
-
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(ball, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
                         ballResetCount++;
-                        print('BALL RESET COUNT:::' + ballResetCount);
                         if (ballResetCount === balls.length) {
                             Resetter.deleteObjects(balls);
                             Resetter.createBasketBalls();
@@ -142,15 +140,13 @@ var Resetter = {
             var originalPosition = userData.originalPositionKey.originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
-            print('DISTANCE 2:::' + length);
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(target, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
-                        print('DELETING TARGET NOT MOVING')
+
                         Entities.deleteEntity(target);
-                        print('SHOULD CREATE TARGET');
 
                         var targetProperties = {
                             name: 'Hifi-Target',
