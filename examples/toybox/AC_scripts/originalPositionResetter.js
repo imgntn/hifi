@@ -38,7 +38,7 @@ var ballResetCount = 0;
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName, searchRadius) {
         var ids = Entities.findEntities(searchOrigin, searchRadius);
-        print(objectname + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
+        print(objectName + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
         var objects = [];
         var i;
         var entityID;
