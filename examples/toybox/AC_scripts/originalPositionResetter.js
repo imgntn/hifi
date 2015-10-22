@@ -33,7 +33,7 @@ var RESET_DISTANCE = 1;
 var MINIMUM_MOVE_LENGTH = 0.05;
 
 var BALL_SEARCH_RADIUS = 50;
-var TARGET_SEARCH_RADIUS = 10;
+var TARGET_SEARCH_RADIUS = 50;
 
 var totalTime = 0;
 var lastUpdate = 0;
