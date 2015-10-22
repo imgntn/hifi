@@ -38,6 +38,9 @@ var ballResetCount = 0;
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName, searchRadius) {
         var ids = Entities.findEntities(searchOrigin, searchRadius);
+        ids.forEach(function(id){
+            print('ENTITY ID FOUND::' + id);
+        })
         print(objectName + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
         var objects = [];
         var i;
@@ -46,6 +49,7 @@ var Resetter = {
         for (i = 0; i < ids.length; i++) {
             entityID = ids[i];
             name = Entities.getEntityProperties(entityID, "name").name;
+            print('ENTITY NAME IS:: '+name);
             if (name === objectName) {
                 //we found an object to reset
                 objects.push(entityID);
