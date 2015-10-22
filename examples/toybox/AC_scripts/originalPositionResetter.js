@@ -20,6 +20,9 @@ var TARGET_DIMENSIONS = {
 var TARGET_ROTATION = Quat.fromPitchYawRollDegrees(0, -55.25, 0);
 
 var targetsScriptURL = Script.resolvePath('../ping_pong_gun/wallTarget.js');
+Script.setInterval(function(){
+    print('TARGET SCRIPT URL::'+targetsScriptURL);
+},5000)
 
 
 var basketballURL = HIFI_PUBLIC_BUCKET + "models/content/basketball2.fbx";
@@ -29,13 +32,16 @@ var BALL_DIAMETER = 0.30;
 var RESET_DISTANCE = 1;
 var MINIMUM_MOVE_LENGTH = 0.05;
 
+var BALL_SEARCH_RADIUS = 50;
+var TARGET_SEARCH_RADIUS = 10;
+
 var totalTime = 0;
 var lastUpdate = 0;
 var UPDATE_INTERVAL = 1 / 5; // 5fps
 var ballResetCount = 0;
 var Resetter = {
-    searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName) {
-        var ids = Entities.findEntities(searchOrigin, 50);
+    searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName, searchRadius) {
+        var ids = Entities.findEntities(searchOrigin, searchRadius);
         var objects = [];
         var i;
         var entityID;
@@ -116,11 +122,13 @@ var Resetter = {
             var originalPosition = userData["originalPositionKey"].originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
+            print('BALL LENGTH:: ' + length);
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(ball, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
+                        print('BALL STOPPED MOVING');
                         ballResetCount++;
                         if (ballResetCount === balls.length) {
                             Resetter.deleteObjects(balls);
@@ -140,12 +148,13 @@ var Resetter = {
             var originalPosition = userData.originalPositionKey.originalPosition;
             var distance = Vec3.subtract(originalPosition, currentPosition);
             var length = Vec3.length(distance);
+            print('TARGET LENGTH:: ' + length);
             if (length > RESET_DISTANCE) {
                 Script.setTimeout(function() {
                     var newPosition = Entities.getEntityProperties(target, "position").position;
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
-
+                        print('TARGET STOPPED MOVING');
                         Entities.deleteEntity(target);
 
                         var targetProperties = {
@@ -200,13 +209,13 @@ function update(deltaTime) {
             x: 542.86,
             y: 494.84,
             z: 475.06
-        }, "Hifi-Basketball");
+        }, "Hifi-Basketball", BALL_SEARCH_RADIUS);
 
         var targets = Resetter.searchForEntitiesToResetToOriginalPosition({
             x: 548.68,
             y: 497.30,
             z: 509.74
-        }, "Hifi-Target");
+        }, "Hifi-Target", TARGET_SEARCH_RADIUS);
 
         if (balls.length !== NUMBER_OF_BALLS) {
             if (balls.length !== 0) {
