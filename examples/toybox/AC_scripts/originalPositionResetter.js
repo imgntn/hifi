@@ -65,11 +65,9 @@ var Resetter = {
         var ballPosition;
         var collidingBall;
 
-
-                    
         for (i = 0; i < NUMBER_OF_BALLS; i++) {
             ballPosition = {
-                x: position.x + (BALL_DIAMETER) - (BALL_DIAMETER * i)
+                x: position.x + (BALL_DIAMETER) - (BALL_DIAMETER * i),
                 y: position.y + BALL_DIAMETER * 2,
                 z: position.z
             };
@@ -109,7 +107,7 @@ var Resetter = {
         }
     },
     testBallDistanceFromStart: function(balls) {
-        ballResetCount=0;
+        ballResetCount = 0;
         balls.forEach(function(ball, index) {
             var properties = Entities.getEntityProperties(ball, ["position", "userData"]);
             var currentPosition = properties.position;
@@ -125,7 +123,7 @@ var Resetter = {
                     var moving = Vec3.length(Vec3.subtract(currentPosition, newPosition));
                     if (moving < MINIMUM_MOVE_LENGTH) {
                         ballResetCount++;
-                        print('BALL RESET COUNT:::'+ballResetCount);
+                        print('BALL RESET COUNT:::' + ballResetCount);
                         if (ballResetCount === balls.length) {
                             Resetter.deleteObjects(balls);
                             Resetter.createBasketBalls();
