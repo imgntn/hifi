@@ -20,10 +20,6 @@ var TARGET_DIMENSIONS = {
 var TARGET_ROTATION = Quat.fromPitchYawRollDegrees(0, -55.25, 0);
 
 var targetsScriptURL = Script.resolvePath('../ping_pong_gun/wallTarget.js');
-Script.setInterval(function(){
-    print('TARGET SCRIPT URL::'+targetsScriptURL);
-},5000)
-
 
 var basketballURL = HIFI_PUBLIC_BUCKET + "models/content/basketball2.fbx";
 
@@ -42,6 +38,7 @@ var ballResetCount = 0;
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName, searchRadius) {
         var ids = Entities.findEntities(searchOrigin, searchRadius);
+        print(objectname + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
         var objects = [];
         var i;
         var entityID;
