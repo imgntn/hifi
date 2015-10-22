@@ -64,13 +64,15 @@ var Resetter = {
         var i;
         var ballPosition;
         var collidingBall;
+
+
+                    
         for (i = 0; i < NUMBER_OF_BALLS; i++) {
             ballPosition = {
-                x: position.x,
+                x: position.x + (BALL_DIAMETER) - (BALL_DIAMETER * i)
                 y: position.y + BALL_DIAMETER * 2,
-                z: position.z + (BALL_DIAMETER) - (BALL_DIAMETER * i)
+                z: position.z
             };
-
             collidingBall = Entities.addEntity({
                 type: "Model",
                 name: 'Hifi-Basketball',
