@@ -31,17 +31,26 @@ var MINIMUM_MOVE_LENGTH = 0.05;
 var BALL_SEARCH_RADIUS = 50;
 var TARGET_SEARCH_RADIUS = 50;
 
+Agent.isAvatar = true;
+
 var totalTime = 0;
 var lastUpdate = 0;
 var UPDATE_INTERVAL = 1 / 5; // 5fps
 var ballResetCount = 0;
 var Resetter = {
     searchForEntitiesToResetToOriginalPosition: function(searchOrigin, objectName, searchRadius) {
+
+        //we need to make it so the server will consider the area we want when looking for entities
+
+        EntityViewer.setPosition(searchOrigin);
+        EntityViewer.setKeyholeRadius(searchRadius);
+        EntityViewer.queryOctree();
         var ids = Entities.findEntities(searchOrigin, searchRadius);
-        ids.forEach(function(id){
-            print('ENTITY ID FOUND::' + id);
-        })
+
         print(objectName + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
+        // ids.forEach(function(id) {
+        //     print('ENTITY ID FOUND::' + id);
+        // })
         var objects = [];
         var i;
         var entityID;
@@ -49,7 +58,7 @@ var Resetter = {
         for (i = 0; i < ids.length; i++) {
             entityID = ids[i];
             name = Entities.getEntityProperties(entityID, "name").name;
-            print('ENTITY NAME IS:: '+name);
+            print('ENTITY NAME IS:: ' + name);
             if (name === objectName) {
                 //we found an object to reset
                 objects.push(entityID);
