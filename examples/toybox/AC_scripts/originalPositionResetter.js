@@ -55,10 +55,10 @@ var Resetter = {
         var name;
         for (i = 0; i < ids.length; i++) {
             entityID = ids[i];
-            name = Entities.getEntityProperties(entityID, "name").name;
-            print('ENTITY NAME DOES NOT MATCH');
-            if (name === objectName) {
-                print('ENTITY NAME DOES MATCHES');
+            var properties = Entities.getEntityProperties(entityID);
+            if (properties.name === objectName) {
+                print('ENTITY NAME DOES MATCH');
+                print('ENTITY PROPS:::'+JSON.stringify(properties));
                 //we found an object to reset
                 objects.push(entityID);
             }
@@ -233,7 +233,7 @@ function update(deltaTime) {
         //     }
         //     Resetter.createBasketBalls();
         // }
-        
+
         print('FOUND BALLS::' + balls.length);
         print('FOUND TARGETS::' + targets.length);
         if (balls.length !== 0) {
