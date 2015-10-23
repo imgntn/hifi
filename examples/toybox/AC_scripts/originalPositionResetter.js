@@ -48,9 +48,7 @@ var Resetter = {
         var ids = Entities.findEntities(searchOrigin, searchRadius);
 
         print(objectName + " search found " + ids.length + " at " + JSON.stringify(searchOrigin));
-        // ids.forEach(function(id) {
-        //     print('ENTITY ID FOUND::' + id);
-        // })
+
         var objects = [];
         var i;
         var entityID;
@@ -58,8 +56,9 @@ var Resetter = {
         for (i = 0; i < ids.length; i++) {
             entityID = ids[i];
             name = Entities.getEntityProperties(entityID, "name").name;
-            print('ENTITY NAME IS:: ' + name);
+            print('ENTITY NAME DOES NOT MATCH');
             if (name === objectName) {
+                print('ENTITY NAME DOES MATCHES');
                 //we found an object to reset
                 objects.push(entityID);
             }
@@ -124,6 +123,7 @@ var Resetter = {
         }
     },
     testBallDistanceFromStart: function(balls) {
+        print('TESTING BALL DISTANCE')
         ballResetCount = 0;
         balls.forEach(function(ball, index) {
             var properties = Entities.getEntityProperties(ball, ["position", "userData"]);
@@ -227,12 +227,13 @@ function update(deltaTime) {
             z: 509.74
         }, "Hifi-Target", TARGET_SEARCH_RADIUS);
 
-        if (balls.length !== NUMBER_OF_BALLS) {
-            if (balls.length !== 0) {
-                Resetter.deleteObjects(balls)
-            }
-            Resetter.createBasketBalls();
-        }
+        // if (balls.length !== NUMBER_OF_BALLS) {
+        //     if (balls.length !== 0) {
+        //         Resetter.deleteObjects(balls)
+        //     }
+        //     Resetter.createBasketBalls();
+        // }
+        
         print('FOUND BALLS::' + balls.length);
         print('FOUND TARGETS::' + targets.length);
         if (balls.length !== 0) {
