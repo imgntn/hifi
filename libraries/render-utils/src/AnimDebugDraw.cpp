@@ -13,6 +13,7 @@
 #include "AbstractViewStateInterface.h"
 #include "RenderUtilsLogging.h"
 #include "GLMHelpers.h"
+#include "DebugDraw.h"
 
 #include "AnimDebugDraw.h"
 
@@ -67,13 +68,9 @@ namespace render {
     }
 }
 
-static AnimDebugDraw* instance = nullptr;
-
 AnimDebugDraw& AnimDebugDraw::getInstance() {
-    if (!instance) {
-        instance = new AnimDebugDraw();
-    }
-    return *instance;
+    static AnimDebugDraw instance;
+    return instance;
 }
 
 static uint32_t toRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -144,6 +141,10 @@ AnimDebugDraw::AnimDebugDraw() :
 }
 
 AnimDebugDraw::~AnimDebugDraw() {
+}
+
+void AnimDebugDraw::shutdown() {
+    // remove renderItem from main 3d scene.
     render::ScenePointer scene = AbstractViewStateInterface::instance()->getMain3DScene();
     if (scene && _itemID) {
         render::PendingChanges pendingChanges;
@@ -152,20 +153,28 @@ AnimDebugDraw::~AnimDebugDraw() {
     }
 }
 
-void AnimDebugDraw::addSkeleton(std::string key, AnimSkeleton::ConstPointer skeleton, const AnimPose& rootPose, const glm::vec4& color) {
+void AnimDebugDraw::addSkeleton(const std::string& key, AnimSkeleton::ConstPointer skeleton, const AnimPose& rootPose, const glm::vec4& color) {
     _skeletons[key] = SkeletonInfo(skeleton, rootPose, color);
 }
 
-void AnimDebugDraw::removeSkeleton(std::string key) {
+void AnimDebugDraw::removeSkeleton(const std::string& key) {
     _skeletons.erase(key);
 }
 
-void AnimDebugDraw::addAnimNode(std::string key, AnimNode::ConstPointer animNode, const AnimPose& rootPose, const glm::vec4& color) {
+void AnimDebugDraw::addAnimNode(const std::string& key, AnimNode::ConstPointer animNode, const AnimPose& rootPose, const glm::vec4& color) {
     _animNodes[key] = AnimNodeInfo(animNode, rootPose, color);
 }
 
-void AnimDebugDraw::removeAnimNode(std::string key) {
+void AnimDebugDraw::removeAnimNode(const std::string& key) {
     _animNodes.erase(key);
+}
+
+void AnimDebugDraw::addPoses(const std::string& key, AnimSkeleton::ConstPointer skeleton, const AnimPoseVec& poses, const AnimPose& rootPose, const glm::vec4& color) {
+    _poses[key] = PosesInfo(skeleton, poses, rootPose, color);
+}
+
+void AnimDebugDraw::removePoses(const std::string& key) {
+    _poses.erase(key);
 }
 
 static const uint32_t red = toRGBA(255, 0, 0, 255);
@@ -176,6 +185,8 @@ const int NUM_CIRCLE_SLICES = 24;
 
 static void addBone(const AnimPose& rootPose, const AnimPose& pose, float radius, Vertex*& v) {
 
+    const float XYZ_AXIS_LENGTH = radius * 4.0f;
+
     AnimPose finalPose = rootPose * pose;
     glm::vec3 base = rootPose * pose.trans;
 
@@ -184,8 +195,8 @@ static void addBone(const AnimPose& rootPose, const AnimPose& pose, float radius
     glm::vec3 zRing[NUM_CIRCLE_SLICES + 1];
     const float dTheta = (2.0f * (float)M_PI) / NUM_CIRCLE_SLICES;
     for (int i = 0; i < NUM_CIRCLE_SLICES + 1; i++) {
-        float rCosTheta = radius * cos(dTheta * i);
-        float rSinTheta = radius * sin(dTheta * i);
+        float rCosTheta = radius * cosf(dTheta * i);
+        float rSinTheta = radius * sinf(dTheta * i);
         xRing[i] = finalPose * glm::vec3(0.0f, rCosTheta, rSinTheta);
         yRing[i] = finalPose * glm::vec3(rCosTheta, 0.0f, rSinTheta);
         zRing[i] = finalPose * glm::vec3(rCosTheta, rSinTheta, 0.0f);
@@ -195,7 +206,7 @@ static void addBone(const AnimPose& rootPose, const AnimPose& pose, float radius
     v->pos = base;
     v->rgba = red;
     v++;
-    v->pos = finalPose * glm::vec3(radius * 2.0f, 0.0f, 0.0f);
+    v->pos = finalPose * glm::vec3(XYZ_AXIS_LENGTH, 0.0f, 0.0f);
     v->rgba = red;
     v++;
 
@@ -213,7 +224,7 @@ static void addBone(const AnimPose& rootPose, const AnimPose& pose, float radius
     v->pos = base;
     v->rgba = green;
     v++;
-    v->pos = finalPose * glm::vec3(0.0f, radius * 2.0f, 0.0f);
+    v->pos = finalPose * glm::vec3(0.0f, XYZ_AXIS_LENGTH, 0.0f);
     v->rgba = green;
     v++;
 
@@ -231,7 +242,7 @@ static void addBone(const AnimPose& rootPose, const AnimPose& pose, float radius
     v->pos = base;
     v->rgba = blue;
     v++;
-    v->pos = finalPose * glm::vec3(0.0f, 0.0f, radius * 2.0f);
+    v->pos = finalPose * glm::vec3(0.0f, 0.0f, XYZ_AXIS_LENGTH);
     v->rgba = blue;
     v++;
 
@@ -322,11 +333,12 @@ void AnimDebugDraw::update() {
         const size_t VERTICES_PER_BONE = (6 + (NUM_CIRCLE_SLICES * 2) * 3);
         const size_t VERTICES_PER_LINK = 8 * 2;
 
-        const float BONE_RADIUS = 0.0075f;
+        const float BONE_RADIUS = 0.01f; // 1 cm
+        const float POSE_RADIUS = 0.1f; // 10 cm
 
         // figure out how many verts we will need.
         int numVerts = 0;
-        for (auto&& iter : _skeletons) {
+        for (auto& iter : _skeletons) {
             AnimSkeleton::ConstPointer& skeleton = std::get<0>(iter.second);
             numVerts += skeleton->getNumJoints() * VERTICES_PER_BONE;
             for (int i = 0; i < skeleton->getNumJoints(); i++) {
@@ -337,7 +349,7 @@ void AnimDebugDraw::update() {
             }
         }
 
-        for (auto&& iter : _animNodes) {
+        for (auto& iter : _animNodes) {
             AnimNode::ConstPointer& animNode = std::get<0>(iter.second);
             auto poses = animNode->getPosesInternal();
             numVerts += poses.size() * VERTICES_PER_BONE;
@@ -350,10 +362,27 @@ void AnimDebugDraw::update() {
             }
         }
 
+        for (auto& iter : _poses) {
+            AnimSkeleton::ConstPointer& skeleton = std::get<0>(iter.second);
+            numVerts += skeleton->getNumJoints() * VERTICES_PER_BONE;
+            for (int i = 0; i < skeleton->getNumJoints(); i++) {
+                auto parentIndex = skeleton->getParentIndex(i);
+                if (parentIndex >= 0) {
+                    numVerts += VERTICES_PER_LINK;
+                }
+            }
+        }
+
+        // count marker verts from shared DebugDraw singleton
+        auto markerMap = DebugDraw::getInstance().getMarkerMap();
+        numVerts += markerMap.size() * VERTICES_PER_BONE;
+        auto myAvatarMarkerMap = DebugDraw::getInstance().getMyAvatarMarkerMap();
+        numVerts += myAvatarMarkerMap.size() * VERTICES_PER_BONE;
+
         data._vertexBuffer->resize(sizeof(Vertex) * numVerts);
         Vertex* verts = (Vertex*)data._vertexBuffer->editData();
         Vertex* v = verts;
-        for (auto&& iter : _skeletons) {
+        for (auto& iter : _skeletons) {
             AnimSkeleton::ConstPointer& skeleton = std::get<0>(iter.second);
             AnimPose rootPose = std::get<1>(iter.second);
             int hipsIndex = skeleton->nameToJointIndex("Hips");
@@ -380,7 +409,7 @@ void AnimDebugDraw::update() {
             }
         }
 
-        for (auto&& iter : _animNodes) {
+        for (auto& iter : _animNodes) {
             AnimNode::ConstPointer& animNode = std::get<0>(iter.second);
             AnimPose rootPose = std::get<1>(iter.second);
             if (animNode->_skeleton) {
@@ -416,6 +445,62 @@ void AnimDebugDraw::update() {
                     addLink(rootPose, absAnimPose[i], absAnimPose[parentIndex], radius, color, v);
                 }
             }
+        }
+
+        for (auto& iter : _poses) {
+            AnimSkeleton::ConstPointer& skeleton = std::get<0>(iter.second);
+            AnimPoseVec& poses = std::get<1>(iter.second);
+            AnimPose rootPose = std::get<2>(iter.second);
+            int hipsIndex = skeleton->nameToJointIndex("Hips");
+            if (hipsIndex >= 0) {
+                rootPose.trans -= skeleton->getRelativeBindPose(hipsIndex).trans;
+            }
+            glm::vec4 color = std::get<3>(iter.second);
+
+            std::vector<AnimPose> absAnimPose;
+            absAnimPose.resize(skeleton->getNumJoints());
+
+            for (int i = 0; i < skeleton->getNumJoints(); i++) {
+                const AnimPose& pose = poses[i];
+
+                const float radius = BONE_RADIUS / (pose.scale.x * rootPose.scale.x);
+
+                auto parentIndex = skeleton->getParentIndex(i);
+                if (parentIndex >= 0) {
+                    absAnimPose[i] = absAnimPose[parentIndex] * pose;
+                } else {
+                    absAnimPose[i] = pose;
+                }
+
+                // draw bone
+                addBone(rootPose, absAnimPose[i], radius, v);
+
+                // draw link to parent
+                if (parentIndex >= 0) {
+                    assert(parentIndex < skeleton->getNumJoints());
+                    addLink(rootPose, absAnimPose[i], absAnimPose[parentIndex], radius, color, v);
+                }
+            }
+        }
+
+        // draw markers from shared DebugDraw singleton
+        for (auto& iter : markerMap) {
+            glm::quat rot = std::get<0>(iter.second);
+            glm::vec3 pos = std::get<1>(iter.second);
+            glm::vec4 color = std::get<2>(iter.second);  // TODO: currently ignored.
+            Q_UNUSED(color);
+            const float radius = POSE_RADIUS;
+            addBone(AnimPose::identity, AnimPose(glm::vec3(1), rot, pos), radius, v);
+        }
+
+        AnimPose myAvatarPose(glm::vec3(1), DebugDraw::getInstance().getMyAvatarRot(), DebugDraw::getInstance().getMyAvatarPos());
+        for (auto& iter : myAvatarMarkerMap) {
+            glm::quat rot = std::get<0>(iter.second);
+            glm::vec3 pos = std::get<1>(iter.second);
+            glm::vec4 color = std::get<2>(iter.second);  // TODO: currently ignored.
+            Q_UNUSED(color);
+            const float radius = POSE_RADIUS;
+            addBone(myAvatarPose, AnimPose(glm::vec3(1), rot, pos), radius, v);
         }
 
         assert(numVerts == (v - verts));

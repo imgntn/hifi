@@ -1,8 +1,5 @@
 set(TARGET_NAME networking)
-
-# use setup_hifi_library macro to setup our project and link appropriate Qt modules
 setup_hifi_library(Network)
-
 link_hifi_libraries(shared)
 
 if (WIN32)
@@ -26,6 +23,11 @@ include_directories(SYSTEM "${OPENSSL_INCLUDE_DIR}")
 
 # append OpenSSL to our list of libraries to link
 target_link_libraries(${TARGET_NAME} ${OPENSSL_LIBRARIES} ${TBB_LIBRARIES})
+
+# libcrypto uses dlopen in libdl
+if (UNIX)
+  target_link_libraries(${TARGET_NAME} ${CMAKE_DL_LIBS})
+endif (UNIX)
 
 # append tbb includes to our list of includes to bubble
 target_include_directories(${TARGET_NAME} SYSTEM PUBLIC ${TBB_INCLUDE_DIRS})

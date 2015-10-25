@@ -16,9 +16,10 @@
 #include <QDir>
 #include <ByteCountCoding.h>
 
-#include <PathUtils.h>
 #include <BoxEntityItem.h>
+#include <EntityItemProperties.h>
 #include <Octree.h>
+#include <PathUtils.h>
 
 const QString& getTestResourceDir() {
     static QString dir;
@@ -84,8 +85,8 @@ void testByteCountCodedStable(const T& value) {
     Q_ASSERT(decoder.data == coder.data);
     #ifndef QT_NO_DEBUG
     auto consumed = decoder.decode(encoded.data(), encoded.size());
-    #endif
     Q_ASSERT(consumed == (unsigned int)originalEncodedSize);
+    #endif
 
 }
 
@@ -93,9 +94,6 @@ template <typename T>
 void testByteCountCoded() {
     testByteCountCodedStable<T>(0);
     testByteCountCodedStable<T>(1);
-    testByteCountCodedStable<T>(1 << 8*sizeof(T));
-    testByteCountCodedStable<T>(std::numeric_limits<T>::max() >> 8*sizeof(T));
-    testByteCountCodedStable<T>(std::numeric_limits<T>::max() >> 8);
     testByteCountCodedStable<T>(std::numeric_limits<T>::max() >> 1);
     testByteCountCodedStable<T>(std::numeric_limits<T>::max());
 }
@@ -124,9 +122,9 @@ void testPropertyFlags(uint32_t value) {
     {
         #ifndef QT_NO_DEBUG
         int decodeSize = decodeNew.decode((const uint8_t*)encoded.data(), encoded.size());
-        #endif
         Q_ASSERT(originalSize == decodeSize);
         Q_ASSERT(decodeNew == original);
+        #endif
     }
 }
 

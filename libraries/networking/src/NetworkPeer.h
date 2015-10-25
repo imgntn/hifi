@@ -61,8 +61,8 @@ public:
     quint64 getWakeTimestamp() const { return _wakeTimestamp; }
     void setWakeTimestamp(quint64 wakeTimestamp) { _wakeTimestamp = wakeTimestamp; }
 
-    quint64 getLastHeardMicrostamp() const { return _lastHeardMicrostamp.load(); }
-    void setLastHeardMicrostamp(quint64 lastHeardMicrostamp) { _lastHeardMicrostamp.store(lastHeardMicrostamp); }
+    quint64 getLastHeardMicrostamp() const { return _lastHeardMicrostamp; }
+    void setLastHeardMicrostamp(quint64 lastHeardMicrostamp) { _lastHeardMicrostamp = lastHeardMicrostamp; }
 
     QByteArray toByteArray() const;
 
@@ -70,11 +70,11 @@ public:
     void incrementConnectionAttempts() { ++_connectionAttempts; }
     void resetConnectionAttempts() { _connectionAttempts = 0; }
 
-    void recordBytesSent(int count);
-    void recordBytesReceived(int count);
+    void recordBytesSent(int count) const;
+    void recordBytesReceived(int count) const;
 
-    float getOutboundBandwidth(); // in kbps
-    float getInboundBandwidth(); // in kbps
+    float getOutboundBandwidth() const; // in kbps
+    float getInboundBandwidth() const; // in kbps
 
     friend QDataStream& operator<<(QDataStream& out, const NetworkPeer& peer);
     friend QDataStream& operator>>(QDataStream& in, NetworkPeer& peer);

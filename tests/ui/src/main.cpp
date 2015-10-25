@@ -28,7 +28,6 @@
 #include <QQmlContext>
 #include <QtQml/QQmlApplicationEngine>
 #include <PathUtils.h>
-#include <unordered_map>
 #include <memory>
 #include <glm/glm.hpp>
 #include <PathUtils.h>
@@ -261,7 +260,7 @@ protected:
     }
 
   
-    void keyPressEvent(QKeyEvent* event) {
+    void keyPressEvent(QKeyEvent* event) override {
         _altPressed = Qt::Key_Alt == event->key();
         switch (event->key()) {
             case Qt::Key_B:
@@ -293,13 +292,13 @@ protected:
         QWindow::keyPressEvent(event);
     }
     QQmlContext* menuContext{ nullptr };
-    void keyReleaseEvent(QKeyEvent *event) {
+    void keyReleaseEvent(QKeyEvent *event) override {
         if (_altPressed && Qt::Key_Alt == event->key()) {
             VrMenu::toggle();
         }
     }
 
-    void moveEvent(QMoveEvent* event) {
+    void moveEvent(QMoveEvent* event) override {
         static qreal oldPixelRatio = 0.0;
         if (devicePixelRatio() != oldPixelRatio) {
             oldPixelRatio = devicePixelRatio();

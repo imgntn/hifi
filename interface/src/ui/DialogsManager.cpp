@@ -1,6 +1,6 @@
 //
 //  DialogsManager.cpp
-//
+//  interface/src/ui
 //
 //  Created by Clement on 1/18/15.
 //  Copyright 2015 High Fidelity, Inc.
@@ -14,6 +14,7 @@
 #include <QMessageBox>
 
 #include <AccountManager.h>
+#include <Application.h>
 #include <MainWindow.h>
 #include <PathUtils.h>
 
@@ -32,6 +33,19 @@
 #include "ScriptEditorWindow.h"
 #include "UpdateDialog.h"
 
+template<typename T>
+void DialogsManager::maybeCreateDialog(QPointer<T>& member) {
+    if (!member) {
+        MainWindow* parent = qApp->getWindow();
+        Q_CHECK_PTR(parent);
+        member = new T(parent);
+        Q_CHECK_PTR(member);
+        
+        if (_hmdToolsDialog && member->windowHandle()) {
+            _hmdToolsDialog->watchWindow(member->windowHandle());
+        }
+    }
+}
 
 void DialogsManager::toggleAddressBar() {
     AddressBarDialog::toggle();

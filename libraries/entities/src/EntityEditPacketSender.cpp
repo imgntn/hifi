@@ -16,6 +16,7 @@
 #include "EntityEditPacketSender.h"
 #include "EntitiesLogging.h"
 #include "EntityItem.h"
+#include "EntityItemProperties.h"
 
 EntityEditPacketSender::EntityEditPacketSender() {
     auto& packetReceiver = DependencyManager::get<NodeList>()->getPacketReceiver();
@@ -28,13 +29,13 @@ void EntityEditPacketSender::processEntityEditNackPacket(QSharedPointer<NLPacket
     }
 }
 
-void EntityEditPacketSender::adjustEditPacketForClockSkew(PacketType::Value type, QByteArray& buffer, int clockSkew) {
+void EntityEditPacketSender::adjustEditPacketForClockSkew(PacketType type, QByteArray& buffer, int clockSkew) {
     if (type == PacketType::EntityAdd || type == PacketType::EntityEdit) {
         EntityItem::adjustEditPacketForClockSkew(buffer, clockSkew);
     }
 }
 
-void EntityEditPacketSender::queueEditEntityMessage(PacketType::Value type, EntityItemID modelID,
+void EntityEditPacketSender::queueEditEntityMessage(PacketType type, EntityItemID modelID,
                                                                 const EntityItemProperties& properties) {
     if (!_shouldSend) {
         return; // bail early

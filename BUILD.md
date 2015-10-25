@@ -13,7 +13,6 @@
 * [Intel Threading Building Blocks](https://www.threadingbuildingblocks.org/) ~> 4.3
 * [glm](http://glm.g-truc.net/0.9.5/index.html) ~> 0.9.5.4
 * [gverb](https://github.com/highfidelity/gverb)
-* [Soxr](http://sourceforge.net/projects/soxr/) ~> 0.1.1
 
 The following external projects are optional dependencies. You can indicate to CMake that you would like to include them by passing -DGET_$NAME=1 when running a clean CMake build. For example, to get CMake to download and compile SDL2 you would pass -DGET_SDL2=1.
 
@@ -52,6 +51,8 @@ Create a build directory in the root of your checkout and then run the CMake bui
     mkdir build
     cd build
     cmake ..
+
+If cmake gives you the same error message repeatedly after the build fails (e.g. you had a typo in the QT_CMAKE_PREFIX_PATH that you fixed but the `.cmake` files still cannot be found), try removing `CMakeCache.txt`.
 
 ####Variables
 Any variables that need to be set for CMake to find dependencies can be set as ENV variables in your shell profile, or passed directly to CMake with a `-D` flag appended to the `cmake ..` command.

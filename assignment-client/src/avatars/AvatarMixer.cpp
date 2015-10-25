@@ -219,7 +219,7 @@ void AvatarMixer::broadcastAvatarData() {
             }
 
             // setup a PacketList for the avatarPackets
-            NLPacketList avatarPacketList(PacketType::BulkAvatarData);
+            auto avatarPacketList = NLPacketList::create(PacketType::BulkAvatarData);
 
             // this is an AGENT we have received head data from
             // send back a packet with other active node data to this node
@@ -259,17 +259,12 @@ void AvatarMixer::broadcastAvatarData() {
                         return;
                     }
 
-                    PacketSequenceNumber lastSeqToReceiver = nodeData->getLastBroadcastSequenceNumber(otherNode->getUUID());
-                    PacketSequenceNumber lastSeqFromSender = otherNode->getLastSequenceNumberForPacketType(PacketType::AvatarData);
+                    AvatarDataSequenceNumber lastSeqToReceiver = nodeData->getLastBroadcastSequenceNumber(otherNode->getUUID());
+                    AvatarDataSequenceNumber lastSeqFromSender = otherNodeData->getLastReceivedSequenceNumber();
 
-                    if (lastSeqToReceiver > lastSeqFromSender) {
-                        // Did we somehow get out of order packets from the sender?
-                        // We don't expect this to happen - in RELEASE we add this to a trackable stat
-                        // and in DEBUG we crash on the assert
-
+                    if (lastSeqToReceiver > lastSeqFromSender && lastSeqToReceiver != UINT16_MAX) {
+                        // we got out out of order packets from the sender, track it
                         otherNodeData->incrementNumOutOfOrderSends();
-
-                        assert(false);
                     }
 
                     // make sure we haven't already sent this data from this sender to this receiver
@@ -289,16 +284,16 @@ void AvatarMixer::broadcastAvatarData() {
 
                     // set the last sent sequence number for this sender on the receiver
                     nodeData->setLastBroadcastSequenceNumber(otherNode->getUUID(),
-                        otherNode->getLastSequenceNumberForPacketType(PacketType::AvatarData));
+                                                             otherNodeData->getLastReceivedSequenceNumber());
 
                     // start a new segment in the PacketList for this avatar
-                    avatarPacketList.startSegment();
+                    avatarPacketList->startSegment();
 
-                    numAvatarDataBytes += avatarPacketList.write(otherNode->getUUID().toRfc4122());
+                    numAvatarDataBytes += avatarPacketList->write(otherNode->getUUID().toRfc4122());
                     numAvatarDataBytes +=
-                        avatarPacketList.write(otherAvatar.toByteArray(false, randFloat() < AVATAR_SEND_FULL_UPDATE_RATIO));
+                        avatarPacketList->write(otherAvatar.toByteArray(false, randFloat() < AVATAR_SEND_FULL_UPDATE_RATIO));
 
-                    avatarPacketList.endSegment();
+                    avatarPacketList->endSegment();
 
                     // if the receiving avatar has just connected make sure we send out the mesh and billboard
                     // for this avatar (assuming they exist)
@@ -344,10 +339,10 @@ void AvatarMixer::broadcastAvatarData() {
             });
             
             // close the current packet so that we're always sending something
-            avatarPacketList.closeCurrentPacket(true);
+            avatarPacketList->closeCurrentPacket(true);
 
             // send the avatar data PacketList
-            nodeList->sendPacketList(avatarPacketList, *node);
+            nodeList->sendPacketList(std::move(avatarPacketList), *node);
 
             // record the bytes sent for other avatar data in the AvatarMixerClientData
             nodeData->recordSentAvatarData(numAvatarDataBytes);
@@ -485,10 +480,13 @@ void AvatarMixer::sendStatsPacket() {
         QJsonObject avatarStats;
 
         const QString NODE_OUTBOUND_KBPS_STAT_KEY = "outbound_kbps";
+        const QString NODE_INBOUND_KBPS_STAT_KEY = "inbound_kbps";
 
         // add the key to ask the domain-server for a username replacement, if it has it
         avatarStats[USERNAME_UUID_REPLACEMENT_STATS_KEY] = uuidStringWithoutCurlyBraces(node->getUUID());
+        
         avatarStats[NODE_OUTBOUND_KBPS_STAT_KEY] = node->getOutboundBandwidth();
+        avatarStats[NODE_INBOUND_KBPS_STAT_KEY] = node->getInboundBandwidth();
 
         AvatarMixerClientData* clientData = static_cast<AvatarMixerClientData*>(node->getLinkedData());
         if (clientData) {
@@ -539,6 +537,7 @@ void AvatarMixer::run() {
     qDebug() << "Waiting for domain settings from domain-server.";
 
     // block until we get the settingsRequestComplete signal
+    
     QEventLoop loop;
     connect(&domainHandler, &DomainHandler::settingsReceived, &loop, &QEventLoop::quit);
     connect(&domainHandler, &DomainHandler::settingsReceiveFail, &loop, &QEventLoop::quit);

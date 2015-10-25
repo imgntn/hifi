@@ -21,6 +21,8 @@
 #include <PerfStat.h>
 
 #include "RenderableDebugableEntityItem.h"
+#include "../render-utils/simple_vert.h"
+#include "../render-utils/simple_frag.h"
 
 EntityItemPointer RenderableBoxEntityItem::factory(const EntityItemID& entityID, const EntityItemProperties& properties) {
     return std::make_shared<RenderableBoxEntityItem>(entityID, properties);
@@ -37,19 +39,29 @@ void RenderableBoxEntityItem::render(RenderArgs* args) {
     PerformanceTimer perfTimer("RenderableBoxEntityItem::render");
     Q_ASSERT(getType() == EntityTypes::Box);
     Q_ASSERT(args->_batch);
-    gpu::Batch& batch = *args->_batch;
-    batch.setModelTransform(getTransformToCenter()); // we want to include the scale as well
-    
+
     if (!_procedural) {
-        _procedural.reset(new ProceduralInfo(this));
+        _procedural.reset(new Procedural(this->getUserData()));
+        _procedural->_vertexSource = simple_vert;
+        _procedural->_fragmentSource = simple_frag;
+        _procedural->_state->setCullMode(gpu::State::CULL_NONE);
+        _procedural->_state->setDepthTest(true, true, gpu::LESS_EQUAL);
+        _procedural->_state->setBlendFunction(false,
+            gpu::State::SRC_ALPHA, gpu::State::BLEND_OP_ADD, gpu::State::INV_SRC_ALPHA,
+            gpu::State::FACTOR_ALPHA, gpu::State::BLEND_OP_ADD, gpu::State::ONE);
     }
 
+    gpu::Batch& batch = *args->_batch;
+    glm::vec4 cubeColor(toGlm(getXColor()), getLocalRenderAlpha());
+
     if (_procedural->ready()) {
-        _procedural->prepare(batch);
-        DependencyManager::get<GeometryCache>()->renderUnitCube(batch);
+        batch.setModelTransform(getTransformToCenter()); // we want to include the scale as well
+        _procedural->prepare(batch, getPosition(), getDimensions());
+        auto color = _procedural->getColor(cubeColor);
+        batch._glColor4f(color.r, color.g, color.b, color.a);
+        DependencyManager::get<GeometryCache>()->renderCube(batch);
     } else {
-        glm::vec4 cubeColor(toGlm(getXColor()), getLocalRenderAlpha());
-        DependencyManager::get<DeferredLightingEffect>()->renderSolidCube(batch, 1.0f, cubeColor);
+        DependencyManager::get<DeferredLightingEffect>()->renderSolidCubeInstance(batch, getTransformToCenter(), cubeColor);
     }
 
     RenderableDebugableEntityItem::render(this, args);

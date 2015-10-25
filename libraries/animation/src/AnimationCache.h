@@ -12,9 +12,9 @@
 #ifndef hifi_AnimationCache_h
 #define hifi_AnimationCache_h
 
-#include <QRunnable>
-#include <QScriptEngine>
-#include <QScriptValue>
+#include <QtCore/QRunnable>
+#include <QtScript/QScriptEngine>
+#include <QtScript/QScriptValue>
 
 #include <DependencyManager.h>
 #include <FBXReader.h>
@@ -65,7 +65,7 @@ public:
     const QVector<FBXAnimationFrame>& getFramesReference() const;
     
 protected:
-    virtual void downloadFinished(QNetworkReply* reply);
+    virtual void downloadFinished(const QByteArray& data) override;
 
 protected slots:
     void animationParseSuccess(FBXGeometry* geometry);
@@ -81,7 +81,7 @@ class AnimationReader : public QObject, public QRunnable {
     Q_OBJECT
 
 public:
-    AnimationReader(const QUrl& url, QNetworkReply* reply);
+    AnimationReader(const QUrl& url, const QByteArray& data);
     virtual void run();
 
 signals:
@@ -90,14 +90,14 @@ signals:
 
 private:
     QUrl _url;
-    QNetworkReply* _reply;
+    QByteArray _data;
 };
 
 class AnimationDetails {
 public:
     AnimationDetails();
     AnimationDetails(QString role, QUrl url, float fps, float priority, bool loop,
-        bool hold, bool startAutomatically, float firstFrame, float lastFrame, bool running, float frameIndex);
+        bool hold, bool startAutomatically, float firstFrame, float lastFrame, bool running, float currentFrame);
 
     QString role;
     QUrl url;
@@ -109,7 +109,7 @@ public:
     float firstFrame;
     float lastFrame;
     bool running;
-    float frameIndex;
+    float currentFrame;
 };
 Q_DECLARE_METATYPE(AnimationDetails);
 QScriptValue animationDetailsToScriptValue(QScriptEngine* engine, const AnimationDetails& event);

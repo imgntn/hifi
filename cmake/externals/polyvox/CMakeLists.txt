@@ -5,7 +5,7 @@ ExternalProject_Add(
   ${EXTERNAL_NAME}
   URL http://hifi-public.s3.amazonaws.com/dependencies/polyvox-master-2015-7-15.zip
   URL_MD5 9ec6323b87e849ae36e562ae1c7494a9
-  CMAKE_ARGS -DENABLE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+  CMAKE_ARGS -DENABLE_EXAMPLES=OFF -DENABLE_BINDINGS=OFF -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
   BINARY_DIR ${EXTERNAL_PROJECT_PREFIX}/build
   LOG_DOWNLOAD 1
   LOG_CONFIGURE 1
@@ -19,19 +19,20 @@ ExternalProject_Get_Property(${EXTERNAL_NAME} INSTALL_DIR)
 
 if (APPLE)
   set(INSTALL_NAME_LIBRARY_DIR ${INSTALL_DIR}/lib)
-  message(STATUS "in polyvox INSTALL_NAME_LIBRARY_DIR ${INSTALL_NAME_LIBRARY_DIR}")
+  
   ExternalProject_Add_Step(
     ${EXTERNAL_NAME}
-    change-install-name
+    change-install-name-debug
     COMMENT "Calling install_name_tool on libraries to fix install name for dylib linking"
     COMMAND ${CMAKE_COMMAND} -DINSTALL_NAME_LIBRARY_DIR=${INSTALL_NAME_LIBRARY_DIR}/Debug -P ${EXTERNAL_PROJECT_DIR}/OSXInstallNameChange.cmake
     DEPENDEES install
     WORKING_DIRECTORY <SOURCE_DIR>
     LOG 1
   )
+  
   ExternalProject_Add_Step(
     ${EXTERNAL_NAME}
-    change-install-name
+    change-install-name-release
     COMMENT "Calling install_name_tool on libraries to fix install name for dylib linking"
     COMMAND ${CMAKE_COMMAND} -DINSTALL_NAME_LIBRARY_DIR=${INSTALL_NAME_LIBRARY_DIR}/Release -P ${EXTERNAL_PROJECT_DIR}/OSXInstallNameChange.cmake
     DEPENDEES install

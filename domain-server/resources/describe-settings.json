@@ -167,6 +167,21 @@
       ]
     },
     {
+      "name": "asset_server",
+      "label": "Asset Server",
+      "assignment-types": [3],
+      "settings": [
+        {
+          "name": "enabled",
+          "type": "checkbox",
+          "label": "Enabled",
+          "help": "Assigns an asset-server in your domain to serve files to clients via the ATP protocol (over UDP)",
+          "default": true,
+          "advanced": true
+        }
+      ]
+    },
+    {
       "name": "audio_env",
       "label": "Audio Environment",
       "assignment-types": [0],
@@ -465,6 +480,14 @@
           "name": "wantEditLogging",
           "type": "checkbox",
           "label": "Edit Logging",
+          "help": "Logging of all edits to entities",
+          "default": false,
+          "advanced": true
+        },
+        {
+          "name": "wantTerseEditLogging",
+          "type": "checkbox",
+          "label": "Edit Logging (Terse)",
           "help": "Logging of all edits to entities",
           "default": false,
           "advanced": true

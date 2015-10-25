@@ -9,10 +9,12 @@
 //
 
 #include "AnimSkeleton.h"
-#include "AnimationLogging.h"
-#include "GLMHelpers.h"
+
 #include <glm/gtx/transform.hpp>
-#include <glm/gtc/quaternion.hpp>
+
+#include <GLMHelpers.h>
+
+#include "AnimationLogging.h"
 
 const AnimPose AnimPose::identity = AnimPose(glm::vec3(1.0f),
                                              glm::quat(),
@@ -20,7 +22,7 @@ const AnimPose AnimPose::identity = AnimPose(glm::vec3(1.0f),
 
 AnimPose::AnimPose(const glm::mat4& mat) {
     scale = extractScale(mat);
-    rot = extractRotation(mat);
+    rot = glm::normalize(glm::quat_cast(mat));
     trans = extractTranslation(mat);
 }
 
@@ -58,7 +60,77 @@ AnimPose::operator glm::mat4() const {
                      glm::vec4(zAxis, 0.0f), glm::vec4(trans, 1.0f));
 }
 
+AnimSkeleton::AnimSkeleton(const FBXGeometry& fbxGeometry) {
+    // convert to std::vector of joints
+    std::vector<FBXJoint> joints;
+    joints.reserve(fbxGeometry.joints.size());
+    for (auto& joint : fbxGeometry.joints) {
+        joints.push_back(joint);
+    }
+
+    AnimPose geometryOffset(fbxGeometry.offset);
+    buildSkeletonFromJoints(joints, geometryOffset);
+}
+
 AnimSkeleton::AnimSkeleton(const std::vector<FBXJoint>& joints, const AnimPose& geometryOffset) {
+    buildSkeletonFromJoints(joints, geometryOffset);
+}
+
+int AnimSkeleton::nameToJointIndex(const QString& jointName) const {
+    for (size_t i = 0; i < _joints.size(); i++) {
+        if (_joints[i].name == jointName) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int AnimSkeleton::getNumJoints() const {
+    return _joints.size();
+}
+
+const AnimPose& AnimSkeleton::getAbsoluteBindPose(int jointIndex) const {
+    return _absoluteBindPoses[jointIndex];
+}
+
+AnimPose AnimSkeleton::getRootAbsoluteBindPoseByChildName(const QString& childName) const {
+    AnimPose pose = AnimPose::identity;
+    int jointIndex = nameToJointIndex(childName);
+    if (jointIndex >= 0) {
+        int numJoints = (int)(_absoluteBindPoses.size());
+        if (jointIndex < numJoints) {
+            int parentIndex = getParentIndex(jointIndex);
+            while (parentIndex != -1 && parentIndex < numJoints) {
+                jointIndex = parentIndex;
+                parentIndex = getParentIndex(jointIndex);
+            }
+            pose = _absoluteBindPoses[jointIndex];
+        }
+    }
+    return pose;
+}
+
+const AnimPose& AnimSkeleton::getRelativeBindPose(int jointIndex) const {
+    return _relativeBindPoses[jointIndex];
+}
+
+int AnimSkeleton::getParentIndex(int jointIndex) const {
+    return _joints[jointIndex].parentIndex;
+}
+
+const QString& AnimSkeleton::getJointName(int jointIndex) const {
+    return _joints[jointIndex].name;
+}
+
+AnimPose AnimSkeleton::getAbsolutePose(int jointIndex, const AnimPoseVec& poses) const {
+    if (jointIndex < 0) {
+        return AnimPose::identity;
+    } else {
+        return getAbsolutePose(_joints[jointIndex].parentIndex, poses) * poses[jointIndex];
+    }
+}
+
+void AnimSkeleton::buildSkeletonFromJoints(const std::vector<FBXJoint>& joints, const AnimPose& geometryOffset) {
     _joints = joints;
 
     // build a cache of bind poses
@@ -113,40 +185,12 @@ AnimSkeleton::AnimSkeleton(const std::vector<FBXJoint>& joints, const AnimPose& 
     }
 }
 
-int AnimSkeleton::nameToJointIndex(const QString& jointName) const {
-    for (size_t i = 0; i < _joints.size(); i++) {
-        if (_joints[i].name == jointName) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int AnimSkeleton::getNumJoints() const {
-    return _joints.size();
-}
-
-AnimPose AnimSkeleton::getAbsoluteBindPose(int jointIndex) const {
-    return _absoluteBindPoses[jointIndex];
-}
-
-AnimPose AnimSkeleton::getRelativeBindPose(int jointIndex) const {
-    return _relativeBindPoses[jointIndex];
-}
-
-int AnimSkeleton::getParentIndex(int jointIndex) const {
-    return _joints[jointIndex].parentIndex;
-}
-
-const QString& AnimSkeleton::getJointName(int jointIndex) const {
-    return _joints[jointIndex].name;
-}
-
 #ifndef NDEBUG
 void AnimSkeleton::dump() const {
     qCDebug(animation) << "[";
     for (int i = 0; i < getNumJoints(); i++) {
         qCDebug(animation) << "    {";
+        qCDebug(animation) << "        index =" << i;
         qCDebug(animation) << "        name =" << getJointName(i);
         qCDebug(animation) << "        absBindPose =" << getAbsoluteBindPose(i);
         qCDebug(animation) << "        relBindPose =" << getRelativeBindPose(i);
@@ -162,6 +206,7 @@ void AnimSkeleton::dump(const AnimPoseVec& poses) const {
     qCDebug(animation) << "[";
     for (int i = 0; i < getNumJoints(); i++) {
         qCDebug(animation) << "    {";
+        qCDebug(animation) << "        index =" << i;
         qCDebug(animation) << "        name =" << getJointName(i);
         qCDebug(animation) << "        absBindPose =" << getAbsoluteBindPose(i);
         qCDebug(animation) << "        relBindPose =" << getRelativeBindPose(i);

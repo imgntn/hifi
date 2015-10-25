@@ -22,9 +22,9 @@
 #include <UserActivityLogger.h>
 #include <VrMenu.h>
 
-
 #include "Application.h"
 #include "AccountManager.h"
+#include "assets/ATPAssetMigrator.h"
 #include "audio/AudioScope.h"
 #include "avatar/AvatarManager.h"
 #include "devices/DdeFaceTracker.h"
@@ -33,12 +33,14 @@
 #include "devices/3DConnexionClient.h"
 #include "MainWindow.h"
 #include "scripting/MenuScriptingInterface.h"
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
-#include "SpeechRecognizer.h"
-#endif
+#include "ui/AssetUploadDialogFactory.h"
 #include "ui/DialogsManager.h"
 #include "ui/StandAloneJSConsole.h"
 #include "InterfaceLogging.h"
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+#include "SpeechRecognizer.h"
+#endif
 
 #include "Menu.h"
 
@@ -293,9 +295,6 @@ Menu::Menu() {
 
     addCheckableActionToQMenuAndActionHash(viewMenu, MenuOption::TurnWithHead, 0, false);
 
-    addCheckableActionToQMenuAndActionHash(viewMenu, MenuOption::StandingHMDSensorMode, 0, false,
-                                           avatar, SLOT(updateStandingHMDModeFromMenu()));
-
     addCheckableActionToQMenuAndActionHash(viewMenu, MenuOption::WorldAxes);
 
     addCheckableActionToQMenuAndActionHash(viewMenu, MenuOption::Stats);
@@ -334,8 +333,7 @@ Menu::Menu() {
     ambientLightGroup->addAction(addCheckableActionToQMenuAndActionHash(ambientLightMenu, MenuOption::RenderAmbientLight8, 0, false));
     ambientLightGroup->addAction(addCheckableActionToQMenuAndActionHash(ambientLightMenu, MenuOption::RenderAmbientLight9, 0, false));
 
-    addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::ThrottleFPSIfNotFocus, 0, true,
-            qApp, SLOT(setThrottleFPSEnabled()));
+    addCheckableActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::ThrottleFPSIfNotFocus, 0, true);
 
     MenuWrapper* resolutionMenu = renderOptionsMenu->addMenu(MenuOption::RenderResolution);
     QActionGroup* resolutionGroup = new QActionGroup(resolutionMenu);
@@ -353,7 +351,28 @@ Menu::Menu() {
     addActionToQMenuAndActionHash(renderOptionsMenu, MenuOption::LodTools,
         0, // QML Qt::SHIFT | Qt::Key_L,
         dialogsManager.data(), SLOT(lodTools()));
-
+    
+    MenuWrapper* assetDeveloperMenu = developerMenu->addMenu("Assets");
+    
+    auto& assetDialogFactory = AssetUploadDialogFactory::getInstance();
+    assetDialogFactory.setDialogParent(this);
+    
+    QAction* assetUpload = addActionToQMenuAndActionHash(assetDeveloperMenu,
+                                                         MenuOption::UploadAsset,
+                                                         0,
+                                                         &assetDialogFactory,
+                                                         SLOT(showDialog()));
+    
+    // disable the asset upload action by default - it gets enabled only if asset server becomes present
+    assetUpload->setEnabled(false);
+    
+    auto& atpMigrator = ATPAssetMigrator::getInstance();
+    atpMigrator.setDialogParent(this);
+    
+    addActionToQMenuAndActionHash(assetDeveloperMenu, MenuOption::AssetMigration,
+                                                            0, &atpMigrator,
+                                                            SLOT(loadEntityServerFile()));
+    
     MenuWrapper* avatarDebugMenu = developerMenu->addMenu("Avatar");
 
     MenuWrapper* faceTrackingMenu = avatarDebugMenu->addMenu("Face Tracking");
@@ -432,9 +451,11 @@ Menu::Menu() {
     addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::RenderFocusIndicator, 0, false);
     addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::ShowWhosLookingAtMe, 0, false);
     addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::FixGaze, 0, false);
-    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::EnableRigAnimations, 0, true,
+    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::EnableAvatarUpdateThreading, 0, false,
+                                           qApp, SLOT(setAvatarUpdateThreading(bool)));
+    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::EnableRigAnimations, 0, false,
                                            avatar, SLOT(setEnableRigAnimations(bool)));
-    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::EnableAnimGraph, 0, false,
+    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::EnableAnimGraph, 0, true,
                                            avatar, SLOT(setEnableAnimGraph(bool)));
     addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::AnimDebugDrawBindPose, 0, false,
                                            avatar, SLOT(setEnableDebugDrawBindPose(bool)));
@@ -448,11 +469,11 @@ Menu::Menu() {
                                            0, false,
                                            &ConnexionClient::getInstance(),
                                            SLOT(toggleConnexion(bool)));
+    addCheckableActionToQMenuAndActionHash(avatarDebugMenu, MenuOption::ComfortMode, 0, true);
 
     MenuWrapper* handOptionsMenu = developerMenu->addMenu("Hands");
-    addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::DisplayHands, 0, true);
     addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::DisplayHandTargets, 0, false);
-    addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::HandMouseInput, 0, true);
+    addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::EnableHandMouseInput, 0, false);
     addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::LowVelocityFilter, 0, true,
                                            qApp, SLOT(setLowVelocityFilter(bool)));
     addCheckableActionToQMenuAndActionHash(handOptionsMenu, MenuOption::ShowIKConstraints, 0, false);

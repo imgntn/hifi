@@ -14,6 +14,9 @@
 #include "AvatarMixerClientData.h"
 
 int AvatarMixerClientData::parseData(NLPacket& packet) {
+    // pull the sequence number from the data first
+    packet.readPrimitive(&_lastReceivedSequenceNumber);
+    
     // compute the offset to the data payload
     return _avatar.parseDataFromBuffer(packet.readWithoutCopy(packet.bytesLeftToRead()));
 }
@@ -24,24 +27,27 @@ bool AvatarMixerClientData::checkAndSetHasReceivedFirstPackets() {
     return oldValue;
 }
 
-PacketSequenceNumber AvatarMixerClientData::getLastBroadcastSequenceNumber(const QUuid& nodeUUID) const {
+uint16_t AvatarMixerClientData::getLastBroadcastSequenceNumber(const QUuid& nodeUUID) const {
     // return the matching PacketSequenceNumber, or the default if we don't have it
     auto nodeMatch = _lastBroadcastSequenceNumbers.find(nodeUUID);
     if (nodeMatch != _lastBroadcastSequenceNumbers.end()) {
         return nodeMatch->second;
     } else {
-        return DEFAULT_SEQUENCE_NUMBER;
+        return 0;
     }
 }
 
 void AvatarMixerClientData::loadJSONStats(QJsonObject& jsonObject) const {
     jsonObject["display_name"] = _avatar.getDisplayName();
     jsonObject["full_rate_distance"] = _fullRateDistance;
-    jsonObject["max_avatar_distance"] = _maxAvatarDistance;
-    jsonObject["num_avatars_sent_last_frame"] = _numAvatarsSentLastFrame;
-    jsonObject["avg_other_avatar_starves_per_second"] = getAvgNumOtherAvatarStarvesPerSecond();
-    jsonObject["avg_other_avatar_skips_per_second"] = getAvgNumOtherAvatarSkipsPerSecond();
+    jsonObject["max_av_distance"] = _maxAvatarDistance;
+    jsonObject["num_avs_sent_last_frame"] = _numAvatarsSentLastFrame;
+    jsonObject["avg_other_av_starves_per_second"] = getAvgNumOtherAvatarStarvesPerSecond();
+    jsonObject["avg_other_av_skips_per_second"] = getAvgNumOtherAvatarSkipsPerSecond();
     jsonObject["total_num_out_of_order_sends"] = _numOutOfOrderSends;
     
     jsonObject[OUTBOUND_AVATAR_DATA_STATS_KEY] = getOutboundAvatarDataKbps();
+    jsonObject[INBOUND_AVATAR_DATA_STATS_KEY] = _avatar.getAverageBytesReceivedPerSecond() / (float) BYTES_PER_KILOBIT;
+    
+    jsonObject["av_data_receive_rate"] = _avatar.getReceiveRate();
 }

@@ -27,6 +27,7 @@
 #include <UUIDHasher.h>
 
 const QString OUTBOUND_AVATAR_DATA_STATS_KEY = "outbound_av_data_kbps";
+const QString INBOUND_AVATAR_DATA_STATS_KEY = "inbound_av_data_kbps";
 
 class AvatarMixerClientData : public NodeData {
     Q_OBJECT
@@ -36,10 +37,12 @@ public:
     
     bool checkAndSetHasReceivedFirstPackets();
 
-    PacketSequenceNumber getLastBroadcastSequenceNumber(const QUuid& nodeUUID) const;
-    void setLastBroadcastSequenceNumber(const QUuid& nodeUUID, PacketSequenceNumber sequenceNumber)
+    uint16_t getLastBroadcastSequenceNumber(const QUuid& nodeUUID) const;
+    void setLastBroadcastSequenceNumber(const QUuid& nodeUUID, uint16_t sequenceNumber)
         { _lastBroadcastSequenceNumbers[nodeUUID] = sequenceNumber; }
     Q_INVOKABLE void removeLastBroadcastSequenceNumber(const QUuid& nodeUUID) { _lastBroadcastSequenceNumbers.erase(nodeUUID); }
+    
+    uint16_t getLastReceivedSequenceNumber() const { return _lastReceivedSequenceNumber; }
 
     quint64 getBillboardChangeTimestamp() const { return _billboardChangeTimestamp; }
     void setBillboardChangeTimestamp(quint64 billboardChangeTimestamp) { _billboardChangeTimestamp = billboardChangeTimestamp; }
@@ -77,8 +80,9 @@ public:
     void loadJSONStats(QJsonObject& jsonObject) const;
 private:
     AvatarData _avatar;
-
-    std::unordered_map<QUuid, PacketSequenceNumber, UUIDHasher> _lastBroadcastSequenceNumbers;
+    
+    uint16_t _lastReceivedSequenceNumber { 0 };
+    std::unordered_map<QUuid, uint16_t> _lastBroadcastSequenceNumbers;
 
     bool _hasReceivedFirstPackets = false;
     quint64 _billboardChangeTimestamp = 0;

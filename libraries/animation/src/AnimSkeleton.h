@@ -12,8 +12,10 @@
 #define hifi_AnimSkeleton
 
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
-#include "FBXReader.h"
+#include <FBXReader.h>
 
 struct AnimPose {
     AnimPose() {}
@@ -47,18 +49,23 @@ public:
     using Pointer = std::shared_ptr<AnimSkeleton>;
     using ConstPointer = std::shared_ptr<const AnimSkeleton>;
 
+    AnimSkeleton(const FBXGeometry& fbxGeometry);
     AnimSkeleton(const std::vector<FBXJoint>& joints, const AnimPose& geometryOffset);
     int nameToJointIndex(const QString& jointName) const;
     const QString& getJointName(int jointIndex) const;
     int getNumJoints() const;
 
     // absolute pose, not relative to parent
-    AnimPose getAbsoluteBindPose(int jointIndex) const;
+    const AnimPose& getAbsoluteBindPose(int jointIndex) const;
+    AnimPose getRootAbsoluteBindPoseByChildName(const QString& childName) const;
 
     // relative to parent pose
-    AnimPose getRelativeBindPose(int jointIndex) const;
+    const AnimPose& getRelativeBindPose(int jointIndex) const;
+    const AnimPoseVec& getRelativeBindPoses() const { return _relativeBindPoses; }
 
     int getParentIndex(int jointIndex) const;
+
+    AnimPose getAbsolutePose(int jointIndex, const AnimPoseVec& poses) const;
 
 #ifndef NDEBUG
     void dump() const;
@@ -66,6 +73,8 @@ public:
 #endif
 
 protected:
+    void buildSkeletonFromJoints(const std::vector<FBXJoint>& joints, const AnimPose& geometryOffset);
+
     std::vector<FBXJoint> _joints;
     AnimPoseVec _absoluteBindPoses;
     AnimPoseVec _relativeBindPoses;

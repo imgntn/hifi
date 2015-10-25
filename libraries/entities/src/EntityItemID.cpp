@@ -11,8 +11,10 @@
 
 #include <QtCore/QObject>
 #include <QDebug>
+
 #include <BufferParser.h>
 #include <udt/PacketHeaders.h>
+#include <UUID.h>
 
 #include "RegisteredMetaTypes.h"
 #include "EntityItemID.h"
@@ -50,3 +52,19 @@ QScriptValue EntityItemIDtoScriptValue(QScriptEngine* engine, const EntityItemID
 void EntityItemIDfromScriptValue(const QScriptValue &object, EntityItemID& id) {
     quuidFromScriptValue(object, id);
 }
+
+QVector<EntityItemID> qVectorEntityItemIDFromScriptValue(const QScriptValue& array) {
+    if (!array.isArray()) {
+        return QVector<EntityItemID>();
+    }
+    QVector<EntityItemID> newVector;
+    int length = array.property("length").toInteger();
+    newVector.reserve(length);
+    for (int i = 0; i < length; i++) {
+        QString uuidAsString = array.property(i).toString();
+        EntityItemID fromString(uuidAsString);
+        newVector << fromString;
+    }
+    return newVector;
+}
+

@@ -19,12 +19,8 @@
 OctreePacketProcessor::OctreePacketProcessor() {
     auto& packetReceiver = DependencyManager::get<NodeList>()->getPacketReceiver();
     
-    QSet<PacketType::Value> types {
-        PacketType::OctreeStats, PacketType::EntityData,
-        PacketType::EntityErase, PacketType::OctreeStats
-    };
-
-    packetReceiver.registerDirectListenerForTypes(types, this, "handleOctreePacket");
+    packetReceiver.registerDirectListenerForTypes({ PacketType::OctreeStats, PacketType::EntityData, PacketType::EntityErase },
+                                                  this, "handleOctreePacket");
 }
 
 void OctreePacketProcessor::handleOctreePacket(QSharedPointer<NLPacket> packet, SharedNodePointer senderNode) {
@@ -37,20 +33,19 @@ void OctreePacketProcessor::processPacket(QSharedPointer<NLPacket> packet, Share
 
     const int WAY_BEHIND = 300;
 
-    if (packetsToProcessCount() > WAY_BEHIND && Application::getInstance()->getLogger()->extraDebugging()) {
+    if (packetsToProcessCount() > WAY_BEHIND && qApp->getLogger()->extraDebugging()) {
         qDebug("OctreePacketProcessor::processPacket() packets to process=%d", packetsToProcessCount());
     }
     
-    Application* app = Application::getInstance();
     bool wasStatsPacket = false;
 
-    PacketType::Value octreePacketType = packet->getType();
+    PacketType octreePacketType = packet->getType();
 
     // note: PacketType_OCTREE_STATS can have PacketType_VOXEL_DATA
     // immediately following them inside the same packet. So, we process the PacketType_OCTREE_STATS first
     // then process any remaining bytes as if it was another packet
     if (octreePacketType == PacketType::OctreeStats) {
-        int statsMessageLength = app->processOctreeStats(*packet, sendingNode);
+        int statsMessageLength = qApp->processOctreeStats(*packet, sendingNode);
 
         wasStatsPacket = true;
         int piggybackBytes = packet->getPayloadSize() - statsMessageLength;
@@ -68,17 +63,17 @@ void OctreePacketProcessor::processPacket(QSharedPointer<NLPacket> packet, Share
         }
     } // fall through to piggyback message
 
-    PacketType::Value packetType = packet->getType();
+    PacketType packetType = packet->getType();
 
     // check version of piggyback packet against expected version
     if (packet->getVersion() != versionForPacketType(packet->getType())) {
-        static QMultiMap<QUuid, PacketType::Value> versionDebugSuppressMap;
+        static QMultiMap<QUuid, PacketType> versionDebugSuppressMap;
 
         const QUuid& senderUUID = packet->getSourceID();
         if (!versionDebugSuppressMap.contains(senderUUID, packetType)) {
             
-            qDebug() << "Packet version mismatch on" << packetType << "- Sender"
-                << senderUUID << "sent" << (int) packetType << "but"
+            qDebug() << "OctreePacketProcessor - piggyback packet version mismatch on" << packetType << "- Sender"
+                << senderUUID << "sent" << (int) packet->getVersion() << "but"
                 << (int) versionForPacketType(packetType) << "expected.";
 
             emit packetVersionMismatch();
@@ -88,7 +83,7 @@ void OctreePacketProcessor::processPacket(QSharedPointer<NLPacket> packet, Share
         return; // bail since piggyback version doesn't match
     }
 
-    app->trackIncomingOctreePacket(*packet, sendingNode, wasStatsPacket);
+    qApp->trackIncomingOctreePacket(*packet, sendingNode, wasStatsPacket);
     
     // seek back to beginning of packet after tracking
     packet->seek(0);
@@ -96,13 +91,13 @@ void OctreePacketProcessor::processPacket(QSharedPointer<NLPacket> packet, Share
     switch(packetType) {
         case PacketType::EntityErase: {
             if (DependencyManager::get<SceneScriptingInterface>()->shouldRenderEntities()) {
-                app->_entities.processEraseMessage(*packet, sendingNode);
+                qApp->getEntities()->processEraseMessage(*packet, sendingNode);
             }
         } break;
 
         case PacketType::EntityData: {
             if (DependencyManager::get<SceneScriptingInterface>()->shouldRenderEntities()) {
-                app->_entities.processDatagram(*packet, sendingNode);
+                qApp->getEntities()->processDatagram(*packet, sendingNode);
             }
         } break;
 

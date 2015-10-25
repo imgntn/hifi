@@ -35,9 +35,8 @@ public:
         if (rayResult.m_collisionObject == _me) {
             return 1.0f;
         }
-        return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace
-    );
-}
+        return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+    }
 protected:
     btRigidBody* _me;
 };
@@ -409,8 +408,7 @@ void DynamicCharacterController::postSimulation() {
         glm::quat rotation = bulletToGLM(avatarTransform.getRotation());
         glm::vec3 position = bulletToGLM(avatarTransform.getOrigin());
 
-        _avatarData->setOrientation(rotation);
-        _avatarData->setPosition(position - rotation * _shapeLocalOffset);
+        _avatarData->nextAttitude(position - rotation * _shapeLocalOffset, rotation);
         _avatarData->setVelocity(bulletToGLM(_rigidBody->getLinearVelocity()));
     }
 }
