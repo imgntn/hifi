@@ -73,6 +73,8 @@
             //TODO: how do you make sure nets join successfully?
             var saveNet = this.net.toJSON();
             var str = JSON.stringify(saveNet);
+
+            //maybe userData is not the best place to store this.  i haven't really tested how big they get yet.
             setEntityCustomData(this.entityID, "hifiConvnetKey", {
                 net: str
             })
