@@ -467,7 +467,6 @@ var convnetjs = convnetjs || {
   ConvLayer.prototype = {
     forward: function(V, is_training) {
       // optimized code by @mdda that achieves 2x speedup over previous version
-
       this.in_act = V;
       var A = new Vol(this.out_sx | 0, this.out_sy | 0, this.out_depth | 0, 0.0);
 
@@ -1533,7 +1532,7 @@ var convnetjs = convnetjs || {
 
     // checks
     if (this.n % 2 === 0) {
-      console.log('WARNING n should be odd for LRN layer');
+      print('WARNING n should be odd for LRN layer');
     }
   }
   LocalResponseNormalizationLayer.prototype = {
@@ -1703,7 +1702,7 @@ var convnetjs = convnetjs || {
                 group_size: gs
               });
             } else {
-              console.log('ERROR unsupported activation ' + def.activation);
+              print('ERROR unsupported activation ' + def.activation);
             }
           }
           if (typeof def.drop_prob !== 'undefined' && def.type !== 'dropout') {
@@ -1770,7 +1769,7 @@ var convnetjs = convnetjs || {
             this.layers.push(new global.SVMLayer(def));
             break;
           default:
-            console.log('ERROR: UNRECOGNIZED LAYER TYPE: ' + def.type);
+            //    console.log('ERROR: UNRECOGNIZED LAYER TYPE: ' + def.type);
         }
       }
     },
@@ -2399,6 +2398,6 @@ var convnetjs = convnetjs || {
 })(convnetjs);
 
 
- loadConvnetjs = function(){
-    return convnetjs;
+loadConvnetjs = function() {
+  return convnetjs;
 }
