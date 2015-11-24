@@ -127,8 +127,11 @@ var childOfChild = Entities.addEntity(childOfChildProps);
 //     Entities.editEntity(childCube,{
 //     parentID: '123'
 // })
+// ALSO CRASHES INTERFACE
+// Entities.editEntity(childCube,{
+//     parentID:undefined,
+// })
 // },500);
-
 
 Script.setTimeout(function() {
 
