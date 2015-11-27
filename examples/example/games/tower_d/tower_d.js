@@ -21,6 +21,18 @@ var steer = loadSteer();
 var CREATURE_SCRIPT_URL = '';
 var BOW_SCRIPT_URL = '';
 
+var GROUND_START_LOCATION = {
+	x: 0,
+	y: 0,
+	z: 0
+};
+
+var TOWER_START_LOCATION = {
+	x: 0,
+	y: 0,
+	z: 0
+};
+
 var BOTTOM_OF_TOWER_TARGET = {
 	x: 0,
 	y: 0,
@@ -32,6 +44,10 @@ var TOP_OF_TOWER_TARGET {
 	y: 0,
 	z: 0
 };
+
+var CREATURE_RUNNING_ANIMATION_URL = '';
+var CREATURE_CLIMBING_ANIMATION_URL = '';
+var CREATURE_CRAWLING_ANIMATION_URL = '';
 
 var TOWER_MODEL_URL = '';
 var CREATURE_MODEL_URL = '';
@@ -57,6 +73,7 @@ var NUMBER_OF_SPAWNERS = 12;
 var SPAWNER_RADIUS_X = 50;
 var SPAWNER_RADIUS_y\ Y = 50;
 
+var SPAWN_CREATURE_INTERVAL = 5000;
 var MOVE_SEEKING_CREATURES_INTERVAL = 100;
 var MOVE_CLIMBING_CREATURES_INTERVAL = 250;
 
@@ -84,17 +101,28 @@ App.prototype = {
 		});
 	},
 	setupScene: function() {
-		this.ground = this.createGround();
-		this.tower = this.createTower();
-		distribute(NUMBER_OF_SPAWNERS, SPAWNER_RADIUS_X, SPAWNER_RADIUS_Y);
-
+		this.ground = this.createGround(GROUND_START_LOCATION);
+		this.tower = this.createTower(TOWER_START_LOCATION);
+		this.distribute(NUMBER_OF_SPAWNERS, SPAWNER_RADIUS_X, SPAWNER_RADIUS_Y);
+		this.createSpawnerInterval();
+	},
+	createSpawnerInterval: function() {
+		this.spawnerInterval = Script.setInterval(App.createCreatureAtRandomSpawner, SPAWN_CREATURE_INTERVAL);
+		this.timers.push(this.spawnerInterval);
+	},
+	spawnCreatureAtRandomSpawner: function() {
+		//pick a spawner position
+		var spawner = this.spawners[Math.floor(Math.random() * this.spawners.length)];
+		var spawnerProperties = Entities.getEntityProperties(this.spawner, "position");
+		this.createCreature(spawnerProperties.position);
 	},
 	createGround: function(position) {
-
+		var ground;
+		return Entities.addEntity(ground);
 	},
 	createTower: function(position) {
 		var tower;
-		return Entities.addEntity(tower);;
+		return Entities.addEntity(tower);
 	},
 	createSpawner: function(position) {
 		var spawner;
@@ -107,18 +135,11 @@ App.prototype = {
 	createBow: function(position) {
 
 	},
-	changeAnimationToType: function(creature, animationType) {
-
-	},
 	distribute: function(_numberOfPoints, radiusX, radiusY) {
 
 		var IS_VERTICAL = false;
 
-		var centrePos = {
-			x: 100,
-			y: 100,
-			z: 100
-		}
+		var centrePos = TOWER_START_LOCATION;
 
 		for (var pointNum = 0; pointNum < _numberOfPoints; pointNum++) {
 			// "i" now represents the progress around the circle from 0-1
@@ -160,6 +181,11 @@ App.prototype = {
 	cleanupTimers: function() {
 		while (this.timers.length > 0) {
 			Script.clearInterval(this.timers.pop())
+		}
+	},
+	cleanupCreatures: function() {
+		while (this.creatures.length > 0) {
+			Entities.deleteEntity(this.creatures.pop());
 		}
 	}
 }
