@@ -24,6 +24,41 @@ function arrive(thisEntity, target) {
   return steer
 }
 
+function fleeObstacles(thisEntity) {
+  // print('FLEE AVOIDER BLOCKS');
+  var properties = Entities.getEntityProperties(thisEntity, ["position", "velocity"]);
+  var location = properties.position;
+  var velocity = properties.velocity;
+
+  var nearbyEntities = Entities.findEntities(location, 4);
+  var flightVectors = [];
+  for (var entityIndex = 0; entityIndex < nearbyEntities.length; entityIndex++) {
+    var entityID = nearbyEntities[entityIndex];
+    var entityProps = Entities.getEntityProperties(entityID);
+    if (entityProps.name === 'Hifi-Tower-Obstacle') {
+      //  print('found an avoiderblock to flee');
+
+      var MAX_SPEED = 8;
+      var MAX_FORCE = 6;
+
+      var desired = Vec3.subtract(location, entityProps.position);
+      var d = Vec3.length(desired);
+      desired = Vec3.normalize(desired);
+      desired = Vec3.multiply(MAX_SPEED, desired);
+      if (d < 5) {
+        var steer = Vec3.subtract(desired, velocity);
+        var steerVector = new V3(desired.x, desired.y, desired.z);
+        steer = steerVector.limit(MAX_FORCE)
+        flightVectors.push(steer);
+      } else {
+        //print('target too far away from this avoider to flee' + d);
+      }
+    }
+
+  }
+
+  return flightVectors
+}
 
 function V3(x, y, z) {
   this.x = x;
@@ -61,6 +96,7 @@ var scale = function(value, min1, max1, min2, max2) {
 
 loadSteer = function() {
   return {
-    arrive: arrive
+    arrive: arrive,
+    fleeObstacles: fleeObstacles
   }
 }
