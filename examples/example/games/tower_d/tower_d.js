@@ -416,7 +416,7 @@ App.prototype = {
 				}
 			}
 
-			print('CREATE AT:' + pos.x + "/" + pos.y + "/" + pos.z);
+			print('CREATE SPAWNER AT:' + pos.x + "/" + pos.y + "/" + pos.z);
 
 			this.spawners.push(this.createSpawner(pos));
 		}
