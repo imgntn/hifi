@@ -32,7 +32,7 @@ var BOTTOM_OF_TOWER_TARGET = {
 
 var TOP_OF_TOWER_TARGET {
 	x: 0,
-	y: 0,
+	y: 10,
 	z: 0
 };
 
@@ -318,7 +318,7 @@ App.prototype = {
 
 	},
 	createBow: function(position) {
-		var SCRIPT_URL = Script.resolvePath('../../toybox/bow/bow.js');
+		var SCRIPT_URL = Script.resolvePath('../../../toybox/bow/bow.js');
 
 		var MODEL_URL = "https://hifi-public.s3.amazonaws.com/models/bow/new/bow-deadly.fbx";
 		var COLLISION_HULL_URL = "https://hifi-public.s3.amazonaws.com/models/bow/new/bow_collision_hull.obj";
