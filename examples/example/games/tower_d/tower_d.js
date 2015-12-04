@@ -36,14 +36,18 @@ var TOP_OF_TOWER_TARGET = {
     z: 0
 };
 
+
+var TOWER_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/complete_tower.fbx';
+var TOWER_COLLISION_HULL = '';
+
+var SECOND_TOWER_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/far_tower.fbx';
+var SECOND_TOWER_COLLISION_HULL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/far_tower_collision_hull.obj';
+
+var CREATURE_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/Beta.fbx';
 var CREATURE_RUNNING_ANIMATION_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/animations/running_inPlace.fbx';
 var CREATURE_CLIMBING_ANIMATION_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/animations/climbing_up_wall_inPlace.fbx';
 var CREATURE_DYING_ANIMATION_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/animations/standing_death_left_01.fbx';
 
-
-var TOWER_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/complete_tower.fbx';
-var TOWER_COLLISION_HULL = '';
-var CREATURE_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/Beta.fbx';
 var ROCK_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/rock.fbx';
 var TREE_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/treetoon.fbx';
 var FENCE_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/towerdefense/models/fence.fbx';
@@ -80,257 +84,257 @@ function App() {
 }
 
 App.prototype = {
-    tower: null,
-    ground: null,
-    spawners: [],
-    creatures: [],
-    seekingCreatures: [],
-    climbingCreatures: [],
-    timers: [],
-    moveClimbersInterval: null,
-    moveSeekersInterval: null,
-    spawnerInterval: null,
-    obstaclesPrimitives: [{
-        modelURL: TREE_MODEL_URL,
-        dimensions: {
-            x: 2.92,
-            y: 6.76,
-            z: 5.7
-        }
-    }, {
-        modelURL: ROCK_MODEL_URL,
-        dimensions: {
-            x: 2,
-            y: 2,
-            z: 2
-        }
-    }, {
-        modelURL: FENCE_MODEL_URL,
-        dimensions: {
-            x: 2.37,
-            y: 0.61,
-            z: 0.07
-        }
-    }],
-    moveCreatureTowardTarget: function(creature, target) {
-        print('target::', JSON.stringify(target))
-            //move toward the tower but avoid obstacles
-        var seek = steer.arrive(creature, target);
-        var avoidObstacles = steer.fleeObstacles(creature);
-        var j;
-        var averageAvoiderFlight;
-
-        for (j = 0; j < avoidObstacles.length; j++) {
-            if (j === 0) {
-                averageAvoiderFlight = avoidObstacles[0];
-            } else {
-                averageAvoiderFlight = Vec3.sum(avoidObstacles[j - 1], avoidObstacles[j])
-            }
-        };
-
-        averageAvoiderFlight = Vec3.multiply(averageAvoiderFlight, 1 / avoidObstacles.length);
-
-        var average = Vec3.sum(seek, averageAvoiderFlight);
-        average = Vec3.multiply(average, 1 / 2);
-
-        //constrain movement up/down
-        var thisCreatureProps = Entities.getEntityProperties(creature, ["position", "rotation"]);
-
-
-        //  var constrainedRotation = Quat.fromVec3Degrees(eulerAngle);
-
-        //  print('CR:::'+JSON.stringify(constrainedRotation))
-
-        var creaturePosition = thisCreatureProps.position;
-        var creatureToTarget = Vec3.subtract(target, creaturePosition);
-        var creatureRotation = Quat.rotationBetween(Vec3.UNIT_Z, creatureToTarget);
-        print('CR::' + JSON.stringify(creatureRotation));
-
-
-
-        // var eulerAngle = Quat.safeEulerAngles(creatureRotation);
-        // eulerAngle.x = 0;
-        // eulerAngle.z = 0;
-        // var constrainedRotation = Quat.fromVec3Degrees(eulerAngle)
-
-
-        Entities.editEntity(creature, {
-            rotation: creatureRotation,
-            velocity: {
-                x: average.x,
-                y: 0,
-                z: average.z
-            }
-        });
-    },
-    moveCreatureUpWall: function(creature) {
-        var position =
-            testDistanceFromTarget()
-        Entities.editEntity(creature, {
-            velocity: {
-                x: 0,
-                y: 1,
-                z: 0
-            }
-        });
-    },
-    moveSeekers: function() {
-        var _t = App;
-        _t.seekingCreatures.forEach(function(creature) {
-            var position = Entities.getEntityProperties(creature, "position").position;
-            var howFarFromBottom = _t.testDistanceFromTarget(position, BOTTOM_OF_TOWER_TARGET);
-            print('HOW FAR FROM BOTTOM:::' + howFarFromBottom)
-            if (howFarFromBottom < MIN_DISTANCE_FROM_BOTTOM) {
-                Entities.deleteEntity(creature);
-                //_t.creatureReachedBottomOfTower(creature);
-            } else {
-                _t.moveCreatureTowardTarget(creature, BOTTOM_OF_TOWER_TARGET);
-            }
-        })
-    },
-    moveClimbers: function() {
-        this.climbingCreatures.forEach(function(creature) {
-            var howFarFromTop = this.testDistanceFromTarget(position, TOP_OF_TOWER_TARGET);
-            if (howFarFromTop < MIN_DISTANCE_FROM_TOP) {
-                this.creatureReachedBottomOfTower(creature);
-            } else {
-                moveCreatureUpWall(creature);
-
-            }
-
-        })
-    },
-    removeCreatureFromSeekers: function(creature) {
-        var index = this.seekingCreatures.indexOf(creature);
-
-        if (index > -1) {
-            this.seekingCreatures.splice(index, 1);
-        }
-    },
-    removeSeekerFromClimbers: function() {
-        var index = this.climbingCreatures.indexOf(creature);
-
-        if (index > -1) {
-            this.climbingCreatures.splice(index, 1);
-        }
-    },
-    testDistanceFromTarget: function(position, target) {
-        var positionToTarget = Vec3.subtract(target, position);
-        var length = Vec3.length(positionToTarget);
-        return length
-    },
-    switchCreatureFromSeekerToClimber: function(creature) {
-        removeCreatureFromSeekers(creature);
-        this.climbingCreatures.push(creature);
-        this.playCreatureClimbingAnimation(creature);
-    },
-    creatureReachedTopOfTower: function(creature) {
-        removeSeekerFromClimbers(creature);
-        Entities.deleteEntity(creature);
-    },
-    creatureReachedBottomOfTower: function(creature) {
-        this.switchCreatureFromSeekerToClimber(creature);
-    },
-    setupScene: function() {
-        this.ground = this.createGround();
-        this.tower = this.createTower(TOWER_START_LOCATION);
-        this.distributeSpawners(NUMBER_OF_SPAWNERS, SPAWNER_RADIUS_X, SPAWNER_RADIUS_Y);
-        // this.distributeTowers(NUMBER_OF_TOWERS,TOWERS_RADIUS_X,TOWERS_RADIUS_Y);
-    },
-    createSpawnerInterval: function() {
-        print('creating spawner interval')
-        this.spawnerInterval = Script.setInterval(App.spawnCreatureAtRandomSpawner, SPAWN_CREATURE_INTERVAL);
-        this.timers.push(this.spawnerInterval);
-    },
-    spawnCreatureAtRandomSpawner: function() {
-        //pick a spawner position
-        var _t = App;
-        print('this spawners' + _t.spawners.length)
-        var spawner = _t.spawners[Math.floor(Math.random() * _t.spawners.length)];
-        var spawnerProperties = Entities.getEntityProperties(spawner, "position");
-        var creature = _t.createCreature(spawnerProperties.position);
-        _t.seekingCreatures.push(creature);
-        _t.playCreatureRunningAnimation(creature);
-
-    },
-    createGround: function(position) {
-
-        var groundModelURL = "https://hifi-public.s3.amazonaws.com/alan/Playa/Ground.fbx";
-        var groundPosition = {
-            x: BOTTOM_OF_TOWER_TARGET.x,
-            y: BOTTOM_OF_TOWER_TARGET.y - 2,
-            z: BOTTOM_OF_TOWER_TARGET.z
-        };
-
-        var ground = {
-            type: "Model",
-            modelURL: groundModelURL,
-            shapeType: "box",
-            position: groundPosition,
-            collisionsWillMove: false,
+        tower: null,
+        ground: null,
+        spawners: [],
+        creatures: [],
+        seekingCreatures: [],
+        climbingCreatures: [],
+        timers: [],
+        moveClimbersInterval: null,
+        moveSeekersInterval: null,
+        spawnerInterval: null,
+        obstaclesPrimitives: [{
+            modelURL: TREE_MODEL_URL,
             dimensions: {
-                x: 900,
-                y: 0.82,
-                z: 900
-            },
-            userData: JSON.stringify({
-                grabbableKey: {
-                    grabbable: false
+                x: 2.92,
+                y: 6.76,
+                z: 5.7
+            }
+        }, {
+            modelURL: ROCK_MODEL_URL,
+            dimensions: {
+                x: 2,
+                y: 2,
+                z: 2
+            }
+        }, {
+            modelURL: FENCE_MODEL_URL,
+            dimensions: {
+                x: 2.37,
+                y: 0.61,
+                z: 0.07
+            }
+        }],
+        moveCreatureTowardTarget: function(creature, target) {
+            print('target::', JSON.stringify(target))
+                //move toward the tower but avoid obstacles
+            var seek = steer.arrive(creature, target);
+            var avoidObstacles = steer.fleeObstacles(creature);
+            var j;
+            var averageAvoiderFlight;
+
+            for (j = 0; j < avoidObstacles.length; j++) {
+                if (j === 0) {
+                    averageAvoiderFlight = avoidObstacles[0];
+                } else {
+                    averageAvoiderFlight = Vec3.sum(avoidObstacles[j - 1], avoidObstacles[j])
+                }
+            };
+
+            averageAvoiderFlight = Vec3.multiply(averageAvoiderFlight, 1 / avoidObstacles.length);
+
+            var average = Vec3.sum(seek, averageAvoiderFlight);
+            average = Vec3.multiply(average, 1 / 2);
+
+            //constrain movement up/down
+            var thisCreatureProps = Entities.getEntityProperties(creature, ["position", "rotation"]);
+
+
+            //  var constrainedRotation = Quat.fromVec3Degrees(eulerAngle);
+
+            //  print('CR:::'+JSON.stringify(constrainedRotation))
+
+            var creaturePosition = thisCreatureProps.position;
+            var creatureToTarget = Vec3.subtract(target, creaturePosition);
+            var creatureRotation = Quat.rotationBetween(Vec3.UNIT_Z, creatureToTarget);
+            print('CR::' + JSON.stringify(creatureRotation));
+
+
+
+            // var eulerAngle = Quat.safeEulerAngles(creatureRotation);
+            // eulerAngle.x = 0;
+            // eulerAngle.z = 0;
+            // var constrainedRotation = Quat.fromVec3Degrees(eulerAngle)
+
+
+            Entities.editEntity(creature, {
+                rotation: creatureRotation,
+                velocity: {
+                    x: average.x,
+                    y: 0,
+                    z: average.z
+                }
+            });
+        },
+        moveCreatureUpWall: function(creature) {
+            var position =
+                testDistanceFromTarget()
+            Entities.editEntity(creature, {
+                velocity: {
+                    x: 0,
+                    y: 1,
+                    z: 0
+                }
+            });
+        },
+        moveSeekers: function() {
+            var _t = App;
+            _t.seekingCreatures.forEach(function(creature) {
+                var position = Entities.getEntityProperties(creature, "position").position;
+                var howFarFromBottom = _t.testDistanceFromTarget(position, BOTTOM_OF_TOWER_TARGET);
+                print('HOW FAR FROM BOTTOM:::' + howFarFromBottom)
+                if (howFarFromBottom < MIN_DISTANCE_FROM_BOTTOM) {
+                    Entities.deleteEntity(creature);
+                    //_t.creatureReachedBottomOfTower(creature);
+                } else {
+                    _t.moveCreatureTowardTarget(creature, BOTTOM_OF_TOWER_TARGET);
                 }
             })
-        }
+        },
+        moveClimbers: function() {
+            this.climbingCreatures.forEach(function(creature) {
+                var howFarFromTop = this.testDistanceFromTarget(position, TOP_OF_TOWER_TARGET);
+                if (howFarFromTop < MIN_DISTANCE_FROM_TOP) {
+                    this.creatureReachedBottomOfTower(creature);
+                } else {
+                    moveCreatureUpWall(creature);
 
-        this.ground = Entities.addEntity(ground);
-        // Script.addEventHandler(ground, "collisionWithEntity", entityCollisionWithGround);
+                }
 
+            })
+        },
+        removeCreatureFromSeekers: function(creature) {
+            var index = this.seekingCreatures.indexOf(creature);
 
+            if (index > -1) {
+                this.seekingCreatures.splice(index, 1);
+            }
+        },
+        removeSeekerFromClimbers: function() {
+            var index = this.climbingCreatures.indexOf(creature);
 
-        return Entities.addEntity(ground);
-    },
-    createTower: function(position) {
-        var tower = {
-            type: 'Model',
-            shapeType: 'compound',
-            modelURL: TOWER_MODEL_URL,
-            compoundShapeURL: TOWER_COLLISION_HULL,
-            collisionsWillMove: false,
-            ignoreForCollisions: false,
-            visible: true,
-            dimensions: TOWER_DIMENSIONS,
-            position: position,
-            name: 'Hifi-Tower'
+            if (index > -1) {
+                this.climbingCreatures.splice(index, 1);
+            }
+        },
+        testDistanceFromTarget: function(position, target) {
+            var positionToTarget = Vec3.subtract(target, position);
+            var length = Vec3.length(positionToTarget);
+            return length
+        },
+        switchCreatureFromSeekerToClimber: function(creature) {
+            removeCreatureFromSeekers(creature);
+            this.climbingCreatures.push(creature);
+            this.playCreatureClimbingAnimation(creature);
+        },
+        creatureReachedTopOfTower: function(creature) {
+            removeSeekerFromClimbers(creature);
+            Entities.deleteEntity(creature);
+        },
+        creatureReachedBottomOfTower: function(creature) {
+            this.switchCreatureFromSeekerToClimber(creature);
+        },
+        setupScene: function() {
+            this.ground = this.createGround();
+            this.tower = this.createTower(TOWER_START_LOCATION);
+            this.distributeSpawners(NUMBER_OF_SPAWNERS, SPAWNER_RADIUS_X, SPAWNER_RADIUS_Y);
+            // this.distributeTowers(NUMBER_OF_TOWERS,TOWERS_RADIUS_X,TOWERS_RADIUS_Y);
+        },
+        createSpawnerInterval: function() {
+            print('creating spawner interval')
+            this.spawnerInterval = Script.setInterval(App.spawnCreatureAtRandomSpawner, SPAWN_CREATURE_INTERVAL);
+            this.timers.push(this.spawnerInterval);
+        },
+        spawnCreatureAtRandomSpawner: function() {
+            //pick a spawner position
+            var _t = App;
+            print('this spawners' + _t.spawners.length)
+            var spawner = _t.spawners[Math.floor(Math.random() * _t.spawners.length)];
+            var spawnerProperties = Entities.getEntityProperties(spawner, "position");
+            var creature = _t.createCreature(spawnerProperties.position);
+            _t.seekingCreatures.push(creature);
+            _t.playCreatureRunningAnimation(creature);
 
-        };
-        return Entities.addEntity(tower);
-    },
-    createAllTowers: function() {
-        var i;
-        for (i = 0; i < this.towers.length; i++) {
+        },
+        createGround: function(position) {
 
-            var towerPosition = {
-                x: 0,
-                y: 0,
-                z: 0
+            var groundModelURL = "https://hifi-public.s3.amazonaws.com/alan/Playa/Ground.fbx";
+            var groundPosition = {
+                x: BOTTOM_OF_TOWER_TARGET.x,
+                y: BOTTOM_OF_TOWER_TARGET.y - 2,
+                z: BOTTOM_OF_TOWER_TARGET.z
             };
+
+            var ground = {
+                type: "Model",
+                modelURL: groundModelURL,
+                shapeType: "box",
+                position: groundPosition,
+                collisionsWillMove: false,
+                dimensions: {
+                    x: 900,
+                    y: 0.82,
+                    z: 900
+                },
+                userData: JSON.stringify({
+                    grabbableKey: {
+                        grabbable: false
+                    }
+                })
+            }
+
+            this.ground = Entities.addEntity(ground);
+            // Script.addEventHandler(ground, "collisionWithEntity", entityCollisionWithGround);
+
+
+
+            return Entities.addEntity(ground);
+        },
+        createTower: function(position) {
+            var tower = {
+                type: 'Model',
+                shapeType: 'compound',
+                modelURL: TOWER_MODEL_URL,
+                compoundShapeURL: TOWER_COLLISION_HULL,
+                collisionsWillMove: false,
+                ignoreForCollisions: false,
+                visible: true,
+                dimensions: TOWER_DIMENSIONS,
+                position: position,
+                name: 'Hifi-Tower'
+
+            };
+            return Entities.addEntity(tower);
+        },
+        createAllTowers: function() {
+            var i;
+            for (i = 0; i < this.towers.length; i++) {
+
+                var towerPosition = {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                };
+            }
+
+            var tower = {
+                type: 'Model',
+                shapeType: 'compound',
+                modelURL: TOWER_MODEL_URL,
+                compoundShapeURL: TOWER_COLLISION_HULL,
+                collisionsWillMove: false,
+                ignoreForCollisions: false,
+                visible: true,
+                dimensions: TOWER_DIMENSIONS,
+                position: towerPosition,
+                name: 'Hifi-Tower'
+
+            };
+            Entities.addEntity(tower)
         }
-
-        var tower = {
-            type: 'Model',
-            shapeType: 'compound',
-            modelURL: TOWER_MODEL_URL,
-            compoundShapeURL: TOWER_COLLISION_HULL,
-            collisionsWillMove: false,
-            ignoreForCollisions: false,
-            visible: true,
-            dimensions: TOWER_DIMENSIONS,
-            position: towerPosition,
-            name: 'Hifi-Tower'
-
-        };
-        Entities.addEntity(tower)
-    }
-}
-createSpawner: function(position) {
+    },
+    createSpawner: function(position) {
         var spawner = {
             type: 'Box',
             collisionsWillMove: false,
