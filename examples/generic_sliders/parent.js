@@ -1,10 +1,10 @@
 //
-//  lightParent.js
+//  parent.js
 //
 //  Created by James Pollack @imgntn on 12/15/2015
 //  Copyright 2015 High Fidelity, Inc.
 //
-//  Entity script that tells the light parent to update the selection tool when we move it.
+//  Entity script that tells the  parent to update the selection tool when we move it.
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
@@ -12,11 +12,11 @@
 
             (function() {
 
-                function LightParent() {
+                function Parent() {
                     return this;
                 }
 
-                LightParent.prototype = {
+                Parent.prototype = {
                     preload: function(entityID) {
                         this.entityID = entityID;
                         var entityProperties = Entities.getEntityProperties(this.entityID, "userData");
@@ -36,5 +36,5 @@
 
                 };
 
-                return new LightParent();
+                return new Parent();
             });

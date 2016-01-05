@@ -13,10 +13,6 @@
 (function() {
 
     var AXIS_SCALE = 1;
-    var COLOR_MAX = 255;
-    var INTENSITY_MAX = 0.05;
-    var CUTOFF_MAX = 360;
-    var EXPONENT_MAX = 1;
 
     function Slider() {
         return this;
@@ -79,14 +75,15 @@
         sendValueToSlider: function() {
             var _t = this;
             var message = {
-                lightID: _t.userData.entityToModify,
+                entityToModify: _t.userData.entityToModify,
                 propertyToModify: _t.userData.propertyToModify,
                 sliderValue: _t.sliderValue
             }
+            
             Messages.sendMessage('Hifi-Slider-Value-Reciever', JSON.stringify(message));
-            if (_t.userData.sliderType === 'cutoff') {
-                Messages.sendMessage('entityToolUpdates', 'callUpdate');
-            }
+            // if (_t.userData.propertyToModify === 'cutoff') {
+            //     Messages.sendMessage('entityToolUpdates', 'callUpdate');
+            // }
         }
     };
 

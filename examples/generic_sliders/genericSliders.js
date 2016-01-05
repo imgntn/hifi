@@ -1,10 +1,10 @@
 //
-//  lightModifier.js
+//  genericSliders.js
 //
 //  Created by James Pollack @imgntn on 12/15/2015
 //  Copyright 2015 High Fidelity, Inc.
 //
-//  Given a selected light, instantiate some entities that represent various values you can dynamically adjust by grabbing and moving.
+//  Given a selected entity, instantiate some entities that represent various values you can dynamically adjust by grabbing and moving.
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
@@ -33,7 +33,7 @@ if (SHOW_ENTITY_VOLUME === true) {
 
     Script.include('../libraries/gridTool.js');
     Script.include('../libraries/entitySelectionTool.js?' + Math.random(0 - 100));
-    
+
 
     var grid = Grid();
     gridTool = GridTool({
@@ -45,17 +45,13 @@ if (SHOW_ENTITY_VOLUME === true) {
     selectionManager = SelectionManager;
     selectionManager.addEventListener(function() {
         selectionDisplay.updateHandles();
-      
+
     });
 }
 
 var DEFAULT_PARENT_ID = '{00000000-0000-0000-0000-000000000000}'
 
 var AXIS_SCALE = 1;
-var COLOR_MAX = 255;
-var INTENSITY_MAX = 0.05;
-var CUTOFF_MAX = 360;
-var EXPONENT_MAX = 1;
 
 var SLIDER_SCRIPT_URL = Script.resolvePath('slider.js?' + Math.random(0, 100));
 var CLOSE_BUTTON_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/james/light_modifier/red_x.fbx';
@@ -117,27 +113,19 @@ var PER_ROW_OFFSET = {
     z: 0
 };
 var sliders = [];
-var slidersRef = {
-    'color_red': null,
-    'color_green': null,
-    'color_blue': null,
-    intensity: null,
-    cutoff: null,
-    exponent: null
-};
+var slidersRef = {};
 
 
-var entity = null
 
 var basePosition;
 var avatarRotation;
 
 
-function entitySlider(entity, color, exposedProperty, displayText, row) {
+function entitySlider(entity, color, propertyToModify, displayText, row) {
     this.entityToModify = entity.id.replace(/[{}]/g, "");
     this.initialProperties = this.entityToModify.initialProperties;
     this.initialDistance;
-    this.exposedProperty = exposedProperty;
+    this.propertyToModify = propertyToModify;
     this.color = color;
     this.displayText = displayText;
     this.verticalOffset = Vec3.multiply(row, PER_ROW_OFFSET);
@@ -149,13 +137,13 @@ function entitySlider(entity, color, exposedProperty, displayText, row) {
 
     var message = {
         entityToModify: this.entityToModify,
-        exposedProperty: this.exposedProperty,
+        propertyToModify: this.propertyToModify,
         sliderValue: null
     };
-    
-    message.sliderValue = this.initialPropertyValue; 
+
+    message.sliderValue = this.initialPropertyValue;
     this.setValueFromMessage(message);
-  
+
 
     this.setInitialSliderPositions();
     this.createAxis();
@@ -303,8 +291,8 @@ entitySlider.prototype = {
 
         var extension = Vec3.multiply(this.initialDistance, extensionVector);
         var sliderPosition = Vec3.sum(position, extension);
-       
-      
+
+
 
         var properties = {
             type: 'Sphere',
@@ -318,14 +306,14 @@ entitySlider.prototype = {
             userData: JSON.stringify({
                 genericSliderKey: {
                     entityToModify: this.entityToModify,
-                    propertyToModify: this.exposedProperty
+                    propertyToModify: this.propertyToModify
                     axisStart: position,
                     axisEnd: this.endOfAxis,
                 },
                 handControllerKey: {
                     disableReleaseVelocity: true,
                     disableMoveWithHead: true,
-                    disableNearGrab:true
+                    disableNearGrab: true
                 }
             }),
         };
@@ -341,30 +329,32 @@ entitySlider.prototype = {
         }
 
         //message is not our type
-        if (message.exposedProperty !== this.exposedProperty) {
+        if (message.propertyToModify !== this.propertyToModify) {
             //    print('not our property type')
             return
         }
 
         var properties = Entities.getEntityProperties(this.entityToModify);
 
-        if (this.sliderType === message.exposedProperty) {
+        if (this.sliderType === message.propertyToModify) {
 
             //send a message with the new slider value to the entity to modify.  which will have to listen and do its thing internally
-           
+
             var data = {
-                sliderValue:message.sliderValue,
-                exposedProperty:this.exposedProperty
+                sliderValue: message.sliderValue,
+                propertyToModify: this.propertyToModify,
+                entityToModify:this.entityToModify
             };
 
-            Messages.sendMessage('Hifi-Exposed-Properties',JSON.stringify(data));
+            //with lights this is where actual edits happened, but this will bounce back to the entity with a message now
+            console.log('DATA TO SEND TO ENTITY:::'+JSON.stringify(data))
+            Messages.sendMessage('Hifi-Exposed-Properties', JSON.stringify(data));
 
         }
 
     },
-    setInitialSliderPositions: function(initialProperty,maximum) {
-           this.initialSliderPosition = (initialProperty/maximum) * AXIS_SCALE;
-
+    setInitialSliderPositions: function(initialProperty, maximum) {
+        this.initialSliderPosition = (initialProperty / maximum) * AXIS_SCALE;
     }
 
 };
@@ -373,7 +363,7 @@ entitySlider.prototype = {
 var panel;
 var visiblePanel;
 
-function makeSliders(entityToModify) {
+function makeSliders(entityID) {
 
     if (USE_PARENTED_PANEL === true) {
         panel = createPanelEntity(MyAvatar.position);
@@ -381,43 +371,17 @@ function makeSliders(entityToModify) {
 
     //get exposed properties
     //for each create a new slider
+    var properties = Entities.getEntityProperties(entityID, "userData");
+    var userData = JSON.parse(properties.userData);
+    var exposedProperties = userData.exposedProperties;
 
-    if (light.type === 'spotlight') {
-        var USE_COLOR_SLIDER = true;
-        var USE_INTENSITY_SLIDER = true;
-        var USE_CUTOFF_SLIDER = true;
-        var USE_EXPONENT_SLIDER = true;
-    }
-    if (light.type === 'pointlight') {
-        var USE_COLOR_SLIDER = true;
-        var USE_INTENSITY_SLIDER = true;
-        var USE_CUTOFF_SLIDER = false;
-        var USE_EXPONENT_SLIDER = false;
-    }
-    if (USE_COLOR_SLIDER === true) {
-        slidersRef.color_red = new entitySlider(light, RED, 'color_red', 'Red', 1);
-        slidersRef.color_green = new entitySlider(light, GREEN, 'color_green', 'Green', 2);
-        slidersRef.color_blue = new entitySlider(light, BLUE, 'color_blue', 'Blue', 3);
+    exposedProperties.forEach(function(ep, index) {
+        var slider = new entitySlider(entityID, WHITE, ep.name, ep.displayName, index);
+        slidersRef[ep.name] = slider;
+        sliders.push(slider);
+    })
 
-        sliders.push(slidersRef.color_red);
-        sliders.push(slidersRef.color_green);
-        sliders.push(slidersRef.color_blue);
-
-    }
-    if (USE_INTENSITY_SLIDER === true) {
-        slidersRef.intensity = new entitySlider(light, WHITE, 'intensity', 'Intensity', 4);
-        sliders.push(slidersRef.intensity);
-    }
-    if (USE_CUTOFF_SLIDER === true) {
-        slidersRef.cutoff = new entitySlider(light, PURPLE, 'cutoff', 'Cutoff', 5);
-        sliders.push(slidersRef.cutoff);
-    }
-    if (USE_EXPONENT_SLIDER === true) {
-        slidersRef.exponent = new entitySlider(light, ORANGE, 'exponent', 'Exponent', 6);
-        sliders.push(slidersRef.exponent);
-    }
-
-    createCloseButton(slidersRef.color_red.axisStart);
+    createCloseButton(sliders[0].axisStart);
 
     subscribeToSliderMessages();
 
@@ -608,7 +572,7 @@ function handleValueMessages(channel, message, sender) {
     slidersRef[message.propertyToModify].setValueFromMessage(parsedMessage);
 }
 
-var currentLight;
+
 var block;
 var oldParent = null;
 var hasParent = false;
@@ -620,23 +584,14 @@ function handleCreateSlidersMessages(channel, message, sender) {
     }
 
     var entityID = message.entityID;
-    var properties = Entiites.getEntityProperties(entityID);
 
-    var exposedProperties = properties.userData.exposedProperties;
+    makeSliders(entityID);
 
-        var entityToModify = {
-            id: entityID,
-            initialProperties: properties,
-            exposedProperties:exposedProperties
-        }
-
-        makeSliders(entityToModify);
-
-        if (SHOW_ENTITY_VOLUME === true) {
-            selectionManager.setSelections([entityToModify]);
-        }
-
+    if (SHOW_ENTITY_VOLUME === true) {
+        selectionManager.setSelections([entityID]);
     }
+
+}
 }
 
 function handleCleanupMessages(channel, message, sender) {
@@ -671,15 +626,15 @@ function cleanup(fromMessage) {
     }
 
     //if the light was already parented to something we will want to restore that.  or come up with groups or something clever.
-    if (oldParent !== null) {
-        Entities.editEntity(currentLight, {
-            parentID: oldParent,
-        });
-    } else {
-        Entities.editEntity(currentLight, {
-            parentID: null,
-        });
-    }
+    // if (oldParent !== null) {
+    //     Entities.editEntity(currentLight, {
+    //         parentID: oldParent,
+    //     });
+    // } else {
+    //     Entities.editEntity(currentLight, {
+    //         parentID: null,
+    //     });
+    // }
 
 
     if (fromMessage !== true) {
@@ -703,7 +658,6 @@ function cleanup(fromMessage) {
 
     oldParent = null;
     hasParent = false;
-    currentLight = null;
     sliders = [];
 
 }
