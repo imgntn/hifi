@@ -91,7 +91,7 @@ var ZERO_VEC = {
     z: 0
 };
 
-var NULL_ACTION_ID = "{00000000-0000-0000-000000000000}";
+var NULL_UUID = "{00000000-0000-0000-0000-000000000000}";
 var MSEC_PER_SEC = 1000.0;
 
 // these control how long an abandoned pointer line or action will hang around
@@ -116,6 +116,10 @@ var GRAB_USER_DATA_KEY = "grabKey"; // shared with grab.js
 var DEFAULT_GRABBABLE_DATA = {
     grabbable: true,
     invertSolidWhileHeld: false
+};
+
+var DEFAULT_WEARABLE_DATA = {
+    joints: []
 };
 
 
@@ -1073,7 +1077,7 @@ function MyController(hand) {
             this.radiusScalar = 1.0;
         }
 
-        this.actionID = NULL_ACTION_ID;
+        this.actionID = NULL_UUID;
         this.actionID = Entities.addAction("spring", this.grabbedEntity, {
             targetPosition: this.currentObjectPosition,
             linearTimeScale: DISTANCE_HOLDING_ACTION_TIMEFRAME,
@@ -1082,7 +1086,7 @@ function MyController(hand) {
             tag: getTag(),
             ttl: ACTION_TTL
         });
-        if (this.actionID === NULL_ACTION_ID) {
+        if (this.actionID === NULL_UUID) {
             this.actionID = null;
         }
         this.actionTimeout = now + (ACTION_TTL * MSEC_PER_SEC);
@@ -1283,7 +1287,7 @@ function MyController(hand) {
             kinematicSetVelocity: true,
             ignoreIK: this.ignoreIK
         });
-        if (this.actionID === NULL_ACTION_ID) {
+        if (this.actionID === NULL_UUID) {
             this.actionID = null;
             return false;
         }
@@ -1483,7 +1487,7 @@ function MyController(hand) {
 
         if (typeof this.equipSpringID === 'undefined' ||
             this.equipSpringID === null ||
-            this.equipSpringID === NULL_ACTION_ID) {
+            this.equipSpringID === NULL_UUID) {
             this.equipSpringID = Entities.addAction("spring", this.grabbedEntity, {
                 targetPosition: targetPosition,
                 linearTimeScale: EQUIP_SPRING_TIMEFRAME,
@@ -1492,7 +1496,7 @@ function MyController(hand) {
                 ttl: ACTION_TTL,
                 ignoreIK: ignoreIK
             });
-            if (this.equipSpringID === NULL_ACTION_ID) {
+            if (this.equipSpringID === NULL_UUID) {
                 this.equipSpringID = null;
                 this.setState(STATE_OFF);
                 return;
@@ -1702,9 +1706,47 @@ function MyController(hand) {
 
         this.deactivateEntity(this.grabbedEntity);
 
-        this.grabbedEntity = null;
         this.actionID = null;
         this.setState(STATE_OFF);
+
+        var allowedJoints = getEntityCustomData('wearable', this.grabbedEntity, DEFAULT_WEARABLE_DATA).joints;
+
+        var props = Entities.getEntityProperties(this.grabbedEntity, ["position", "parentID"]);
+        if (props.parentID === NULL_UUID || props.parentID === MyAvatar.sessionUUID) {
+            var bestJointName = "";
+            var bestJointIndex = -1;
+            var bestJointDistance = 0;
+            allowedJoints.forEach(function(jointName) {
+                var jointIndex = MyAvatar.getJointIndex(jointName);
+                var jointPosition = MyAvatar.getJointPosition(jointIndex);
+                // print("---");
+                // print(jointName + " position = " + vec3toStr(jointPosition));
+                // print("item position = " + vec3toStr(props.position));
+                var distanceFromJoint = Vec3.distance(jointPosition, props.position);
+                // print("distance from joint = " + distanceFromJoint);
+                if (distanceFromJoint < 0.4) {
+                    if (bestJointIndex == -1 || distanceFromJoint < bestJointDistance) {
+                        bestJointName = jointName;
+                        bestJointIndex = jointIndex;
+                        bestJointDistance = distanceFromJoint;
+                    }
+                }
+            });
+
+            if (bestJointIndex != -1) {
+                print("best joint is " + bestJointName + " at " + bestJointDistance);
+                Entities.editEntity(this.grabbedEntity, {
+                    parentID: MyAvatar.sessionUUID,
+                    parentJointIndex: bestJointIndex
+                });
+            } else {
+                Entities.editEntity(this.grabbedEntity, {
+                    parentID: NULL_UUID
+                });
+            }
+        }
+
+        this.grabbedEntity = null;
     };
 
     this.cleanup = function() {
