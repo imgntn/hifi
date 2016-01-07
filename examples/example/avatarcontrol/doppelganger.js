@@ -12,8 +12,11 @@
 //  To-Do:  mirror joints, rotate avatar fully, automatically get avatar fbx, make sure dimensions for avatar are right when u bring it in
 
 var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
+var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('doppelgangerMirroredEntity.js');
 
 var doppelgangers = [];
+var USE_DEBOUNCE = true;
+var DEBOUNCE_RATE = 100;
 
 function Doppelganger(avatar) {
     this.initialProperties = {
@@ -23,6 +26,8 @@ function Doppelganger(avatar) {
         // dimensions: getAvatarDimensions(avatar),
         position: putDoppelgangerAcrossFromAvatar(this, avatar),
         rotation: rotateDoppelgangerTowardAvatar(this, avatar),
+        // collisionsWillMove:true,
+        // shapeType:'box'
     };
 
     this.id = createDoppelgangerEntity(this);
@@ -86,20 +91,151 @@ function rotateDoppelgangerTowardAvatar(doppelganger, avatar) {
 }
 
 function connectDoppelgangerUpdates() {
-    // Script.update.connect(updateDoppelganger);
-    Script.setInterval(updateDoppelganger, 100);
+    Script.update.connect(updateDoppelganger);
 }
 
 function disconnectDoppelgangerUpdates() {
     Script.update.disconnect(updateDoppelganger);
 }
 
-function updateDoppelganger() {
+var sinceLastUpdate = 0;
+
+function updateDoppelganger(deltaTime) {
+    if (USE_DEBOUNCE === true) {
+        sinceLastUpdate = sinceLastUpdate + deltaTime * 100;
+        if (sinceLastUpdate > DEBOUNCE_RATE) {
+            sinceLastUpdate = 0;
+        } else {
+            return;
+        }
+    }
+
+
     doppelgangers.forEach(function(doppelganger) {
         var joints = getJointData(MyAvatar);
         //var mirroredJoints = mirrorJointData(joints);
         setJointData(doppelganger, joints);
     });
+}
+
+function subscribeToWearableMessages() {
+    Messages.subscribe('Hifi-Doppelganger-Wearable');
+    Messages.messageReceived.connect(handleWearableMessages);
+}
+
+var wearablePairs = [];
+
+function handleWearableMessages(channel, message, sender) {
+    print('Doppelganger messageReceived ::: ' + channel + " ::: " + message)
+    if (channel !== 'Hifi-Doppelganger-Wearable') {
+        return;
+    }
+    if (sender !== MyAvatar.sessionUUID) {
+        return;
+    }
+
+    var parsedMessage = null;
+
+    try {
+        parsedMessage = JSON.parse(message);
+    } catch (e) {
+        print('error parsing wearable message');
+    }
+    print('parsed message!!!')
+
+    mirrorEntitiesForDoppelganger(doppelgangers[0], parsedMessage);
+
+}
+
+function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
+    var doppelgangerProps = Entities.getEntityProperties(doppelganger.id);
+
+    var action = parsedMessage.action;
+    print('IN MIRROR ENTITIES CALL' + action)
+
+    var baseEntity = parsedMessage.baseEntity;
+
+    var wearableProps = Entities.getEntityProperties(baseEntity);
+
+    delete wearableProps.id;
+    delete wearableProps.created;
+    delete wearableProps.age;
+    delete wearableProps.ageAsText;
+
+
+    if (action === 'add') {
+        print('IN DOPPELGANGER ADD')
+            //the position of the mirror entity will be the doppelganger position plus the offset of the wearable on the base entity.
+
+        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
+        wearableProps.position = newPosition;
+        wearableProps.parentID = doppelganger.id;
+
+
+        //create a new one
+        wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
+        wearableProps.name = 'Hifi-Doppelganger-Mirrored-Entity';
+        wearableProps.userData = JSON.stringify({
+            doppelgangerKey: {
+                baseEntity: baseEntity,
+                doppelganger: doppelganger.id
+            }
+        })
+
+        var mirrorEntity = Entities.addEntity(wearableProps);
+
+        print('MIRROR ENTITY CREATED:::' + mirrorEntity)
+        var mirrorEntityProps = Entities.getEntityProperties(mirrorEntity)
+        print('MIRROR PROPS::' + JSON.stringify(mirrorEntityProps))
+        var wearablePair = {
+            baseEntity: baseEntity,
+            mirrorEntity: mirrorEntity
+        }
+
+        wearablePairs.push(wearablePair);
+    }
+
+    if (action === 'update') {
+        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage, centerToWearable);
+        wearableProps.position = newPosition;
+        wearableProps.parentID = doppelganger;
+        var mirrorEntity = getMirrorEntityForBaseEntity(baseEntity);
+        Entities.editEntity(mirrorEntity, wearableProps)
+    }
+
+    if (action === 'remove') {
+        Entities.deleteEntity(getMirrorEntityForBaseEntity(baseEntity))
+        wearablePairs = wearablePairs.filter(function(obj) {
+            return obj.baseEntity !== baseEntity;
+        });
+    }
+
+    if (action === 'updateBase') {
+        //this gets called when the mirrored entity gets grabbed.  now we move the 
+        var mirrorEntityProperties = Entities.getEntityProperties(message.mirrorEntity)
+        var doppelgangerToMirrorEntity = Vec3.subtract(doppelgangerProps.position, mirrorEntityProperties.position);
+        var newPosition = Vec3.sum(MyAvatar.position, doppelgangerToMirrorEntity);
+
+        delete mirrorEntityProperties.id;
+        delete mirrorEntityProperties.created;
+        delete mirrorEntityProperties.age;
+        delete mirrorEntityProperties.ageAsText;
+        mirrorEntityProperties.position = newPosition;
+        mirrorEntityProperties.parentID = MyAvatar.sessionUUID;
+        Entities.editEntity(message.baseEntity, mirrorEntityProperties)
+
+    }
+}
+
+function getMirrorEntityForBaseEntity(baseEntity) {
+    var result = wearablePairs.filter(function(obj) {
+        return obj.baseEntity === baseEntity;
+    });
+    if (result.length === 0) {
+        return false;
+    } else {
+        return result[0].mirrorEntity
+    }
 }
 
 function makeDoppelgangerForMyAvatar() {
@@ -109,6 +245,7 @@ function makeDoppelgangerForMyAvatar() {
 }
 
 makeDoppelgangerForMyAvatar();
+subscribeToWearableMessages();
 
 function cleanup() {
     disconnectDoppelgangerUpdates();
