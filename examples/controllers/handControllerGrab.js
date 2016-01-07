@@ -1450,6 +1450,23 @@ function MyController(hand) {
             Entities.callEntityMethod(this.grabbedEntity, "continueEquip");
         }
 
+        if (this.wearables.length > 0) {
+
+            //only do this check if we already have some wearables for the doppelganger
+            var hasWearableAlready = this.wearables.indexOf(this.grabbedEntity);
+            var props = Entities.getEntityProperties(this.grabbedEntity,"position");
+            var centerToWearable = Vec3.subtract(MyAvatar.position,props.position);
+
+            if (hasWearableAlready > -1) {
+                var data = {
+                    action: 'update',
+                    baseEntity: this.grabbedEntity,
+                    centerToWearable:centerToWearable
+                }
+                Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data))
+            }
+        }
+
         if (this.actionTimeout - now < ACTION_TTL_REFRESH * MSEC_PER_SEC) {
             // if less than a 5 seconds left, refresh the actions ttl
             var success = Entities.updateAction(this.grabbedEntity, this.actionID, {
@@ -1721,6 +1738,15 @@ function MyController(hand) {
 
         this.actionID = null;
         this.setState(STATE_OFF);
+        this.checkIfWearable();
+
+        this.grabbedEntity = null;
+    };
+
+    this.wearables =[];
+
+    this.checkIfWearable = function() {
+        print('checking if wearable')
 
         var allowedJoints = getEntityCustomData('wearable', this.grabbedEntity, DEFAULT_WEARABLE_DATA).joints;
 
@@ -1736,6 +1762,7 @@ function MyController(hand) {
                 // print(jointName + " position = " + vec3toStr(jointPosition));
                 // print("item position = " + vec3toStr(props.position));
                 var distanceFromJoint = Vec3.distance(jointPosition, props.position);
+                var jointToWearable = Vec3.subtract(jointPosition,props.position);
                 // print("distance from joint = " + distanceFromJoint);
                 if (distanceFromJoint < 0.4) {
                     if (bestJointIndex == -1 || distanceFromJoint < bestJointDistance) {
@@ -1746,22 +1773,45 @@ function MyController(hand) {
                 }
             });
 
+            var centerToWearable = Vec3.subtract(MyAvatar.position,props.position);
+
             if (bestJointIndex != -1) {
                 print("best joint is " + bestJointName + " at " + bestJointDistance);
                 Entities.editEntity(this.grabbedEntity, {
                     parentID: MyAvatar.sessionUUID,
                     parentJointIndex: bestJointIndex
                 });
+                print('HAS IT??' + this.wearables.indexOf(this.grabbedEntity))
+                if (this.wearables.indexOf(this.grabbedEntity) < 0) {
+                    print('adding, should send message....')
+                    var data = {
+                        action: 'add',
+                        baseEntity: this.grabbedEntity,
+                        centerToWearable:centerToWearable,
+                    }
+
+                    Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
+                }
+
             } else {
                 Entities.editEntity(this.grabbedEntity, {
                     parentID: NULL_UUID
                 });
+
+                var hasWearableAlready =this.wearables.indexOf(this.grabbedEntity);
+                if (hasWearableAlready>-1) {
+                    var data = {
+                        action: 'remove',
+                        baseEntity: this.grabbedEntity
+                    }
+
+                    Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
+                }
+
+                this.wearables.splice(hasWearableAlready,1)
             }
         }
-
-        this.grabbedEntity = null;
-    };
-
+    }
     this.cleanup = function() {
         this.release();
         this.endHandGrasp();
