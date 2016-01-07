@@ -1438,12 +1438,17 @@ function MyController(hand) {
         }
 
         if (this.wearables.length > 0) {
+
             //only do this check if we already have some wearables for the doppelganger
             var hasWearableAlready = this.wearables.indexOf(this.grabbedEntity);
+            var props = Entities.getEntityProperties(this.grabbedEntity,"position");
+            var centerToWearable = Vec3.subtract(MyAvatar.position,props.position);
+
             if (hasWearableAlready > -1) {
                 var data = {
                     action: 'update',
-                    baseEntity: this.grabbedEntity
+                    baseEntity: this.grabbedEntity,
+                    centerToWearable:centerToWearable
                 }
                 Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data))
             }
@@ -1763,13 +1768,12 @@ function MyController(hand) {
                     parentID: MyAvatar.sessionUUID,
                     parentJointIndex: bestJointIndex
                 });
-
+                print('HAS IT??' + this.wearables.indexOf(this.grabbedEntity))
                 if (this.wearables.indexOf(this.grabbedEntity) < 0) {
+                    print('adding, should send message....')
                     var data = {
                         action: 'add',
-                        baseEntity: this.grabbedEntity,.
-                        jointName:bestJointName,
-                        jointToWearable:jointToWearable,
+                        baseEntity: this.grabbedEntity,
                         centerToWearable:centerToWearable,
                     }
 
