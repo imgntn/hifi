@@ -12,7 +12,7 @@
 //  To-Do:  mirror joints, rotate avatar fully, automatically get avatar fbx, make sure dimensions for avatar are right when u bring it in
 
 var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
-var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('doppelgangerMirroredEntity.js');
+var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('mirroredEntity.js');
 
 var doppelgangers = [];
 var USE_DEBOUNCE = true;
@@ -110,7 +110,6 @@ function updateDoppelganger(deltaTime) {
         }
     }
 
-
     doppelgangers.forEach(function(doppelganger) {
         var joints = getJointData(MyAvatar);
         //var mirroredJoints = mirrorJointData(joints);
@@ -162,7 +161,6 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     delete wearableProps.age;
     delete wearableProps.ageAsText;
 
-
     if (action === 'add') {
         print('IN DOPPELGANGER ADD')
             //the position of the mirror entity will be the doppelganger position plus the offset of the wearable on the base entity.
@@ -170,7 +168,6 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
         var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
         wearableProps.position = newPosition;
         wearableProps.parentID = doppelganger.id;
-
 
         //create a new one
         wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
@@ -222,8 +219,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
         delete mirrorEntityProperties.ageAsText;
         mirrorEntityProperties.position = newPosition;
         mirrorEntityProperties.parentID = MyAvatar.sessionUUID;
-        Entities.editEntity(message.baseEntity, mirrorEntityProperties)
-
+        Entities.editEntity(message.baseEntity, mirrorEntityProperties);
     }
 }
 

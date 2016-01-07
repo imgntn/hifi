@@ -1,3 +1,15 @@
+//
+//  createTestWearable.js
+//
+//  Created by James B. Pollack @imgntn on 1/7/2016
+//  Copyright 2016 High Fidelity, Inc.
+//
+//  This script shows how to hook up a model entity to your avatar to act as a doppelganger.
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//
+
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,
     y: 0.5,
@@ -30,6 +42,10 @@ function createWearable() {
             },
             "wearable": {
                 "joints": ["head", "Head", "hair", "neck"]
+            },
+            handControllerKey: {
+                disableReleaseVelocity: true,
+                disableMoveWithHead: true,
             }
         })
     }
@@ -38,7 +54,7 @@ function createWearable() {
 
 createWearable();
 
-function cleanup(){
+function cleanup() {
     Entities.deleteEntity(wearable);
 }
 
