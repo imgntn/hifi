@@ -31,7 +31,7 @@ function Doppelganger(avatar) {
 }
 
 function getJointData(avatar) {
-    var allJointData = [];
+
     var jointNames = MyAvatar.jointNames;
     jointNames.forEach(function(joint, index) {
         var translation = MyAvatar.getJointTranslation(index);
@@ -100,6 +100,84 @@ function updateDoppelganger() {
         //var mirroredJoints = mirrorJointData(joints);
         setJointData(doppelganger, joints);
     });
+}
+
+function subscribeToWearableMessages() {
+    Messages.subscribe('Hifi-Doppelganger-Wearable');
+    Messages.messageReceived.connect(handleWearableMessages);
+}
+
+var wearablePairs=[];
+
+function handleWearableMessages(channel, message, sender) {
+
+    if (channel !== 'Hifi-Doppelganger-Wearable') {
+        return;
+    }
+    if (sender !== MyAvatar.sessionUUID) {
+        return;
+    }
+
+    var parsedMessage = null;
+
+    try {
+        parsedMessage = JSON.parse(message);
+    } catch (e) {
+        print('error parsing wearable message')
+    }
+
+    var action = parsedMessage.action;
+    var baseEntity = parsedMessage.baseEntity;
+    var wearableProps = Entities.getEntityProperties(baseEntity);
+
+    var jointPositon;
+    var entityPosition;
+
+    delete wearableProps.id;
+    delete wearableProps.created;
+    delete wearableProps.age;
+    delete wearableProps.ageAsText;
+
+    //the position of the mirror entity will be the doppelganger position plus the offset of the wearable on the base entity.
+       var newPosition = Vec3.sum(doppelgangerProps.position,centerToWearable);
+        wearableProps.position = newPosition;
+        wearableProps.parentID = doppelgangerProps.id;
+   
+    if(action==='add'){
+        //create a new one
+        var mirrorEntity = Entities.addEntity(wearableProps);
+
+        var wearablePair = {
+            baseEntity:baseEntity,
+            mirrorEntity:mirrorEntity
+        }
+
+        wearablePairs.push(wearablePair);
+    }
+
+    if(action==='update'){
+        var mirrorEntity =getMirrorEntityForBaseEntity(baseEntity);
+        Entities.editEntity(mirrorEntity,wearableProps)
+    }
+
+    if(action==='remove'){
+        Entities.deleteEntity(baseEntity)
+        wearablePairs = wearablePairs.filter(function(obj) {
+            return obj.baseEntity !== baseEntity;
+        });
+    }
+
+}
+
+function getMirrorEntityForBaseEntity(baseEntity) {
+    var result = wearablePairs.filter(function(obj) {
+        return obj.baseEntity === baseEntity;
+    });
+    if (result.length === 0) {
+        return false;
+    } else {
+        return result[0].mirrorEntity
+    }
 }
 
 function makeDoppelgangerForMyAvatar() {
