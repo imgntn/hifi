@@ -16,6 +16,10 @@
 // add ability to drop wearables on doppelganger
     // which means creating a mirror entity on the avatar ...
 
+
+Script.include("../libraries/utils.js");
+
+var NULL_UUID = "{00000000-0000-0000-0000-000000000000}";
 var DEFAULT_WEARABLE_DATA = {
     joints: []
 };
@@ -27,14 +31,16 @@ function WearablesManager() {
     this.subscribeToMessages = function() {
         Messages.subscribe('Hifi-Wearables-Manager');
         Messages.messageReceived.connect(this.handleWearableMessages);
+        print("WearableManager setup done");
     }
 
-    this.handleMessages = function() {
+    this.handleWearableMessages = function(channel, message, sender) {
         print('wearablesManager messageReceived ::: ' + channel + " ::: " + message)
         if (channel !== 'Hifi-Wearables-Manager') {
             return;
         }
         if (sender !== MyAvatar.sessionUUID) {
+            print('wearablesManager got message from wrong sender');
             return;
         }
 
@@ -46,11 +52,12 @@ function WearablesManager() {
             print('error parsing wearable message');
         }
         
-        if(message.action==='update'){
+        if(parsedMessage.action==='update'){
            manager.updateWearable(message.grabbedEntity)
-        }
-        if(message.action==='checkIfWearable'){
+        } else if(parsedMessage.action==='checkIfWearable'){
             manager.checkIfWearable(message.grabbedEntity)
+        } else {
+            print('unknown actions: ' + message.action);
         }
         print('parsed message!!!')
     }
@@ -85,11 +92,12 @@ function WearablesManager() {
             var bestJointName = "";
             var bestJointIndex = -1;
             var bestJointDistance = 0;
+            print("here:" + grabbedEntity);
             allowedJoints.forEach(function(jointName) {
                 var jointIndex = MyAvatar.getJointIndex(jointName);
                 var jointPosition = MyAvatar.getJointPosition(jointIndex);
-                // print("---");
-                // print(jointName + " position = " + vec3toStr(jointPosition));
+                print("---");
+                print(jointName + " position = " + vec3toStr(jointPosition));
                 // print("item position = " + vec3toStr(props.position));
                 var distanceFromJoint = Vec3.distance(jointPosition, props.position);
                 var jointToWearable = Vec3.subtract(jointPosition, props.position);
@@ -142,6 +150,8 @@ function WearablesManager() {
 
                 this.wearables.splice(hasWearableAlready, 1)
             }
+        } else {
+            print("entity is already a child");
         }
     }
 }
