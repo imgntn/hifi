@@ -108,7 +108,8 @@ var GRABBABLE_PROPERTIES = [
     "ignoreForCollisions",
     "collisionsWillMove",
     "locked",
-    "name"
+    "name",
+    "shapeType"
 ];
 
 var GRABBABLE_DATA_KEY = "grabbableKey"; // shared with grab.js
@@ -277,8 +278,6 @@ function MyController(hand) {
 
     var SPATIAL_CONTROLLERS_PER_PALM = 2;
     var TIP_CONTROLLER_OFFSET = 1;
-    this.palm = SPATIAL_CONTROLLERS_PER_PALM * hand;
-    this.tip = SPATIAL_CONTROLLERS_PER_PALM * hand + TIP_CONTROLLER_OFFSET;
 
     this.actionID = null; // action this script created...
     this.grabbedEntity = null; // on this entity.
@@ -362,7 +361,7 @@ function MyController(hand) {
     };
 
     this.setState = function(newState) {
-        if (WANT_DEBUG) {
+        if (true || WANT_DEBUG) {
             print("STATE: " + stateToName(this.state) + " --> " + stateToName(newState) + ", hand: " + this.hand);
         }
         this.state = newState;
@@ -788,7 +787,193 @@ function MyController(hand) {
         }
     };
 
+
     this.search = function() {
+        this.grabbedEntity = null;
+
+        if (this.state == STATE_SEARCHING ? this.triggerSmoothedReleased() : this.bumperReleased()) {
+            this.setState(STATE_RELEASE);
+            return;
+        }
+
+
+        // the trigger is being pressed, so do a ray test to see what we are hitting
+        var handPosition = this.getHandPosition();
+        var controllerHandInput = (this.hand === RIGHT_HAND) ? Controller.Standard.RightHand : Controller.Standard.LeftHand;
+        var currentHandRotation = Controller.getPoseValue(controllerHandInput).rotation;
+        var handDeltaRotation = Quat.multiply(currentHandRotation, Quat.inverse(this.startingHandRotation));
+
+        var distantPickRay = {
+            origin: Camera.position,
+            direction: Vec3.mix(Quat.getUp(this.getHandRotation()), Quat.getFront(Camera.orientation), HAND_HEAD_MIX_RATIO),
+            length: PICK_MAX_DISTANCE
+        };
+
+        var searchVisualizationPickRay = {
+            origin: handPosition,
+            direction: Quat.getUp(this.getHandRotation()),
+            length: PICK_MAX_DISTANCE
+        };
+
+        // Pick at some maximum rate, not always
+        var pickRays = [];
+        var now = Date.now();
+        if (now - this.lastPickTime > MSECS_PER_SEC / PICKS_PER_SECOND_PER_HAND) {
+            pickRays = [distantPickRay];
+            this.lastPickTime = now;
+        }
+
+        rayPickedCandidateEntities = []; // the list of candidates to consider grabbing
+
+        for (var index = 0; index < pickRays.length; ++index) {
+            var pickRay = pickRays[index];
+            var directionNormalized = Vec3.normalize(pickRay.direction);
+            var directionBacked = Vec3.multiply(directionNormalized, PICK_BACKOFF_DISTANCE);
+            var pickRayBacked = {
+                origin: Vec3.subtract(pickRay.origin, directionBacked),
+                direction: pickRay.direction
+            };
+
+            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
+
+            var intersection;
+
+            if (USE_BLACKLIST === true && blacklist.length !== 0) {
+                intersection = Entities.findRayIntersection(pickRayBacked, true, [], blacklist);
+            } else {
+                intersection = Entities.findRayIntersection(pickRayBacked, true);
+            }
+
+            if (intersection.intersects) {
+                rayPickedCandidateEntities.push(intersection.entityID);
+            }
+        }
+
+        nearPickedCandidateEntities = Entities.findEntities(handPosition, GRAB_RADIUS);
+        candidateEntities = rayPickedCandidateEntities.concat(nearPickedCandidateEntities);
+
+        var forbiddenNames = ["Grab Debug Entity", "grab pointer"];
+        var forbiddenTyes = ['Unknown', 'Light', 'ParticleEffect', 'PolyLine', 'Zone'];
+
+        var minDistance = PICK_MAX_DISTANCE;
+        var i, props, distance, grabbableData;
+        this.grabbedEntity = null;
+        print("--- " + candidateEntities.length);
+        for (i = 0; i < candidateEntities.length; i++) {
+            var grabbableDataForCandidate =
+                getEntityCustomData(GRABBABLE_DATA_KEY, candidateEntities[i], DEFAULT_GRABBABLE_DATA);
+            var propsForCandidate = Entities.getEntityProperties(candidateEntities[i], GRABBABLE_PROPERTIES);
+            var grabbable = (typeof grabbableDataForCandidate.grabbable === 'undefined' || grabbableDataForCandidate.grabbable);
+            if (!grabbable && !grabbableDataForCandidate.wantsTrigger) {
+                print("reject " + propsForCandidate.name + " (" + propsForCandidate.type + ") -- not grabbable");
+                continue;
+            }
+            if (forbiddenTyes.indexOf(propsForCandidate.type) >= 0) {
+                print("reject " + propsForCandidate.name + " (" + propsForCandidate.type + ") -- forbidden type");
+                continue;
+            }
+            if (propsForCandidate.locked && !grabbableDataForCandidate.wantsTrigger) {
+                print("reject " + propsForCandidate.name + " (" + propsForCandidate.type + ") -- locked");
+                continue;
+            }
+            if (forbiddenNames.indexOf(propsForCandidate.name) >= 0) {
+                print("reject " + propsForCandidate.name + " (" + propsForCandidate.type + ") -- forbidden name");
+                continue;
+            }
+
+            distance = Vec3.distance(propsForCandidate.position, handPosition);
+            if (distance > PICK_MAX_DISTANCE) {
+                print("reject " + propsForCandidate.name + " (" + propsForCandidate.type + ") -- too far");
+                // too far away, don't grab
+                continue;
+            }
+            if (distance < minDistance) {
+                print("accept " + propsForCandidate.name + " (" + propsForCandidate.type + ")");
+                this.grabbedEntity = candidateEntities[i];
+                minDistance = distance;
+                props = propsForCandidate;
+                grabbableData = grabbableDataForCandidate;
+            }
+        }
+        if (this.grabbedEntity !== null) {
+            // We've found an entity that we'll do something with.
+            print("final " + props.name + " (" + props.type + ") -- shape: " + props.shapeType);
+
+            var near = (nearPickedCandidateEntities.indexOf(this.grabbedEntity) >= 0);
+            var isPhysical = (props.shapeType != 'none' || props.type == 'Box' || props.type == 'Sphere');
+
+            // near or far trigger
+            if (grabbableData.wantsTrigger) {
+                this.setState(near ? STATE_NEAR_TRIGGER : STATE_FAR_TRIGGER);
+                return;
+            }
+            // near grab or equip with action
+            if (isPhysical && near) {
+                this.setState(this.state == STATE_SEARCHING ? STATE_NEAR_GRABBING : STATE_EQUIP)
+                return;
+            }
+            // far grab or equip with action
+            if (isPhysical && !near) {
+
+                // if (typeof grabbableData.spatialKey === 'undefined') {
+                //     // We want to give a temporary position offset to this object so it is pulled close to hand
+                //     var intersectionPointToCenterDistance = Vec3.length(Vec3.subtract(intersection.intersection,
+                //                                                                       intersection.properties.position));
+                //     this.temporaryPositionOffset = Vec3.normalize(Vec3.subtract(intersection.properties.position, handPosition));
+                //     this.temporaryPositionOffset = Vec3.multiply(this.temporaryPositionOffset,
+                //                                                  intersectionPointToCenterDistance *
+                //                                                  FAR_TO_NEAR_GRAB_PADDING_FACTOR);
+                    
+                // }
+
+                this.setState(this.state == STATE_SEARCHING ? STATE_DISTANCE_HOLDING : STATE_EQUIP)
+                return;
+            }
+
+            // TODO -- else this thing isn't physical.  grab it by reparenting it.
+            print("fell off " + props.name + " (" + props.type + ") -- shape: " + props.shapeType);            
+        }
+
+        //search line visualizations
+        if (USE_ENTITY_LINES_FOR_SEARCHING === true) {
+            this.lineOn(distantPickRay.origin, Vec3.multiply(distantPickRay.direction, LINE_LENGTH), NO_INTERSECT_COLOR);
+        }
+
+        if (USE_PARTICLE_BEAM_FOR_SEARCHING === true) {
+            this.handleParticleBeam(distantPickRay.origin, this.getHandRotation(), NO_INTERSECT_COLOR);
+        }
+
+        if (USE_OVERLAY_LINES_FOR_SEARCHING === true) {
+            this.overlayLineOn(searchVisualizationPickRay.origin,
+                               Vec3.sum(searchVisualizationPickRay.origin,
+                                        Vec3.multiply(searchVisualizationPickRay.direction,
+                                                      LINE_LENGTH)),
+                               NO_INTERSECT_COLOR);
+        }
+
+        if (this.intersectionDistance > 0) {
+            var SPHERE_INTERSECTION_SIZE = 0.011;
+            var SEARCH_SPHERE_FOLLOW_RATE = 0.50;
+            var SEARCH_SPHERE_CHASE_DROP = 0.2;
+            this.searchSphereDistance = this.searchSphereDistance * SEARCH_SPHERE_FOLLOW_RATE +
+                this.intersectionDistance * (1.0 - SEARCH_SPHERE_FOLLOW_RATE);
+            var searchSphereLocation = Vec3.sum(distantPickRay.origin,
+                                                Vec3.multiply(distantPickRay.direction, this.searchSphereDistance));
+            searchSphereLocation.y -= ((this.intersectionDistance - this.searchSphereDistance) /
+                                       this.intersectionDistance) * SEARCH_SPHERE_CHASE_DROP;
+            this.searchSphereOn(searchSphereLocation,
+                                SPHERE_INTERSECTION_SIZE * this.intersectionDistance,
+                                this.triggerSmoothedGrab() ? INTERSECT_COLOR : NO_INTERSECT_COLOR);
+            if (USE_OVERLAY_LINES_FOR_SEARCHING === true) {
+                this.overlayLineOn(handPosition,
+                                   searchSphereLocation,
+                                   this.triggerSmoothedGrab() ? INTERSECT_COLOR : NO_INTERSECT_COLOR);
+            }
+        }
+    };
+
+
+    this.searchX = function() {
         this.grabbedEntity = null;
 
         if (this.state == STATE_SEARCHING ? this.triggerSmoothedReleased() : this.bumperReleased()) {
