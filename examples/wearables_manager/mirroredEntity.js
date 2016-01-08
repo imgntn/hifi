@@ -1,9 +1,10 @@
 //
+//  mirroredEntity.js
 //
 //  Created by James B. Pollack @imgntn on 1/6/2016
 //  Copyright 2016 High Fidelity, Inc.
 //
-//  This is an example of an entity script which when assigned to an entity, will detect when the entity is being grabbed by the hydraGrab script
+//  when grabbed, this entity relays updates to update the base entity
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
