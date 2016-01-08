@@ -21,6 +21,7 @@
 #include <Octree.h> // for EncodeBitstreamParams class
 #include <OctreeElement.h> // for OctreeElement::AppendState
 #include <OctreePacketData.h>
+#include <PhysicsCollisionGroups.h>
 #include <ShapeInfo.h>
 #include <Transform.h>
 #include <SpatiallyNestable.h>
@@ -273,6 +274,9 @@ public:
     bool getIgnoreForCollisions() const { return _ignoreForCollisions; }
     void setIgnoreForCollisions(bool value) { _ignoreForCollisions = value; }
 
+    uint8_t getCollisionMask() const { return _collisionMask; }
+    void setCollisionMask(uint8_t value) { _collisionMask = value; }
+
     bool getCollisionsWillMove() const { return _collisionsWillMove; }
     void setCollisionsWillMove(bool value) { _collisionsWillMove = value; }
 
@@ -302,7 +306,7 @@ public:
 
     virtual bool contains(const glm::vec3& point) const;
 
-    virtual bool isReadyToComputeShape() { return true; }
+    virtual bool isReadyToComputeShape() { return !isDead(); }
     virtual void computeShapeInfo(ShapeInfo& info);
     virtual float getVolumeEstimate() const { return getDimensions().x * getDimensions().y * getDimensions().z; }
 
@@ -327,6 +331,7 @@ public:
     void updateAngularVelocity(const glm::vec3& value);
     void updateAngularDamping(float value);
     void updateIgnoreForCollisions(bool value);
+    void updateCollisionMask(uint8_t value);
     void updateCollisionsWillMove(bool value);
     void updateLifetime(float value);
     void updateCreated(uint64_t value);
@@ -336,6 +341,8 @@ public:
     void clearDirtyFlags(uint32_t mask = 0xffffffff) { _dirtyFlags &= ~mask; }
 
     bool isMoving() const;
+
+    bool isSimulated() const { return _simulated; }
 
     void* getPhysicsInfo() const { return _physicsInfo; }
 
@@ -391,6 +398,8 @@ public:
 
 protected:
 
+    void setSimulated(bool simulated) { _simulated = simulated; }
+
     const QByteArray getActionDataInternal() const;
     void setActionDataInternal(QByteArray actionData);
 
@@ -436,6 +445,7 @@ protected:
     float _angularDamping;
     bool _visible;
     bool _ignoreForCollisions;
+    uint8_t _collisionMask { ENTITY_COLLISION_MASK_DEFAULT };
     bool _collisionsWillMove;
     bool _locked;
     QString _userData;

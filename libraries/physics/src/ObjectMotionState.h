@@ -80,7 +80,7 @@ public:
     ObjectMotionState(btCollisionShape* shape);
     ~ObjectMotionState();
 
-    virtual bool handleEasyChanges(uint32_t& flags, PhysicsEngine* engine);
+    virtual bool handleEasyChanges(uint32_t& flags);
     virtual bool handleHardAndEasyChanges(uint32_t& flags, PhysicsEngine* engine);
 
     void updateBodyMaterialProperties();
@@ -134,9 +134,9 @@ public:
     virtual QUuid getSimulatorID() const = 0;
     virtual void bump(quint8 priority) {}
 
-    virtual QString getName() { return ""; }
+    virtual QString getName() const { return ""; }
 
-    virtual int16_t computeCollisionGroup() = 0;
+    virtual void computeCollisionGroupAndMask(int16_t& group, int16_t& mask) const = 0;
 
     bool isActive() const { return _body ? _body->isActive() : false; }
 
@@ -148,13 +148,10 @@ public:
     friend class PhysicsEngine;
 
 protected:
-    virtual bool isReadyToComputeShape() = 0;
+    virtual bool isReadyToComputeShape() const = 0;
     virtual btCollisionShape* computeNewShape() = 0;
     void setMotionType(MotionType motionType);
     void updateCCDConfiguration();
-
-    // clearObjectBackPointer() overrrides should call the base method, then actually clear the object back pointer.
-    virtual void clearObjectBackPointer() { _type = MOTIONSTATE_TYPE_INVALID; }
 
     void setRigidBody(btRigidBody* body);
 
