@@ -53,11 +53,11 @@ function WearablesManager() {
         }
         
         if(parsedMessage.action==='update'){
-           manager.updateWearable(message.grabbedEntity)
+           manager.updateWearable(parsedMessage.grabbedEntity)
         } else if(parsedMessage.action==='checkIfWearable'){
-            manager.checkIfWearable(message.grabbedEntity)
+            manager.checkIfWearable(parsedMessage.grabbedEntity)
         } else {
-            print('unknown actions: ' + message.action);
+            print('unknown actions: ' + parsedMessage.action);
         }
         print('parsed message!!!')
     }
