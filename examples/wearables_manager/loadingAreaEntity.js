@@ -21,12 +21,13 @@
 
     this.enterEntity = function(entityID) {
         print("enterEntity(" + entityID + ")");
-        Script.load(scriptURL);
+        Script.load(WEARABLES_MANAGER_SCRIPT);
+        Script.load(DOPPELGANGER_SCRIPT);
+        Script.load(CREATE_TEST_WEARABLE_SCRIPT);
 
     };
 
     this.leaveEntity = function(entityID) {
         print("leaveEntity(" + entityID + ")");
-
     };
 })

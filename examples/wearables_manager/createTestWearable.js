@@ -50,6 +50,7 @@ function createWearable() {
         })
     }
     wearable = Entities.addEntity(properties);
+  
 }
 
 createWearable();

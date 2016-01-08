@@ -1,5 +1,5 @@
 //
-//  createTestWearable.js
+//  createDressingPlatform.js
 //
 //  Created by James B. Pollack @imgntn on 1/7/2016
 //  Copyright 2016 High Fidelity, Inc.
@@ -12,7 +12,7 @@
 
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,
-    y: 0.5,
+    y: -2,
     z: 0
 }), Vec3.multiply(0.5, Quat.getFront(Camera.getOrientation())));
 
@@ -52,9 +52,9 @@ function createBasePlatform() {
     basePlatform = Entities.addEntity(properties);
 }
 
-function createLoadArea(){
-// on enter, load the wearables manager and the doppelganger manager;
-// on exit, stop the scripts (at least call cleanup);
+function createLoadArea() {
+    // on enter, load the wearables manager and the doppelganger manager;
+    // on exit, stop the scripts (at least call cleanup);
 }
 
 createBasePlatform();

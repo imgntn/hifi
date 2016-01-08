@@ -1448,9 +1448,9 @@ function MyController(hand) {
         }
 
         //// jbp::: SEND UPDATE MESSAGE TO WEARABLES MANAGER
-        Messages.sendMessage('Hifi-Wearables-Manager',JSON.stringify({
-            action:'update',
-            grabbedEntity:this.grabbedEntity
+        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+            action: 'update',
+            grabbedEntity: this.grabbedEntity
         }))
 
         if (this.actionTimeout - now < ACTION_TTL_REFRESH * MSEC_PER_SEC) {
@@ -1727,9 +1727,9 @@ function MyController(hand) {
 
         //// jbp::: SEND RELEASE MESSAGE TO WEARABLES MANAGER
 
-        Messages.sendMessage('Hifi-Wearables-Manager',JSON.stringify({
-            action:'checkIfWearable',
-            grabbedEntity:this.grabbedEntity
+        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+            action: 'checkIfWearable',
+            grabbedEntity: this.grabbedEntity
         }))
 
 

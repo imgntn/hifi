@@ -10,6 +10,12 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 
+
+// todo: 
+// add camera countdown / freezing unfreezing the doppelganger
+// add ability to drop wearables on doppelganger
+    // which means creating a mirror entity on the avatar ...
+
 var DEFAULT_WEARABLE_DATA = {
     joints: []
 };
@@ -54,7 +60,7 @@ function WearablesManager() {
 
             //only do this check if we already have some wearables for the doppelganger
             var hasWearableAlready = this.wearables.indexOf(grabbedEntity);
-            var props = Entities.getEntityProperties(grabbedEntity, "position");
+            var props = Entities.getEntityProperties(grabbedEntity);
             var centerToWearable = Vec3.subtract(MyAvatar.position, props.position);
 
             if (hasWearableAlready > -1) {
@@ -63,6 +69,7 @@ function WearablesManager() {
                     baseEntity: grabbedEntity,
                     centerToWearable: centerToWearable
                 }
+
                 Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data))
             }
         }
@@ -104,6 +111,8 @@ function WearablesManager() {
                     parentID: MyAvatar.sessionUUID,
                     parentJointIndex: bestJointIndex
                 });
+                print('PROPS AFTER DROP:::' + JSON.stringify(wearableProps))
+
                 if (this.wearables.indexOf(this.grabbedEntity) < 0) {
                     print('adding, should send message....')
                     var data = {
@@ -113,6 +122,7 @@ function WearablesManager() {
                     }
                     Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
                     this.wearables.push(grabbedEntity)
+                    var wearableProps = Entities.getEntityProperties(grabbedEntity);
                 }
 
             } else {

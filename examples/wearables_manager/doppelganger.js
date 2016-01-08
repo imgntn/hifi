@@ -193,7 +193,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     }
 
     if (action === 'update') {
-        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage, centerToWearable);
+        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
         wearableProps.position = newPosition;
         wearableProps.parentID = doppelganger;
         var mirrorEntity = getMirrorEntityForBaseEntity(baseEntity);
