@@ -178,6 +178,15 @@ EntityItemProperties EntityScriptingInterface::getEntityProperties(QUuid identit
                     desiredProperties.setHasProperty(PROP_PARENT_JOINT_INDEX);
                 }
 
+                if (desiredProperties.isEmpty()) {
+                    // these are left out of EntityItem::getEntityProperties so that localPosition and localRotation
+                    // don't end up in json saves, etc.  We still want them here, though.
+                    EncodeBitstreamParams params; // unknown
+                    EntityPropertyFlags propertyFlags = entity->getEntityProperties(params);
+                    desiredProperties.setHasProperty(PROP_LOCAL_POSITION);
+                    desiredProperties.setHasProperty(PROP_LOCAL_ROTATION);
+                 }
+
                 results = entity->getProperties(desiredProperties);
 
                 // TODO: improve sitting points and naturalDimensions in the future,
