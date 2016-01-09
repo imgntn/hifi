@@ -15,7 +15,7 @@ var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/a
 var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('mirroredEntity.js');
 
 var doppelgangers = [];
-var USE_DEBOUNCE = true;
+var USE_DEBOUNCE = false;
 var DEBOUNCE_RATE = 100;
 
 function Doppelganger(avatar) {

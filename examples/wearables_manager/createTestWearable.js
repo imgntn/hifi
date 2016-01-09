@@ -21,7 +21,8 @@ var wearable;
 
 function createWearable() {
     var properties = {
-        type: 'Box',
+        type: 'Model',
+        modelURL:'https://s3.amazonaws.com/hifi-public/tony/cowboy-hat.fbx',
         name: 'Hifi-Wearable',
         dimensions: {
             x: 0.25,
@@ -34,8 +35,8 @@ function createWearable() {
             blue: 0
         },
         position: center,
-        collisionsWillMove: true,
-        ignoreForCollisions: true,
+        // collisionsWillMove: true,
+        // ignoreForCollisions: true,
         userData: JSON.stringify({
             "grabbableKey": {
                 "invertSolidWhileHeld": false
@@ -50,7 +51,7 @@ function createWearable() {
         })
     }
     wearable = Entities.addEntity(properties);
-  
+
 }
 
 createWearable();

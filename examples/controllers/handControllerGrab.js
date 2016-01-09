@@ -1657,6 +1657,7 @@ function MyController(hand) {
             action: 'checkIfWearable',
             grabbedEntity: this.grabbedEntity
         }))
+        print('sent message')
 
         this.grabbedEntity = null;
     };
@@ -1705,7 +1706,7 @@ function MyController(hand) {
                 Entities.editEntity(entityID, {
                     gravity: data["gravity"],
                     collisionMask: data["collisionMask"],
-                    collisionsWillMove: data["collisionsWillMove"]
+                    collisionsWillMove: data["collisionsWillMove"],
                     ignoreForCollisions: data["ignoreForCollisions"],
                     collisionsWillMove: data["collisionsWillMove"],
                     parentID: data["parentID"],

@@ -16,7 +16,6 @@
 // add ability to drop wearables on doppelganger
     // which means creating a mirror entity on the avatar ...
 
-
 Script.include("../libraries/utils.js");
 
 var NULL_UUID = "{00000000-0000-0000-0000-000000000000}";
@@ -52,8 +51,11 @@ function WearablesManager() {
             print('error parsing wearable message');
         }
         
-        if(parsedMessage.action==='update'){
+        if(parsedMessage.action==='update' && manager.wearables.length!==0){
            manager.updateWearable(parsedMessage.grabbedEntity)
+        }
+        else if(parsedMessage.action==='update' && manager.wearables.length===0){
+            print('no wearables yet, dont update')
         } else if(parsedMessage.action==='checkIfWearable'){
             manager.checkIfWearable(parsedMessage.grabbedEntity)
         } else {
@@ -68,7 +70,7 @@ function WearablesManager() {
             //only do this check if we already have some wearables for the doppelganger
             var hasWearableAlready = this.wearables.indexOf(grabbedEntity);
             var props = Entities.getEntityProperties(grabbedEntity);
-            var centerToWearable = Vec3.subtract(MyAvatar.position, props.position);
+            var centerToWearable = Vec3.subtract( props.position,MyAvatar.position);
 
             if (hasWearableAlready > -1) {
                 var data = {
@@ -111,7 +113,7 @@ function WearablesManager() {
                 }
             });
 
-            var centerToWearable = Vec3.subtract(MyAvatar.position, props.position);
+            var centerToWearable = Vec3.subtract( props.position,MyAvatar.position);
 
             if (bestJointIndex != -1) {
                 print("best joint is " + bestJointName + " at " + bestJointDistance);
@@ -119,9 +121,8 @@ function WearablesManager() {
                     parentID: MyAvatar.sessionUUID,
                     parentJointIndex: bestJointIndex
                 });
-                print('PROPS AFTER DROP:::' + JSON.stringify(wearableProps))
 
-                if (this.wearables.indexOf(this.grabbedEntity) < 0) {
+                if (this.wearables.indexOf(grabbedEntity) < 0) {
                     print('adding, should send message....')
                     var data = {
                         action: 'add',
@@ -130,7 +131,6 @@ function WearablesManager() {
                     }
                     Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
                     this.wearables.push(grabbedEntity)
-                    var wearableProps = Entities.getEntityProperties(grabbedEntity);
                 }
 
             } else {
@@ -142,7 +142,7 @@ function WearablesManager() {
                 if (hasWearableAlready > -1) {
                     var data = {
                         action: 'remove',
-                        baseEntity: this.grabbedEntity
+                        baseEntity: grabbedEntity
                     }
 
                     Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
