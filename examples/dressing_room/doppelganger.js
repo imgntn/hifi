@@ -14,7 +14,6 @@
 var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
 var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('mirroredEntity.js');
 
-var USE_DRESSING_ROOM_BASE=true;
 var USE_DEBOUNCE = false;
 var DEBOUNCE_RATE = 100;
 var doppelgangers = [];
@@ -77,23 +76,24 @@ function createDoppelgangerEntity(doppelganger) {
 function putDoppelgangerAcrossFromAvatar(doppelganger, avatar) {
     var avatarRot = Quat.fromPitchYawRollDegrees(0, avatar.bodyYaw, 0.0);
     var position;
-    if (USE_DRESSING_ROOM_BASE === true) {
-        var ids = Entities.findEntities(MyAvatar.position, 20);
 
-        for (var i = 0; i < ids.length; i++) {
-            var entityID = ids[i];
-            var props = Entities.getEntityProperties(entityID, "name");
-            var name = props.name;
-            if (name === "Hifi-Dressing-Room-Base") {
-                var details = Entities.getEntityProperties(entityID, ["position","dimensions"]);
-                details.position.y += getAvatarFootOffset();
-                details.position.y += details.dimensions.y/2;
-                position = details.position;
-            }
-
+    var ids = Entities.findEntities(MyAvatar.position, 20);
+    var hasBase = false;
+    for (var i = 0; i < ids.length; i++) {
+        var entityID = ids[i];
+        var props = Entities.getEntityProperties(entityID, "name");
+        var name = props.name;
+        if (name === "Hifi-Dressing-Room-Base") {
+            var details = Entities.getEntityProperties(entityID, ["position", "dimensions"]);
+            details.position.y += getAvatarFootOffset();
+            details.position.y += details.dimensions.y / 2;
+            position = details.position;
+            hasBase = true;
         }
-    } else {
-        var position = Vec3.sum(avatar.position, Vec3.multiply(1.5, Quat.getFront(avatarRot)));
+    }
+
+    if (hasBase === false) {
+        position = Vec3.sum(avatar.position, Vec3.multiply(1.5, Quat.getFront(avatarRot)));
 
     }
 
@@ -127,32 +127,28 @@ function getAvatarFootOffset() {
     var myPosition = MyAvatar.position;
     var offset = upperLeg + lowerLeg + foot + toe + toeTop;
     offset = offset/100;
-    print('AVATAR FOOT OFFSET:::',offset)
     return offset
 }
 
 function rotateDoppelgangerTowardAvatar(doppelganger, avatar) {
     var avatarRot = Quat.fromPitchYawRollDegrees(0, avatar.bodyYaw, 0.0);
-    if (USE_DRESSING_ROOM_BASE === true) {
-        var ids = Entities.findEntities(MyAvatar.position, 20);
 
-        for (var i = 0; i < ids.length; i++) {
-            var entityID = ids[i];
-            var props = Entities.getEntityProperties(entityID, "name");
-            var name = props.name;
-            if (name === "Hifi-Dressing-Room-Base") {
-                var details = Entities.getEntityProperties(entityID, "rotation");
-                avatarRot = details.rotation;
-            }
-
+    var ids = Entities.findEntities(MyAvatar.position, 20);
+    var hasBase = false;
+    for (var i = 0; i < ids.length; i++) {
+        var entityID = ids[i];
+        var props = Entities.getEntityProperties(entityID, "name");
+        var name = props.name;
+        if (name === "Hifi-Dressing-Room-Base") {
+            var details = Entities.getEntityProperties(entityID, "rotation");
+            avatarRot = details.rotation;
         }
-    } else {
-         avatarRot = Vec3.multiply(-1, avatarRot);
     }
-  
+    if (hasBase === false) {
+        avatarRot = Vec3.multiply(-1, avatarRot);
+    }
     return avatarRot;
 }
-
 function connectDoppelgangerUpdates() {
     Script.update.connect(updateDoppelganger);
 }
