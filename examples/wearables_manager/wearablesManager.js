@@ -38,10 +38,10 @@ function WearablesManager() {
         if (channel !== 'Hifi-Wearables-Manager') {
             return;
         }
-        if (sender !== MyAvatar.sessionUUID) {
-            print('wearablesManager got message from wrong sender');
-            return;
-        }
+        // if (sender !== MyAvatar.sessionUUID) {
+        //     print('wearablesManager got message from wrong sender');
+        //     return;
+        // }
 
         var parsedMessage = null;
 
