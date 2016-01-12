@@ -37,10 +37,11 @@ function Doppelganger(avatar) {
     };
 
     this.id = createDoppelgangerEntity(this);
-    var _t=this;
+    var _t = this;
     var props = Entities.getEntityProperties(this);
     //hack to make the model clickable / pickable again
     Script.setTimeout(function() {
+        console.log('MOOV')
         Entities.editEntity(_this.id, {
             position: {
                 x: props.position.x + 0.01,
@@ -48,7 +49,7 @@ function Doppelganger(avatar) {
                 z: props.position.z
             }
         })
-    }, 1000)
+    }, 1500)
     this.avatar = avatar;
     return this;
 }
@@ -169,6 +170,7 @@ function rotateDoppelgangerTowardAvatar(doppelganger, avatar) {
 }
 
 var isConnected = false;
+
 function connectDoppelgangerUpdates() {
     Script.update.connect(updateDoppelganger);
     isConnected = true;
@@ -176,8 +178,8 @@ function connectDoppelgangerUpdates() {
 
 function disconnectDoppelgangerUpdates() {
     print('SHOULD DISCONNECT')
-    if(isConnected===true){
-            Script.update.disconnect(updateDoppelganger);
+    if (isConnected === true) {
+        Script.update.disconnect(updateDoppelganger);
     }
     isConnected = false;
 }
@@ -212,7 +214,6 @@ function subscribeToFreezeMessages() {
 }
 
 function handleFreezeMessages(channel, message, sender) {
-    print('Doppelganger freeze messageReceived ::: ' + channel + " ::: " + message)
     if (channel !== 'Hifi-Doppelganger-Freeze') {
         return;
     }
@@ -243,7 +244,6 @@ function handleFreezeMessages(channel, message, sender) {
 var wearablePairs = [];
 
 function handleWearableMessages(channel, message, sender) {
-    print('Doppelganger messageReceived ::: ' + channel + " ::: " + message)
     if (channel !== 'Hifi-Doppelganger-Wearable') {
         return;
     }
@@ -264,6 +264,10 @@ function handleWearableMessages(channel, message, sender) {
 
 }
 
+function mirrorEntitiesForAvatar(){
+
+}
+
 function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     var doppelgangerProps = Entities.getEntityProperties(doppelganger.id);
 
@@ -278,15 +282,27 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     delete wearableProps.created;
     delete wearableProps.age;
     delete wearableProps.ageAsText;
-
+    delete wearableProps.position;
+    // add to dg
+    // add to avatar
+    // moved item on dg
+    // moved item on avatar
+    // remove item from dg
+    // remove item from avatar
+ 
+    var joint = wearableProps.parentJointIndex;
     if (action === 'add') {
         print('IN DOPPELGANGER ADD')
             //the position of the mirror entity will be the doppelganger position plus the offset of the wearable on the base entity.
+            //var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
 
-        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
-        wearableProps.position = newPosition;
+        var jointPosition = Entities.getAbsoluteJointTranslationInObjectFrame(doppelganger.id, joint);
+        var jointRotation = Entities.getAbsoluteJointRotationInObjectFrame(doppelganger.id, joint);
+
         wearableProps.parentID = doppelganger.id;
-
+        wearableProps.parentJointIndex = joint;
+        wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
+        // wearableProps.localRotation = Quat.multiply(wearableProps.localRotation, jointRotation);
         //create a new one
         wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
         wearableProps.name = 'Hifi-Doppelganger-Mirrored-Entity';
@@ -296,7 +312,6 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
                 doppelganger: doppelganger.id
             }
         })
-
         var mirrorEntity = Entities.addEntity(wearableProps);
 
         print('MIRROR ENTITY CREATED:::' + mirrorEntity)
@@ -311,10 +326,17 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     }
 
     if (action === 'update') {
-        var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
-        wearableProps.position = newPosition;
-        wearableProps.parentID = doppelganger;
+        // var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
+        // wearableProps.position = newPosition;
+ 
+        var jointPosition = Entities.getAbsoluteJointTranslationInObjectFrame(doppelganger.id, joint);
+        var jointRotation = Entities.getAbsoluteJointRotationInObjectFrame(doppelganger.id, joint);
+
+        wearableProps.parentID = doppelganger.id;
+        wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
+
         var mirrorEntity = getMirrorEntityForBaseEntity(baseEntity);
+     //   print('MIRROR ENTITY, newPosition' + mirrorEntity + ":::" + JSON.stringify(newPosition))
         Entities.editEntity(mirrorEntity, wearableProps)
     }
 
@@ -365,8 +387,8 @@ subscribeToWearableMessages();
 subscribeToFreezeMessages();
 
 function cleanup() {
-    if(isConnected===true){
-       disconnectDoppelgangerUpdates(); 
+    if (isConnected === true) {
+        disconnectDoppelgangerUpdates();
     }
 
     doppelgangers.forEach(function(doppelganger) {
