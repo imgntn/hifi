@@ -300,7 +300,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
 
         wearableProps.parentID = doppelganger.id;
         wearableProps.parentJointIndex = joint;
-        wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
+        //wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
         // wearableProps.localRotation = Quat.multiply(wearableProps.localRotation, jointRotation);
         //create a new one
         wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
