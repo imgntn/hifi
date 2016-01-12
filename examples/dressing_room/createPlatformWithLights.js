@@ -144,7 +144,7 @@ function getLightRotation(myPosition) {
 function init() {
     createBasePlatform();
     createLights();
-     createLoadArea();
+    // createLoadArea();
 }
 
 
@@ -154,7 +154,7 @@ function cleanup() {
     while (lights.length > 0) {
         Entities.deleteEntity(lights.pop());
     }
-     Entities.deleteEntity(loadArea);
+  //   Entities.deleteEntity(loadArea);
 }
 init();
 Script.scriptEnding.connect(cleanup)

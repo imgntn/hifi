@@ -4,5 +4,6 @@ var createTableWithItems = Script.resolvePath('createTableWithItems.js?'+Math.ra
 Script.include(createTableWithItems);
 var doppelganger = Script.resolvePath('doppelganger.js?'+Math.random(0,100));
 Script.include(doppelganger);
+var wearablesManager = Script.resolvePath('wearablesManager.js?'+Math.random(0,100));
+Script.include(wearablesManager);
 //put it in an interior
-//maybe add some sounds, whatever
