@@ -37,9 +37,9 @@ function createBasePlatform() {
         position: basePosition,
         collisionsWillMove: false,
         ignoreForCollisions: false,
-        userData:JSON.stringify({
-            grabbableKey:{
-                grabbable:false
+        userData: JSON.stringify({
+            grabbableKey: {
+                grabbable: false
             }
         })
     }
@@ -154,7 +154,7 @@ function cleanup() {
     while (lights.length > 0) {
         Entities.deleteEntity(lights.pop());
     }
-  //   Entities.deleteEntity(loadArea);
+    //   Entities.deleteEntity(loadArea);
 }
 init();
 Script.scriptEnding.connect(cleanup)

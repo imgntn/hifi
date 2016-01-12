@@ -6,4 +6,6 @@ var doppelganger = Script.resolvePath('doppelganger.js?'+Math.random(0,100));
 Script.include(doppelganger);
 var wearablesManager = Script.resolvePath('wearablesManager.js?'+Math.random(0,100));
 Script.include(wearablesManager);
+var handControllerGrab = Script.resolvePath('../controllers/handControllerGrab.js?'+Math.random(0,100));
+Script.include(handControllerGrab);
 //put it in an interior

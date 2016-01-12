@@ -263,7 +263,7 @@ function handleWearableMessages(channel, message, sender) {
 
 }
 
-function mirrorEntitiesForAvatar(){
+function mirrorEntitiesForAvatar() {
 
 }
 
@@ -277,18 +277,19 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
 
     var wearableProps = Entities.getEntityProperties(baseEntity);
 
+    print('WEARABLE PROPS::')
     delete wearableProps.id;
     delete wearableProps.created;
     delete wearableProps.age;
     delete wearableProps.ageAsText;
-    delete wearableProps.position;
+    //delete wearableProps.position;
     // add to dg
     // add to avatar
     // moved item on dg
     // moved item on avatar
     // remove item from dg
     // remove item from avatar
- 
+
     var joint = wearableProps.parentJointIndex;
     if (action === 'add') {
         print('IN DOPPELGANGER ADD')
@@ -301,7 +302,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
         wearableProps.parentID = doppelganger.id;
         wearableProps.parentJointIndex = joint;
         wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
-         wearableProps.localRotation = Quat.multiply(wearableProps.localRotation, jointRotation);
+      //  wearableProps.localRotation = Quat.multiply(wearableProps.localRotation, jointRotation);
         //create a new one
         wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
         wearableProps.name = 'Hifi-Doppelganger-Mirrored-Entity';
@@ -313,7 +314,6 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
         })
         var mirrorEntity = Entities.addEntity(wearableProps);
 
-        print('MIRROR ENTITY CREATED:::' + mirrorEntity)
         var mirrorEntityProps = Entities.getEntityProperties(mirrorEntity)
         print('MIRROR PROPS::' + JSON.stringify(mirrorEntityProps))
         var wearablePair = {
@@ -327,7 +327,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     if (action === 'update') {
         // var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
         // wearableProps.position = newPosition;
- 
+
         var jointPosition = Entities.getAbsoluteJointTranslationInObjectFrame(doppelganger.id, joint);
         var jointRotation = Entities.getAbsoluteJointRotationInObjectFrame(doppelganger.id, joint);
 
@@ -335,7 +335,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
         wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
 
         var mirrorEntity = getMirrorEntityForBaseEntity(baseEntity);
-     //   print('MIRROR ENTITY, newPosition' + mirrorEntity + ":::" + JSON.stringify(newPosition))
+        //   print('MIRROR ENTITY, newPosition' + mirrorEntity + ":::" + JSON.stringify(newPosition))
         Entities.editEntity(mirrorEntity, wearableProps)
     }
 
