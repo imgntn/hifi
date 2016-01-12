@@ -54,16 +54,16 @@ function createLoadArea() {
         shapeType: 'box',
         name: 'Hifi-Dressing-Room-Load-Area',
         dimensions: {
-            x: 8,
-            y: 5,
-            z: 8
+            x: 0.25,
+            y: 0.25,
+            z: 0.25
         },
         color: {
             red: 0,
             green: 255,
             blue: 0
         },
-        visible: false,
+        visible: true,
         position: basePosition,
         collisionsWillMove: false,
         ignoreForCollisions: true,
@@ -144,7 +144,7 @@ function getLightRotation(myPosition) {
 function init() {
     createBasePlatform();
     createLights();
-    // createLoadArea();
+     createLoadArea();
 }
 
 
@@ -154,7 +154,7 @@ function cleanup() {
     while (lights.length > 0) {
         Entities.deleteEntity(lights.pop());
     }
-    // Entities.deleteEntity(loadArea);
+     Entities.deleteEntity(loadArea);
 }
 init();
 Script.scriptEnding.connect(cleanup)

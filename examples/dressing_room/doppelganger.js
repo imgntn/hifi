@@ -41,7 +41,6 @@ function Doppelganger(avatar) {
     var props = Entities.getEntityProperties(this);
     //hack to make the model clickable / pickable again
     Script.setTimeout(function() {
-        console.log('MOOV')
         Entities.editEntity(_this.id, {
             position: {
                 x: props.position.x + 0.01,
