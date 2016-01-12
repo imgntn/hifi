@@ -25,9 +25,9 @@ function createBasePlatform() {
         type: 'Box',
         name: 'Hifi-Dressing-Room-Base',
         dimensions: {
-            x: 2,
+            x: 4,
             y: 0.10,
-            z: 2
+            z: 4
         },
         color: {
             red: 255,
@@ -37,6 +37,11 @@ function createBasePlatform() {
         position: basePosition,
         collisionsWillMove: false,
         ignoreForCollisions: false,
+        userData:JSON.stringify({
+            grabbableKey:{
+                grabbable:false
+            }
+        })
     }
     basePlatform = Entities.addEntity(properties);
 }
@@ -86,7 +91,7 @@ function createLightAtPosition(position) {
         },
         intensity: 0.035,
         exponent: 1,
-        cutoff: 60,
+        cutoff: 40,
         lifetime: -1,
         position: position,
         rotation: getLightRotation(position)
@@ -99,28 +104,28 @@ function createLightAtPosition(position) {
 function createLights() {
     var lightPosition = {
         x: basePosition.x - 2,
-        y: basePosition.y + 4,
+        y: basePosition.y + 3,
         z: basePosition.z
     }
     createLightAtPosition(lightPosition);
 
     var lightPosition = {
         x: basePosition.x + 2,
-        y: basePosition.y + 4,
+        y: basePosition.y + 3,
         z: basePosition.z
     }
 
     createLightAtPosition(lightPosition);
     var lightPosition = {
         x: basePosition.x,
-        y: basePosition.y + 4,
+        y: basePosition.y + 3,
         z: basePosition.z + 2
     }
 
     createLightAtPosition(lightPosition);
     var lightPosition = {
         x: basePosition.x,
-        y: basePosition.y + 4,
+        y: basePosition.y + 3,
         z: basePosition.z - 2
     }
 

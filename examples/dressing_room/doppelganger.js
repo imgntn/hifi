@@ -13,23 +13,42 @@
 
 var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
 var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('mirroredEntity.js');
-
+var FREEZE_TOGGLER_SCRIPT_URL = Script.resolvePath('freezeToggler.js?' + Math.random(0, 1000))
 var USE_DEBOUNCE = false;
 var DEBOUNCE_RATE = 100;
 var doppelgangers = [];
+
 function Doppelganger(avatar) {
     this.initialProperties = {
         name: 'Hifi-Doppelganger',
         type: 'Model',
         modelURL: TEST_MODEL_URL,
-        // dimensions: getAvatarDimensions(avatar),
         position: putDoppelgangerAcrossFromAvatar(this, avatar),
         rotation: rotateDoppelgangerTowardAvatar(this, avatar),
-        // collisionsWillMove:true,
-        // shapeType:'box'
+        collisionsWillMove: false,
+        ignoreForCollisions: false,
+        script: FREEZE_TOGGLER_SCRIPT_URL,
+        userData: JSON.stringify({
+            grabbableKey: {
+                grabbable: false,
+                wantsTrigger: true
+            }
+        })
     };
 
     this.id = createDoppelgangerEntity(this);
+    var _t=this;
+    var props = Entities.getEntityProperties(this);
+    //hack to make the model clickable / pickable again
+    Script.setTimeout(function() {
+        Entities.editEntity(_this.id, {
+            position: {
+                x: props.position.x + 0.01,
+                y: props.position.y,
+                z: props.position.z
+            }
+        })
+    }, 1000)
     this.avatar = avatar;
     return this;
 }
@@ -102,11 +121,10 @@ function putDoppelgangerAcrossFromAvatar(doppelganger, avatar) {
 
 function getAvatarFootOffset() {
     var data = getJointData();
-    var upperLeg, lowerLeg, foot, toe,toeTop;
+    var upperLeg, lowerLeg, foot, toe, toeTop;
     data.forEach(function(d) {
 
         var jointName = d.joint;
-        print('jointName'+jointName)
         if (jointName === "RightUpLeg") {
             upperLeg = d.translation.y;
         }
@@ -116,17 +134,17 @@ function getAvatarFootOffset() {
         if (jointName === "RightFoot") {
             foot = d.translation.y;
         }
-        if (jointName=== "RightToeBase") {
+        if (jointName === "RightToeBase") {
             toe = d.translation.y;
         }
-        if(jointName==="RightToe_End"){
+        if (jointName === "RightToe_End") {
             toeTop = d.translation.y
         }
     })
 
     var myPosition = MyAvatar.position;
     var offset = upperLeg + lowerLeg + foot + toe + toeTop;
-    offset = offset/100;
+    offset = offset / 100;
     return offset
 }
 
@@ -149,12 +167,19 @@ function rotateDoppelgangerTowardAvatar(doppelganger, avatar) {
     }
     return avatarRot;
 }
+
+var isConnected = false;
 function connectDoppelgangerUpdates() {
     Script.update.connect(updateDoppelganger);
+    isConnected = true;
 }
 
 function disconnectDoppelgangerUpdates() {
-    Script.update.disconnect(updateDoppelganger);
+    print('SHOULD DISCONNECT')
+    if(isConnected===true){
+            Script.update.disconnect(updateDoppelganger);
+    }
+    isConnected = false;
 }
 
 var sinceLastUpdate = 0;
@@ -179,6 +204,40 @@ function updateDoppelganger(deltaTime) {
 function subscribeToWearableMessages() {
     Messages.subscribe('Hifi-Doppelganger-Wearable');
     Messages.messageReceived.connect(handleWearableMessages);
+}
+
+function subscribeToFreezeMessages() {
+    Messages.subscribe('Hifi-Doppelganger-Freeze');
+    Messages.messageReceived.connect(handleFreezeMessages);
+}
+
+function handleFreezeMessages(channel, message, sender) {
+    print('Doppelganger freeze messageReceived ::: ' + channel + " ::: " + message)
+    if (channel !== 'Hifi-Doppelganger-Freeze') {
+        return;
+    }
+    if (sender !== MyAvatar.sessionUUID) {
+        return;
+    }
+
+    var parsedMessage = null;
+
+    try {
+        parsedMessage = JSON.parse(message);
+    } catch (e) {
+        print('error parsing wearable message');
+    }
+    print('MESSAGE ACTION::' + parsedMessage.action)
+    if (parsedMessage.action === 'freeze') {
+        print('ACTUAL FREEZE')
+        disconnectDoppelgangerUpdates();
+    }
+    if (parsedMessage.action === 'unfreeze') {
+        print('ACTUAL UNFREEZE')
+
+        connectDoppelgangerUpdates();
+    }
+
 }
 
 var wearablePairs = [];
@@ -299,13 +358,19 @@ function makeDoppelgangerForMyAvatar() {
     connectDoppelgangerUpdates();
 }
 
+
+
 makeDoppelgangerForMyAvatar();
 subscribeToWearableMessages();
+subscribeToFreezeMessages();
 
 function cleanup() {
-    disconnectDoppelgangerUpdates();
+    if(isConnected===true){
+       disconnectDoppelgangerUpdates(); 
+    }
 
     doppelgangers.forEach(function(doppelganger) {
+        print('DOPPELGANGER' + doppelganger.id)
         Entities.deleteEntity(doppelganger.id);
     });
 }
