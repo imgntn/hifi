@@ -293,16 +293,11 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     var joint = wearableProps.parentJointIndex;
     if (action === 'add') {
         print('IN DOPPELGANGER ADD')
-            //the position of the mirror entity will be the doppelganger position plus the offset of the wearable on the base entity.
-            //var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
 
-        var jointPosition = Entities.getAbsoluteJointTranslationInObjectFrame(doppelganger.id, joint);
-        var jointRotation = Entities.getAbsoluteJointRotationInObjectFrame(doppelganger.id, joint);
 
         wearableProps.parentID = doppelganger.id;
         wearableProps.parentJointIndex = joint;
-        wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
-      //  wearableProps.localRotation = Quat.multiply(wearableProps.localRotation, jointRotation);
+
         //create a new one
         wearableProps.script = MIRRORED_ENTITY_SCRIPT_URL;
         wearableProps.name = 'Hifi-Doppelganger-Mirrored-Entity';
