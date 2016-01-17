@@ -1146,6 +1146,10 @@ function MyController(hand) {
             this.handleParticleBeam(distantPickRay.origin, this.getHandRotation(), NO_INTERSECT_COLOR);
         }
 
+        if ((USE_OVERLAY_LINES_FOR_SEARCHING === true) && SHOW_PRE_INTERSECTION_SEARCH_BEAM && HAND_HEAD_MIX_RATIO===0.0) {
+            this.overlayLineOn(searchVisualizationPickRay.origin, Vec3.sum(searchVisualizationPickRay.origin, Vec3.multiply(searchVisualizationPickRay.direction, LINE_LENGTH)), NO_INTERSECT_COLOR);
+        }
+            
         if (this.intersectionDistance > 0) {
             var SPHERE_INTERSECTION_SIZE = 0.011;
             var SEARCH_SPHERE_FOLLOW_RATE = 0.50;
