@@ -14,8 +14,8 @@
 var TEST_MODEL_URL = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
 var MIRRORED_ENTITY_SCRIPT_URL = Script.resolvePath('mirroredEntity.js');
 var FREEZE_TOGGLER_SCRIPT_URL = Script.resolvePath('freezeToggler.js?' + Math.random(0, 1000))
-var USE_DEBOUNCE = false;
-var DEBOUNCE_RATE = 100;
+var THROTTLE = false;
+var THROTTLE_RATE = 100;
 var doppelgangers = [];
 
 function Doppelganger(avatar) {
@@ -186,9 +186,9 @@ function disconnectDoppelgangerUpdates() {
 var sinceLastUpdate = 0;
 
 function updateDoppelganger(deltaTime) {
-    if (USE_DEBOUNCE === true) {
+    if (THROTTLE === true) {
         sinceLastUpdate = sinceLastUpdate + deltaTime * 100;
-        if (sinceLastUpdate > DEBOUNCE_RATE) {
+        if (sinceLastUpdate > THROTTLE_RATE) {
             sinceLastUpdate = 0;
         } else {
             return;
@@ -206,6 +206,12 @@ function subscribeToWearableMessages() {
     Messages.subscribe('Hifi-Doppelganger-Wearable');
     Messages.messageReceived.connect(handleWearableMessages);
 }
+
+function subscribeToWearableMessagesForAvatar() {
+    Messages.subscribe('Hifi-Doppelganger-Wearable-Avatar');
+    Messages.messageReceived.connect(handleWearableMessages);
+}
+
 
 function subscribeToFreezeMessages() {
     Messages.subscribe('Hifi-Doppelganger-Freeze');
@@ -243,9 +249,11 @@ function handleFreezeMessages(channel, message, sender) {
 var wearablePairs = [];
 
 function handleWearableMessages(channel, message, sender) {
-    if (channel !== 'Hifi-Doppelganger-Wearable') {
+    if (channel !== 'Hifi-Doppelganger-Wearable' || 'Hifi-Doppelganger-Wearable-Avatar') {
         return;
     }
+
+
     if (sender !== MyAvatar.sessionUUID) {
         return;
     }
@@ -259,11 +267,39 @@ function handleWearableMessages(channel, message, sender) {
     }
     print('parsed message!!!')
 
-    mirrorEntitiesForDoppelganger(doppelgangers[0], parsedMessage);
+    if (channel === 'Hifi-Doppelganger-Wearable') {
+        mirrorEntitiesForDoppelganger(doppelgangers[0], parsedMessage);
+    }
+    if (channel === 'Hifi-Doppelganger-Wearable') {
+        mirrorEntitiesForAvatar(parsedMessge);
+    }
 
 }
 
-function mirrorEntitiesForAvatar() {
+function mirrorEntitiesForAvatar(avatar, parsedMessage) {
+    var action = parsedMessage.action;
+    print('IN MIRROR ENTITIES CALL' + action)
+
+    var baseEntity = parsedMessage.baseEntity;
+
+    var wearableProps = Entities.getEntityProperties(baseEntity);
+    print('WEARABLE PROPS::')
+    delete wearableProps.id;
+    delete wearableProps.created;
+    delete wearableProps.age;
+    delete wearableProps.ageAsText;
+
+    var joint = wearableProps.parentJointIndex;
+    if (action === 'add') {
+        print('IN AVATAR ADD')
+    }
+    if (action === 'remove') {
+        print('IN AVATAR REMOVE')
+    }
+
+    if (action === 'update') {
+        print('IN AVATAR UPDATE')
+    }
 
 }
 
@@ -292,8 +328,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
 
     var joint = wearableProps.parentJointIndex;
     if (action === 'add') {
-        print('IN DOPPELGANGER ADD')
-
+        print('IN DOPPELGANGER ADD');
 
         wearableProps.parentID = doppelganger.id;
         wearableProps.parentJointIndex = joint;
@@ -320,14 +355,7 @@ function mirrorEntitiesForDoppelganger(doppelganger, parsedMessage) {
     }
 
     if (action === 'update') {
-        // var newPosition = Vec3.sum(doppelgangerProps.position, parsedMessage.centerToWearable);
-        // wearableProps.position = newPosition;
-
-        var jointPosition = Entities.getAbsoluteJointTranslationInObjectFrame(doppelganger.id, joint);
-        var jointRotation = Entities.getAbsoluteJointRotationInObjectFrame(doppelganger.id, joint);
-
         wearableProps.parentID = doppelganger.id;
-        wearableProps.localPosition = Vec3.subtract(wearableProps.localPosition, jointPosition);
 
         var mirrorEntity = getMirrorEntityForBaseEntity(baseEntity);
         //   print('MIRROR ENTITY, newPosition' + mirrorEntity + ":::" + JSON.stringify(newPosition))
@@ -368,6 +396,17 @@ function getMirrorEntityForBaseEntity(baseEntity) {
     }
 }
 
+function getBaseEntityForMirrorEntity(mirrorEntity) {
+    var result = wearablePairs.filter(function(obj) {
+        return obj.mirrorEntity === mirrorEntity;
+    });
+    if (result.length === 0) {
+        return false;
+    } else {
+        return result[0].baseEntity
+    }
+}
+
 function makeDoppelgangerForMyAvatar() {
     var doppelganger = createDoppelganger(MyAvatar);
     doppelgangers.push(doppelganger);
@@ -375,9 +414,9 @@ function makeDoppelgangerForMyAvatar() {
 }
 
 
-
 makeDoppelgangerForMyAvatar();
 subscribeToWearableMessages();
+subscribeToWearableMessagesForAvatar();
 subscribeToFreezeMessages();
 
 function cleanup() {

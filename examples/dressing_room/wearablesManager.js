@@ -10,11 +10,10 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 
-
 // todo: 
 // add camera countdown / freezing unfreezing the doppelganger
 // add ability to drop wearables on doppelganger
-    // which means creating a mirror entity on the avatar ...
+// which means creating a mirror entity on the avatar ...
 
 Script.include("../libraries/utils.js");
 
@@ -50,13 +49,12 @@ function WearablesManager() {
         } catch (e) {
             print('error parsing wearable message');
         }
-        
-        if(parsedMessage.action==='update' && manager.wearables.length!==0){
-           manager.updateWearable(parsedMessage.grabbedEntity)
-        }
-        else if(parsedMessage.action==='update' && manager.wearables.length===0){
+
+        if (parsedMessage.action === 'update' && manager.wearables.length !== 0) {
+            manager.updateWearable(parsedMessage.grabbedEntity)
+        } else if (parsedMessage.action === 'update' && manager.wearables.length === 0) {
             print('no wearables yet, dont update')
-        } else if(parsedMessage.action==='checkIfWearable'){
+        } else if (parsedMessage.action === 'checkIfWearable') {
             manager.checkIfWearable(parsedMessage.grabbedEntity)
         } else {
             print('unknown actions: ' + parsedMessage.action);
@@ -70,13 +68,11 @@ function WearablesManager() {
             //only do this check if we already have some wearables for the doppelganger
             var hasWearableAlready = this.wearables.indexOf(grabbedEntity);
             var props = Entities.getEntityProperties(grabbedEntity);
-            var centerToWearable = Vec3.subtract( props.position,MyAvatar.position);
 
             if (hasWearableAlready > -1) {
                 var data = {
                     action: 'update',
                     baseEntity: grabbedEntity,
-                    centerToWearable: centerToWearable
                 }
 
                 Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data))
@@ -84,8 +80,8 @@ function WearablesManager() {
         }
     }
 
-    this.checkIfWearable = function(grabbedEntity) {
-        print('checking if wearable')
+    this.checkIfWearableOnDoppelganger = function(grabbedEntity) {
+        print('checking if wearable');
 
         var allowedJoints = getEntityCustomData('wearable', grabbedEntity, DEFAULT_WEARABLE_DATA).joints;
 
@@ -96,13 +92,14 @@ function WearablesManager() {
             var bestJointDistance = 0;
             print("here:" + grabbedEntity);
             allowedJoints.forEach(function(jointName) {
-                var jointIndex = MyAvatar.getJointIndex(jointName);
-                var jointPosition = MyAvatar.getJointPosition(jointIndex);
+
+                //do this for the model
+                var jointIndex = Entities.getJointIndex(doppelganger.id,jointName);
+                var jointPosition = Entities.getJointPosition(doppelganger.id,jointIndex);
                 print("---");
                 print(jointName + " position = " + vec3toStr(jointPosition));
                 // print("item position = " + vec3toStr(props.position));
                 var distanceFromJoint = Vec3.distance(jointPosition, props.position);
-                var jointToWearable = Vec3.subtract(jointPosition, props.position);
                 // print("distance from joint = " + distanceFromJoint);
                 if (distanceFromJoint < 0.4) {
                     if (bestJointIndex == -1 || distanceFromJoint < bestJointDistance) {
@@ -113,26 +110,22 @@ function WearablesManager() {
                 }
             });
 
-            var centerToWearable = Vec3.subtract( props.position,MyAvatar.position);
-
             if (bestJointIndex != -1) {
                 print("best joint is " + bestJointName + " at " + bestJointDistance);
                 Entities.editEntity(grabbedEntity, {
-                    parentID: MyAvatar.sessionUUID,
+                    parentID: doppelganger.id,
                     parentJointIndex: bestJointIndex
                 });
 
                 if (this.wearables.indexOf(grabbedEntity) < 0) {
                     print('adding, should send message....')
                     var data = {
-                        action: 'add',
+                        action: 'addToDoppelganger',
                         baseEntity: grabbedEntity,
-                        centerToWearable: centerToWearable,
                     }
-                    Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
+                    Messages.sendMessage('Hifi-Doppelganger-Wearable-Avatar', JSON.stringify(data));
                     this.wearables.push(grabbedEntity)
                 }
-
             } else {
                 Entities.editEntity(grabbedEntity, {
                     parentID: NULL_UUID
@@ -141,11 +134,11 @@ function WearablesManager() {
                 var hasWearableAlready = this.wearables.indexOf(grabbedEntity);
                 if (hasWearableAlready > -1) {
                     var data = {
-                        action: 'remove',
+                        action: 'removeFromDoppelganger',
                         baseEntity: grabbedEntity
                     }
 
-                    Messages.sendMessage('Hifi-Doppelganger-Wearable', JSON.stringify(data));
+                    Messages.sendMessage('Hifi-Doppelganger-Wearable-Avatar', JSON.stringify(data));
                 }
 
                 this.wearables.splice(hasWearableAlready, 1)
