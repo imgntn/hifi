@@ -1158,9 +1158,7 @@ function MyController(hand) {
             var searchSphereLocation = Vec3.sum(distantPickRay.origin, Vec3.multiply(distantPickRay.direction, this.searchSphereDistance));
             searchSphereLocation.y -= ((this.intersectionDistance - this.searchSphereDistance) / this.intersectionDistance) * SEARCH_SPHERE_CHASE_DROP;
             this.searchSphereOn(searchSphereLocation, SPHERE_INTERSECTION_SIZE * this.intersectionDistance, this.triggerSmoothedGrab() ? INTERSECT_COLOR : NO_INTERSECT_COLOR);
-            if ((USE_OVERLAY_LINES_FOR_SEARCHING === true) && SHOW_PRE_INTERSECTION_SEARCH_BEAM && HAND_HEAD_MIX_RATIO===0.0) {
-            this.overlayLineOn(searchVisualizationPickRay.origin, Vec3.sum(searchVisualizationPickRay.origin, Vec3.multiply(searchVisualizationPickRay.direction, LINE_LENGTH)), NO_INTERSECT_COLOR);
-            }
+
             if ((USE_OVERLAY_LINES_FOR_SEARCHING === true) && PICK_WITH_HAND_RAY) {
                 this.overlayLineOn(handPosition, searchSphereLocation, this.triggerSmoothedGrab() ? INTERSECT_COLOR : NO_INTERSECT_COLOR);
             }
