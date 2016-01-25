@@ -1,7 +1,7 @@
 var messagesReceivedCount = 0;
 
 function handleMessages(channel, message, sender) {
-    print('GOT MESSAGE')
+    print('JBP GOT MESSAGE')
     if (sender === MyAvatar.sessionUUID) {
         if (channel === 'messageTest') {
             messagesReceivedCount++;
@@ -12,5 +12,6 @@ function handleMessages(channel, message, sender) {
 }
 
 Messages.messageReceived.connect(handleMessages);
-Messages.subscribe('messageTest')
-print('READY TO RECEIVE')
+// Messages.subscribe('messageTest')
+Messages.subscribe('Hifi-Hand-Disabler');
+print('JBP READY TO RECEIVE')

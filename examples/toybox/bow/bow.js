@@ -10,7 +10,6 @@
 //
 
 (function() {
-
     Script.include("../../libraries/utils.js");
 
     var NOTCH_ARROW_SOUND_URL = 'http://hifi-content.s3.amazonaws.com/james/bow_and_arrow/sounds/notch.wav';
@@ -125,22 +124,29 @@
         },
 
         setLeftHand: function() {
+            print('JBP setLeftHand call')
             if (this.isGrabbed === true) {
+                print('JBP setLeftHand already grabbed dont set ')
                 return false;
             }
             this.hand = 'left';
+             print('JBP set left hand success: '+this.hand)
         },
 
         setRightHand: function() {
+              print('JBP setRightHand call')
             if (this.isGrabbed === true) {
+                print('JBP  setRightHand already grabbed dont set ')
                 return false;
             }
             this.hand = 'right';
+            print('JBP set right hand success: '+this.hand)
+
         },
 
         startNearGrab: function() {
 
-            print('START BOW GRAB')
+            print('JBP startNearGrab event')
             if (this.isGrabbed === true) {
                 return false;
             }
@@ -148,11 +154,11 @@
             this.isGrabbed = true;
 
             this.initialHand = this.hand;
-
+            print('JBP startNearGrab INITIAL HAND:' + this.initialHand)
             //disable the opposite hand in handControllerGrab.js by message
             var handToDisable = this.initialHand === 'right' ? 'left' : 'right';
             Messages.sendMessage('Hifi-Hand-Disabler', handToDisable);
-
+            print('JBP startNearGrab SENT MESSAGE TO DISABLE HAND: ' + handToDisable);
             var data = getEntityCustomData('grabbableKey', this.entityID, {});
             data.grabbable = false;
             setEntityCustomData('grabbableKey', this.entityID, data);
@@ -201,11 +207,14 @@
         },
 
         releaseGrab: function() {
-            //  print('RELEASE GRAB EVENT')
+              print('JBP releaseGrab call')
+              print('JBP releaseGrab isGrabbed? ' + this.isGrabbed)
+              print('JBP releaseGrab this hand: '+ this.hand)
+              print('JBP releaseGrab initial hand: '+this.initialHand)
             if (this.isGrabbed === true && this.hand === this.initialHand) {
 
                 Messages.sendMessage('Hifi-Hand-Disabler', "none")
-
+                print('JBP releaseGrab sent message to hand disabler to disable: none')
                 this.isGrabbed = false;
                 this.stringDrawn = false;
                 this.deleteStrings();
@@ -219,6 +228,9 @@
                 this.hasArrowNotched = false;
                 this.preNotchString = null;
 
+            }
+            else{
+                print('JBP releaseGrab dont release')
             }
         },
 

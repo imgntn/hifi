@@ -18,7 +18,7 @@ Script.include("../libraries/utils.js");
 // add lines where the hand ray picking is happening
 //
 var WANT_DEBUG = false;
-var WANT_DEBUG_STATE = false;
+var WANT_DEBUG_STATE = true;
 
 //
 // these tune time-averaging and "on" value for analog trigger
@@ -371,7 +371,7 @@ function MyController(hand) {
 
     this.setState = function(newState) {
         if (WANT_DEBUG || WANT_DEBUG_STATE) {
-            print("STATE: " + stateToName(this.state) + " --> " + stateToName(newState) + ", hand: " + this.hand);
+            print("JBP STATE: " + stateToName(this.state) + " --> " + stateToName(newState) + ", hand: " + this.hand);
         }
         this.state = newState;
     };
@@ -1703,15 +1703,21 @@ Messages.subscribe('Hifi-Hand-Grab');
 Messages.subscribe('Hifi-Hand-RayPick-Blacklist');
 
 handleHandMessages = function(channel, message, sender) {
+    print("JBP message received on channel:" + channel + ", message:" + message + ", sender:" + sender);
     if (sender === MyAvatar.sessionUUID) {
+        print('JBP Got a message from myself')
         if (channel === 'Hifi-Hand-Disabler') {
+            print('JBP Got a hand disabler message: '+message)
             if (message === 'left') {
+                print('JBP left handToDisable: ' + message)
                 handToDisable = LEFT_HAND;
             }
             if (message === 'right') {
+                print('JBP right handToDisable: ' + message)
                 handToDisable = RIGHT_HAND;
             }
             if (message === 'both' || message === 'none') {
+                print('JBP both or none handToDisable: ' + message)
                 handToDisable = message;
             }
         } else if (channel === 'Hifi-Hand-Grab') {
