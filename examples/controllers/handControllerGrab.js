@@ -816,7 +816,7 @@ function MyController(hand) {
                 direction: pickRay.direction
             };
 
-            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
+            // Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
 
             var intersection;
 
@@ -1322,10 +1322,10 @@ function MyController(hand) {
         }
 
         //// jbp::: SEND UPDATE MESSAGE TO WEARABLES MANAGER
-        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
-            action: 'update',
-            grabbedEntity: this.grabbedEntity
-        }))
+        // Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+        //     action: 'update',
+        //     grabbedEntity: this.grabbedEntity
+        // }))
 
         if (this.actionID && this.actionTimeout - now < ACTION_TTL_REFRESH * MSEC_PER_SEC) {
             // if less than a 5 seconds left, refresh the actions ttl
@@ -1597,10 +1597,10 @@ function MyController(hand) {
 
         //// jbp::: SEND RELEASE MESSAGE TO WEARABLES MANAGER
 
-        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
-            action: 'checkIfWearable',
-            grabbedEntity: this.grabbedEntity
-        }))
+        // Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+        //     action: 'checkIfWearable',
+        //     grabbedEntity: this.grabbedEntity
+        // }))
 
         this.grabbedEntity = null;
     };
@@ -1690,6 +1690,7 @@ Controller.enableMapping(MAPPING_NAME);
 var handToDisable = 'none';
 
 function update() {
+   // print('JBP HAND TO DISABLE IN UPDATE::: '+ handToDisable)
     if (handToDisable !== LEFT_HAND && handToDisable !== 'both') {
         leftController.update();
     }
@@ -1705,6 +1706,7 @@ Messages.subscribe('Hifi-Hand-RayPick-Blacklist');
 handleHandMessages = function(channel, message, sender) {
     if (sender === MyAvatar.sessionUUID) {
         if (channel === 'Hifi-Hand-Disabler') {
+            print('JBP GRAB SCRIPT GOT DISABLE MESSAGE ' + message)
             if (message === 'left') {
                 handToDisable = LEFT_HAND;
             }
@@ -1714,6 +1716,7 @@ handleHandMessages = function(channel, message, sender) {
             if (message === 'both' || message === 'none') {
                 handToDisable = message;
             }
+            print('JBP handToDisable is' + handToDisable)
         } else if (channel === 'Hifi-Hand-Grab') {
             try {
                 var data = JSON.parse(message);

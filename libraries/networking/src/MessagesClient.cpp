@@ -76,6 +76,7 @@ std::unique_ptr<NLPacketList> MessagesClient::encodeMessagesPacket(QString chann
 
 
 void MessagesClient::handleMessagesPacket(QSharedPointer<ReceivedMessage> receivedMessage, SharedNodePointer senderNode) {
+    qDebug() << "JBP HANDLING MESSAGE PACKET" << receivedMessage;
     QString channel, message;
     QUuid senderID;
     decodeMessagesPacket(receivedMessage, channel, message, senderID);
@@ -83,10 +84,12 @@ void MessagesClient::handleMessagesPacket(QSharedPointer<ReceivedMessage> receiv
 }
 
 void MessagesClient::sendMessage(QString channel, QString message) {
+    qDebug() << "JBP CHANNEL" << channel << " GOT MESSAGE" << message;
     auto nodeList = DependencyManager::get<NodeList>();
     SharedNodePointer messagesMixer = nodeList->soloNodeOfType(NodeType::MessagesMixer);
     
     if (messagesMixer) {
+        qDebug() << "JBP HAS MESSAGES MIXER! IN SENDMESSAGE";
         QUuid senderID = nodeList->getSessionUUID();
         auto packetList = encodeMessagesPacket(channel, message, senderID);
         nodeList->sendPacketList(std::move(packetList), *messagesMixer);
