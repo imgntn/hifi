@@ -816,7 +816,21 @@ function MyController(hand) {
                 direction: pickRay.direction
             };
 
-            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
+            //we need to trim the size of this message a bit right now.
+            var modifiedPickRayBacked = {
+                origin:{
+                    x:  parseFloat(pickRayBacked.origin.x.toFixed(2)),
+                    y:  parseFloat(pickRayBacked.origin.y.toFixed(2)),
+                    z:  parseFloat(pickRayBacked.origin.z.toFixed(2))
+                },
+                 direction:{
+                    x:  parseFloat(pickRayBacked.direction.x.toFixed(2)),
+                    y:  parseFloat(pickRayBacked.direction.y.toFixed(2)),
+                    z:  parseFloat(pickRayBacked.direction.z.toFixed(2))
+                }
+            }
+
+            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(modifiedPickRayBacked));
 
             var intersection;
 
