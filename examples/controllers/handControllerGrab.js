@@ -816,7 +816,6 @@ function MyController(hand) {
                 direction: pickRay.direction
             };
 
-            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
 
             var intersection;
 
@@ -1116,7 +1115,6 @@ function MyController(hand) {
                 z: this.currentObjectPosition.z
             }
         }
-
 
         //visualizations
         if (USE_ENTITY_LINES_FOR_MOVING === true) {
