@@ -816,7 +816,24 @@ function MyController(hand) {
                 direction: pickRay.direction
             };
 
-            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
+           // Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(pickRayBacked));
+
+            var modifiedPickRayBacked = {
+                origin:{
+                    x:  parseFloat(pickRayBacked.origin.x.toFixed(2)),
+                    y:  parseFloat(pickRayBacked.origin.y.toFixed(2)),
+                    z:  parseFloat(pickRayBacked.origin.z.toFixed(2))
+                },
+                 direction:{
+                    x:  parseFloat(pickRayBacked.direction.x.toFixed(2)),
+                    y:  parseFloat(pickRayBacked.direction.y.toFixed(2)),
+                    z:  parseFloat(pickRayBacked.direction.z.toFixed(2))
+                }
+            }
+
+            print('JBP MODIFIED THING:: '+JSON.stringify(modifiedPickRayBacked))
+            Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', JSON.stringify(modifiedPickRayBacked));
+            //Messages.sendMessage('Hifi-Light-Overlay-Ray-Check', 'test');
 
             var intersection;
 
@@ -1322,10 +1339,12 @@ function MyController(hand) {
         }
 
         //// jbp::: SEND UPDATE MESSAGE TO WEARABLES MANAGER
-        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
-            action: 'update',
-            grabbedEntity: this.grabbedEntity
-        }))
+        // Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+        //     action: 'update',
+        //     grabbedEntity: this.grabbedEntity
+        // }))
+
+            Messages.sendMessage('Hifi-Wearables-Manager','test')
 
         if (this.actionID && this.actionTimeout - now < ACTION_TTL_REFRESH * MSEC_PER_SEC) {
             // if less than a 5 seconds left, refresh the actions ttl
@@ -1597,10 +1616,12 @@ function MyController(hand) {
 
         //// jbp::: SEND RELEASE MESSAGE TO WEARABLES MANAGER
 
-        Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
-            action: 'checkIfWearable',
-            grabbedEntity: this.grabbedEntity
-        }))
+        // Messages.sendMessage('Hifi-Wearables-Manager', JSON.stringify({
+        //     action: 'checkIfWearable',
+        //     grabbedEntity: this.grabbedEntity
+        // }))
+
+        Messages.sendMessage('Hifi-Wearables-Manager', 'test2');
 
         this.grabbedEntity = null;
     };

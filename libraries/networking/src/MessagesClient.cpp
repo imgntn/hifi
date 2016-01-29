@@ -26,6 +26,7 @@ MessagesClient::MessagesClient() {
     });
     auto nodeList = DependencyManager::get<NodeList>();
     auto& packetReceiver = nodeList->getPacketReceiver();
+    qDebug() << "REGISTERING HANDLE MESSAGES PACKET LISTENR";
     packetReceiver.registerListener(PacketType::MessagesData, this, "handleMessagesPacket");
     connect(nodeList.data(), &LimitedNodeList::nodeActivated, this, &MessagesClient::handleNodeActivated);
 }
@@ -37,6 +38,7 @@ void MessagesClient::init() {
 }
 
 void MessagesClient::decodeMessagesPacket(QSharedPointer<ReceivedMessage> receivedMessage, QString& channel, QString& message, QUuid& senderID) {
+    qDebug() << "JBP DECODE MESSAGES PACKET CHANNEL: " << channel << "MESSAGE: " << message << "SENDERID: " << senderID;
     quint16 channelLength;
     receivedMessage->readPrimitive(&channelLength);
     auto channelData = receivedMessage->read(channelLength);
@@ -46,17 +48,20 @@ void MessagesClient::decodeMessagesPacket(QSharedPointer<ReceivedMessage> receiv
     receivedMessage->readPrimitive(&messageLength);
     auto messageData = receivedMessage->read(messageLength);
     message = QString::fromUtf8(messageData);
-
+    qDebug() << "JBP INSIDE OF MESSAGE DECODE : " << message;
     QByteArray bytesSenderID = receivedMessage->read(NUM_BYTES_RFC4122_UUID);
     if (bytesSenderID.length() == NUM_BYTES_RFC4122_UUID) {
+        qDebug() << "JBP LOOP1";
         senderID = QUuid::fromRfc4122(bytesSenderID);
     } else {
+        qDebug() << "JBP LOOP2";
         QUuid emptyUUID;
         senderID = emptyUUID; // packet was missing UUID use default instead
     }
 }
 
 std::unique_ptr<NLPacketList> MessagesClient::encodeMessagesPacket(QString channel, QString message, QUuid senderID) {
+    qDebug() << "JBP ENCODING MESSAGE PACKET CHANNEL: " << channel << "MESSAGE:" << message << "SENDERID: " << senderID;
     auto packetList = NLPacketList::create(PacketType::MessagesData, QByteArray(), true, true);
 
     auto channelUtf8 = channel.toUtf8();
@@ -76,6 +81,7 @@ std::unique_ptr<NLPacketList> MessagesClient::encodeMessagesPacket(QString chann
 
 
 void MessagesClient::handleMessagesPacket(QSharedPointer<ReceivedMessage> receivedMessage, SharedNodePointer senderNode) {
+    qDebug() << "JBP HANDLE MESSAGES PACKET";
     QString channel, message;
     QUuid senderID;
     decodeMessagesPacket(receivedMessage, channel, message, senderID);
@@ -83,10 +89,12 @@ void MessagesClient::handleMessagesPacket(QSharedPointer<ReceivedMessage> receiv
 }
 
 void MessagesClient::sendMessage(QString channel, QString message) {
+    qDebug() << "JBP SEND MESSAGE" << "CHANNEL:" << channel << "MESSAGE: " << message;
     auto nodeList = DependencyManager::get<NodeList>();
     SharedNodePointer messagesMixer = nodeList->soloNodeOfType(NodeType::MessagesMixer);
     
     if (messagesMixer) {
+        qDebug() << "JBP HAS MESSAGES MIXER AT SEND";
         QUuid senderID = nodeList->getSessionUUID();
         auto packetList = encodeMessagesPacket(channel, message, senderID);
         nodeList->sendPacketList(std::move(packetList), *messagesMixer);
@@ -99,6 +107,7 @@ void MessagesClient::subscribe(QString channel) {
     SharedNodePointer messagesMixer = nodeList->soloNodeOfType(NodeType::MessagesMixer);
 
     if (messagesMixer) {
+        qDebug() << "JBP HAS MESSAGES MIXER IN SUBSCRIBE";
         auto packetList = NLPacketList::create(PacketType::MessagesSubscribe, QByteArray(), true, true);
         packetList->write(channel.toUtf8());
         nodeList->sendPacketList(std::move(packetList), *messagesMixer);
@@ -120,6 +129,7 @@ void MessagesClient::unsubscribe(QString channel) {
 void MessagesClient::handleNodeActivated(SharedNodePointer node) {
     if (node->getType() == NodeType::MessagesMixer) {
         for (const auto& channel : _subscribedChannels) {
+            qDebug() << "JBP SUBSCRIBING TO CHANNEL ::" << channel;
             subscribe(channel);
         }
     }
