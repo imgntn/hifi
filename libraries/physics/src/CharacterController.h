@@ -71,6 +71,7 @@ public:
     float getFollowTime() const { return _followTime; }
     glm::vec3 getFollowLinearDisplacement() const;
     glm::quat getFollowAngularDisplacement() const;
+    glm::vec3 getFollowVelocity() const;
 
     glm::vec3 getLinearVelocity() const;
 
@@ -86,6 +87,7 @@ public:
 
 protected:
     void updateUpAxis(const glm::quat& rotation);
+    bool checkForSupport(btCollisionWorld* collisionWorld) const;
 
 protected:
     btVector3 _currentUp;
@@ -104,6 +106,7 @@ protected:
     btScalar _radius;
 
     btScalar _floorDistance;
+    bool _hasSupport;
 
     btScalar _gravity;
 
