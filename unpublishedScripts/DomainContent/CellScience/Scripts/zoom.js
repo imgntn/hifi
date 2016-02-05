@@ -5,12 +5,14 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 
-(function() {
-    var teleport;
+// (function() {
+
+     Zoom = function(){
+         var teleport;
     var portalDestination;
     var animationURL;
     var self = this;
-
+    print('jbp subload')
     this.entered = true;
 
     this.preload = function(entityID) {
@@ -90,4 +92,12 @@
             animationSettings: '{ "fps": 24, "firstFrame": 1, "lastFrame": 25, "frameIndex": 1, "running": true, "hold": true }'
         });
     }
-})
+
+    return this;
+    }
+
+    // (function(){
+    //     return new Zoom()
+    // })
+   
+// })

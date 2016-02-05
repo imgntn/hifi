@@ -42,6 +42,24 @@
             // print('NAV SELF ALREADY HAS A BUTTON!!')
         }
 
+    };
+
+    this.testParams= function(myID, paramsArray) {
+
+        paramsArray.forEach(function(param) {
+            var p;
+            try {
+                p = JSON.parse(param);
+                print("JBP it's a json param")
+                print('JBP json param property:' + p.thing);
+            } catch (err) {
+                print('JBP not a json param')
+                p = param;
+                print('JBP param is:' + p);
+            }
+
+        });
+
     }
 
     this.addButton = function() {
