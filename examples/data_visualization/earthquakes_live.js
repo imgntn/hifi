@@ -18,7 +18,7 @@ var tinyColor = loadTinyColor();
 
 //you could make it the size of the actual earth. 
 var EARTH_SPHERE_RADIUS = 6371;
-var EARTH_SPHERE_RADIUS = 2;
+var EARTH_SPHERE_RADIUS = 50;
 
 var EARTH_CENTER_POSITION = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,
@@ -34,9 +34,9 @@ var POLL_FOR_CHANGES = true;
 var CHECK_QUAKE_FREQUENCY = 5 * 60 * 1000;
 
 var QUAKE_MARKER_DIMENSIONS = {
-    x: 0.01,
-    y: 0.01,
-    z: 0.01
+    x: 0.5,
+    y: 0.5,
+    z: 0.5
 };
 
 function createEarth() {
@@ -58,6 +58,7 @@ function createEarth() {
         //     grabbableKey: {
         //         grabbable: false
         //     }
+        // })
         // })
     }
 
@@ -117,14 +118,17 @@ function get(url) {
 
 function createQuakeMarker(earthquake) {
     var markerProperties = {
-        name: earthquake.properties.place,
+        name:"Magnitude "+ earthquake.properties.mag +" "+earthquake.properties.place,
         type: 'Sphere',
         parentID:earth,
+        // shapeType:'sphere',
         dimensions: QUAKE_MARKER_DIMENSIONS,
         position: getQuakePosition(earthquake),
         collisionless:true,
         lifetime: 6000,
-        color: getQuakeMarkerColor(earthquake)
+        color: getQuakeMarkerColor(earthquake),
+        script:Script.resolvePath('quakeMarker.js?'+Math.random()),
+        userData:JSON.stringify(earthquake)
     }
 
     //  print('marker properties::' + JSON.stringify(markerProperties))
@@ -165,7 +169,7 @@ var quakes;
 var markers = [];
 
 var earth = createEarth();
-
+var spinning = false;
 function getThenProcessQuakes() {
     get(QUAKE_URL).then(function(response) {
         print('got it::' + response.features.length)
@@ -186,7 +190,10 @@ function cleanupMarkers() {
 
 function cleanupEarth() {
     Entities.deleteEntity(earth);
-    Script.update.disconnect(spinEarth);
+    if(spinning){
+   Script.update.disconnect(spinEarth);
+    }
+
 }
 
 function cleanupInterval() {
@@ -215,7 +222,7 @@ function spinEarth(){
 Entities.editEntity(earth,{
     angularVelocity:{
         x:0,
-        y:0.25,
+        y:0.12,
         z:0
     }
 })
@@ -223,4 +230,5 @@ Entities.editEntity(earth,{
 
 if(SHOULD_SPIN===true){
     Script.update.connect(spinEarth);
+    spinning = true;
 }
