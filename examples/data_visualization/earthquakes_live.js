@@ -34,9 +34,9 @@ var POLL_FOR_CHANGES = true;
 var CHECK_QUAKE_FREQUENCY = 5 * 60 * 1000;
 
 var QUAKE_MARKER_DIMENSIONS = {
-    x: 0.5,
-    y: 0.5,
-    z: 0.5
+    x: 1,
+    y: 1,
+    z: 1
 };
 
 function createEarth() {
@@ -85,7 +85,7 @@ function getQuakePosition(earthquake) {
     var latitude = earthquake.geometry.coordinates[1];
     var depth = earthquake.geometry.coordinates[2];
 
-    var latlng = latLongToVector3(latitude, longitude, EARTH_SPHERE_RADIUS / 2, 0);
+    var latlng = latLongToVector3(latitude, longitude, EARTH_SPHERE_RADIUS /2, 0);
 
     var position = EARTH_CENTER_POSITION;
     var finalPosition = Vec3.sum(position, latlng);
@@ -121,7 +121,6 @@ function createQuakeMarker(earthquake) {
         name:"Magnitude "+ earthquake.properties.mag +" "+earthquake.properties.place,
         type: 'Sphere',
         parentID:earth,
-        // shapeType:'sphere',
         dimensions: QUAKE_MARKER_DIMENSIONS,
         position: getQuakePosition(earthquake),
         collisionless:true,
@@ -164,6 +163,8 @@ function processQuakes(earthquakes) {
     })
     print('markers length:' + markers.length)
 }
+
+
 
 var quakes;
 var markers = [];
