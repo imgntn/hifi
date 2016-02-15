@@ -34,7 +34,7 @@ EventBridgeProxy.prototype.emitWebEvent = function(data) {
 }
 
 openEventBridge = function(callback) {
-    EVENT_BRIDGE_URI = "ws://localhost:51016";
+    EVENT_BRIDGE_URI = "wss://localhost:51016";
     socket = new WebSocket(this.EVENT_BRIDGE_URI);
     
     socket.onclose = function() { 
