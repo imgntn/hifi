@@ -5,7 +5,7 @@
 //  Persist toolbar by HRS 6/11/15.
 //  Copyright 2014 High Fidelity, Inc.
 //
-//  This script allows you to edit entities with a new UI/UX for mouse and trackpad based editing
+//  This script allows you to edit entities with a new UI/UX for mouse and trackpad based editing 
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
