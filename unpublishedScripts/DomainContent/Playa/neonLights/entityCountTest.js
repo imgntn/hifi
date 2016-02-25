@@ -9,7 +9,7 @@ var basePosition = {
     x: 0,
     y: 0,
     z: 0
-}
+};
 
 function update(deltaTime) {
     if (THROTTLE === true) {
@@ -37,14 +37,13 @@ function update(deltaTime) {
 
 }
 
-function setUpEntityViewer() {
+
     EntityViewer.setPosition(basePosition);
     EntityViewer.setKeyholeRadius(32000);
     octreeQueryInterval = Script.setInterval(function() {
         // print('looking in the octree')
         EntityViewer.queryOctree();
-    }, 200);
-}
+    }, 1000);
 
 
 function countEntities() {
@@ -62,7 +61,6 @@ function countEntities() {
 
 }
 
-setUpEntityViewer();
 Script.update.connect(update);
 
 Script.scriptEnding.connect(function() {
