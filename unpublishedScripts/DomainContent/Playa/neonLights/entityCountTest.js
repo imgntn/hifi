@@ -39,7 +39,8 @@ function update(deltaTime) {
 
 
     EntityViewer.setPosition(basePosition);
-    EntityViewer.setKeyholeRadius(32000);
+    EntityViewer.setCenterRadius(32000);
+   // EntityViewer.setVoxelSizeScale(200*2^16);
     octreeQueryInterval = Script.setInterval(function() {
         // print('looking in the octree')
         EntityViewer.queryOctree();
