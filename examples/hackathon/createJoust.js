@@ -1,18 +1,18 @@
 var RED = {
     red: 255,
-    green: 0
+    green: 0,
     blue: 0
 };
 
 var GREEN = {
     red: 0,
-    green: 255
+    green: 255,
     blue: 0
 };
 
 var BLUE = {
     red: 0,
-    green: 0
+    green: 0,
     blue: 255
 };
 
@@ -24,7 +24,7 @@ var LIGHT_BLUE = {
 
 var PURPLE = {
     red: 0,
-    green: 0
+    green: 0,
     blue: 255
 };
 
@@ -40,7 +40,8 @@ var WHITE = {
     blue: 255
 }
 
-var DEBUG_ENTITY_PROPERTIES = {
+function getDebugProperties(){
+    return  {
     type: 'Box',
     shapeType: 'Box',
     dynamic: true,
@@ -51,6 +52,8 @@ var DEBUG_ENTITY_PROPERTIES = {
     }
 
 }
+}
+
 
 var OSTRICH_DIMENSIONS = {
     x: 0.52,
@@ -58,7 +61,8 @@ var OSTRICH_DIMENSIONS = {
     z: 1.26
 };
 
-var randomColor = myArray;
+var MAPPING_NAME = "com.highfidelity.testing.joust";
+
 // # SOUNDS
 var WING_FLAP_SOUND;
 var COLLISION_SOUND;
@@ -71,7 +75,7 @@ var LAVA_BUBBLE_SOUND;
 var PLAYER_MODEL_MALE;
 
 var PLAYER_MODEL_FEMALE;
-var OSTRICH_MODEL;
+var OSTRICH_MODEL = 'http://hifi-content.s3.amazonaws.com/james/joust/ostrich.FBX';
 //http://www.turbosquid.com/3d-models/3d-model-ostrich-rigged-biped/821665
 
 var LANCE_MODEL;
@@ -91,6 +95,8 @@ var PTERODACTYL_MODEL;
 //https://www.assetstore.unity3d.com/en/#!/content/30715
 
 var controllers = [];
+var cameras = [];
+
 var ostriches = [];
 var lances = [];
 var platforms = [];
@@ -117,6 +123,27 @@ var LAVA_TROLL_GRAVITY = 1.0;
 
 var EGG_HATCH_DELAY = 4.0;
 
+var GROUND_HEIGHT = 1;
+var LEDGE_THICKNESS = 1;
+
+//heights of various layers
+var layerOffsets = [-GROUND_HEIGHT / 2,
+    0,
+    0 + LEDGE_THICKNESS / 2,
+    5,
+    10,
+    15,
+    20,
+    25
+];
+
+var FLAP_THRESHOLD = 0.5;
+var FLAP_FORCE_VERTICAL = 5;
+var FORWARD_MOVE_SCALE = 0.5;
+var YAW_MOVE_SCALE = 1;
+//this is where the AI will seek to -- so the ostrich that the player is riding
+var playerTarget = {};
+
 var score = 0;
 
 var _cameraEntity;
@@ -129,7 +156,7 @@ function bindController() {
     // xz controlled by joystick
     //  to flap
 
-    var MAPPING_NAME = "com.highfidelity.testing.joust";
+
 
     //LEFT -1
     //UP -1
@@ -138,48 +165,118 @@ function bindController() {
 
     var mapping = Controller.newMapping(MAPPING_NAME);
     mapping.from(Controller.Standard.LX).to(function(value) {
-        print('LX value:: ' + value)
+        //   print('LX value:: ' + value)
+        ostrichYaw(value);
     });
     mapping.from(Controller.Standard.LY).to(function(value) {
-        print('LY value:: ' + value)
+        //   print('LY value:: ' + value)
+        moveOstrichForwardBack(value);
     });
     mapping.from(Controller.Standard.RX).to(function(value) {
-        print('RX value:: ' + value)
+        //   print('RX value:: ' + value)
+        ostrichYaw(value)
     });
     mapping.from(Controller.Standard.RY).to(function(value) {
-        print('RY value:: ' + value)
+        //     print('RY value:: ' + value)
+        moveOstrichForwardBack(value);
     });
     mapping.from(Controller.Standard.LT).to(function(value) {
-        print('LT value:: ' + value)
+        //     print('LT value:: ' + value)
+        flapOstrich(value);
     });
     mapping.from(Controller.Standard.RT).to(function(value) {
-        print('RT value:: ' + value)
+        //   print('RT value:: ' + value)
+        flapOstrich(value);
     });
     Controller.enableMapping(MAPPING_NAME);
 
+    Script.update.connect(getControllerState);
     return joustController;
 }
 
-function unbindController() {
+
+function getControllerState() {
+    var LY = Controller.getValue(Controller.Standard.LY);
+    var LX = Controller.getValue(Controller.Standard.LX);
+    var RX = Controller.getValue(Controller.Standard.RX);
+    var RY = Controller.getValue(Controller.Standard.RY)
+    var LT = Controller.getValue(Controller.Standard.LT);
+    var RT = Controller.getValue(Controller.Standard.LT);
+
+    // print('LY ' + LY);
+    // print('RX ' + RX);
+    // print('LT ' + LT);
+    // print('RT' + RT);
+    moveOstrichForwardBack(LY)
+    ostrichYaw(LX)
 
 }
 
+function moveOstrichForwardBack(value) {
+    if (value === 0) {
+        return
+    }
 
+    var ostrichProps = Entities.getEntityProperties(ostriches[0]);
+    var velocity = ostrichProps.velocity;
+    var frontVector = Quat.getFront(ostrichProps.rotation);
+
+    var move = Vec3.multiply(frontVector, value * FORWARD_MOVE_SCALE)
+    move = Vec3.sum(velocity, move);
+
+    Entities.editEntity(ostriches[0], {
+        velocity: move
+    })
+}
+
+function ostrichYaw(value) {
+    if (value === 0) {
+        return
+    }
+    var ostrichProps = Entities.getEntityProperties(ostriches[0]);
+    var safeEuler = Quat.safeEulerAngles(ostrichProps.rotation);
+    safeEuler.y = safeEuler.y += (-value * YAW_MOVE_SCALE);
+    var newRotation = Quat.fromPitchYawRollDegrees(0, safeEuler.y, 0);
+    Entities.editEntity(ostriches[0], {
+        rotation: newRotation
+    });
+
+}
+
+function flapOstrich(value) {
+
+    print('should flap!!');
+    var ostrichProps = Entities.getEntityProperties(ostriches[0])
+    var velocity = ostrichProps.velocity;
+    velocity.y = FLAP_FORCE_VERTICAL;
+    Entities.editEntity(ostriches[0], {
+        velocity: velocity
+    })
+}
+
+function flapEnemy(enemyID) {
+    var value = Math.random(0,2);
+    if(value<0.5){
+        return
+    }
+    print('should flap!!');
+    var ostrichProps = Entities.getEntityProperties(enemyID)
+    var velocity = ostrichProps.velocity;
+    velocity.y = FLAP_FORCE_VERTICAL;
+    Entities.editEntity(enemyID, {
+        velocity: velocity
+    })
+}
+
+function unbindController() {
+    Script.update.disconnect(getControllerState);
+    Controller.disableMapping(MAPPING_NAME);
+}
 
 // # CAMERA
 
 function createSimpleChaseCam(ostrich) {
     var chaseCam;
-
-    var ostrichProps = Entities.getEntityProperties(ostrich);
-    var CAM_VERTICAL_OFFSET = 1;
-    var CAM_FORWARD_OFFSET = 1;
-
-    var upVector = Quat.getUp(ostrichProps.rotation);
-    var frontVector = Quat.getFront(ostrichProps.rotation);
-
-    var upOffset = Vec3.sum(ostrichProps.position, Vec3.multiply(upVector, CAM_VERTICAL_OFFSET));
-    var frontVector = Vec3.sum(ostrichProps.position, Vec3.multiply(frontVector, CAM_FORWARD_OFFSET));
     var chaseCamProperties = {
         type: 'Box',
         dimensions: {
@@ -192,64 +289,140 @@ function createSimpleChaseCam(ostrich) {
             green: 255,
             blue: 0
         },
-        visible: true,
+        visible: false,
         collisionless: true,
         parentID: ostrich,
+        position: getCameraOffset(ostrich)
     }
     var chaseCam = Entities.addEntity(chaseCamProperties);
-    _cameraEntity = chaseCam;
-    activateChaseCam();
-    connectChaseCamUpdates();
+
     return chaseCam;
-}
+};
 
 function activateChaseCam() {
-    Camera.mode = "entity";
-    Camera.cameraEntity = _cameraEntity;
-}
+   // Camera.mode = "independent";
+
+     Camera.mode = "entity";
+    Camera.cameraEntity = cameras[0];
+};
 
 function cameraLookAt(cameraPos, lookAtPos) {
     var lookAtRaw = Quat.lookAt(cameraPos, lookAtPos, Vec3.UP);
-    lookAtRaw.w = -lookAtRaw.w;
+    // print('LOOK AT RAW' + JSON.stringify(lookAtPos))
     return lookAtRaw;
 };
 
-//the camera should look at the ostrich
-function connectChaseCamUpdates() {
-    Script.update.connect(function(deltaTime) {
-            var cameraProperties = Entities.getEntityProperties(_cameraEntity, ["position", "rotation"]);
-            var targetOrientation = cameraLookAt(cameraProperties.position, lookatTargets[currentTarget]);
+function getCameraOffset(ostrich) {
+    var ostrichProps = Entities.getEntityProperties(ostrich);
+    var CAM_VERTICAL_OFFSET = 3;
+    var CAM_FORWARD_OFFSET = 2;
 
-        }
-        Entities.editEntity(_cameraEntity, {
-            rotation: Quat.mix(cameraProperties.rotation, targetOrientation, deltaTime / 3)
-        });
+    var upVector = Quat.getUp(ostrichProps.rotation);
+    var frontVector = Quat.getFront(ostrichProps.rotation);
+
+    var upOffset = Vec3.sum(ostrichProps.position, Vec3.multiply(upVector, CAM_VERTICAL_OFFSET));
+    var finalOffset = Vec3.sum(ostrichProps.position, Vec3.multiply(frontVector, CAM_FORWARD_OFFSET));
+
+    return finalOffset
+}
+
+function updateChaseCam(deltaTime) {
+    var ostrichProps = Entities.getEntityProperties(ostriches[0]);
+    var safeEuler = Quat.safeEulerAngles(ostrichProps.rotation);
+    var newRotation = Quat.fromPitchYawRollDegrees(0, safeEuler.y, 0);
+    Entities.editEntity(ostriches[0], {
+        rotation: newRotation
     });
 
-Script.scriptEnding.connect(function() {
-    disconnectChaseCam();
-});
+
+    var cameraProperties = Entities.getEntityProperties(cameras[0], ["position", "rotation"]);
+
+    var ostrichProperties = Entities.getEntityProperties(ostriches[0], ["position", "rotation"]);
+
+    var ostrichPosition = ostrichProperties.position;
+    var targetOrientation = cameraLookAt(cameraProperties.position, ostrichPosition);
+
+    // simpleSetCamera(getCameraOffset(ostriches[0]), targetOrientation)
+
+    Entities.editEntity(cameras[0], {
+        position:getCameraOffset(ostriches[0]),
+        rotation: targetOrientation,
+    });
+};
+
+function transformBirdHMDToWorld() {
+    var ostrichProps = Entities.getEntityProperties(ostriches[0])
+    var birdXform = new Xform(ostrichProps.rotation, ostrichProps.position);
+  
+    var HMDXform = new Xform({
+        x: HMD.orientation.x,
+        y: HMD.orientation.y,
+        z: HMD.orientation.z,
+        w: HMD.orientation.w
+    }, {
+        x: 0,
+        y: 0,
+        z: -2
+    })
+
+
+    var finalXForm = Xform.mul(birdXform, HMDXform);
+
+    return finalXForm
+}
+
+//the camera should look at the ostrich
+function connectChaseCamUpdates() {
+    Script.update.connect(updateChaseCam);
+
+    Script.scriptEnding.connect(function() {
+        disconnectChaseCam();
+    });
+};
+
+function simpleSetCamera(position, orientation) {
+
+    if (HMD.active === true) {
+        orientation = transformBirdHMDToWorld().rot;
+        position = transformBirdHMDToWorld().pos;
+    }
+
+    Camera.setOrientation(orientation);
+
+    Camera.setPosition(position);
 }
 
 function disconnectChaseCam() {
-    Entities.deleteEntity(_cameraEntity);
+    Script.update.disconnect(updateChaseCam);
+    Entities.deleteEntity(cameras[0]);
     Camera.mode = 'first person';
     Camera.cameraEntity = null;
-}
+};
 // # PLAYER
 
 //this is what you ride
 function createOstrich(position) {
     var ostrich;
-    var debugColor = LIGHT_BLUE;
-    var ostrichProperties = DEBUG_ENTITY_PROPERTIES;
+    var debugColor = WHITE;
+    var ostrichProperties = getDebugProperties();
+    ostrichProperties.name = "joust-ostrich";
+    ostrichProperties.dimensions = OSTRICH_DIMENSIONS;
     ostrichProperties.color = debugColor;
+    ostrichProperties.type = 'Model',
+    ostrichProperties.shapeType = 'Box',
+    ostrichProperties.modelURL = OSTRICH_MODEL;
     ostrichProperties.position = position;
-    ostrich = Entities.addEntity(bounderProperties);
-
+    ostrichProperties.dynamic = true;
+    ostrichProperties.gravity = {
+        x: 0,
+        y: -9.8,
+        z: 0
+    };
+    ostrich = Entities.addEntity(ostrichProperties);
+    ostriches.push(ostrich);
     return ostrich;
-}
 
+}
 //this is what you use to kill pterodactyls
 function createLance() {
     var lance;
@@ -258,10 +431,79 @@ function createLance() {
 
 // # ENVIRONMENT
 
+var layers = [];
+
+function createLayerZero() {
+    var layer = [
+        createGround()
+    ];
+    layers.push(layer);
+}
+
+function createLayerOne() {
+    var layer = [
+        createLavaPit(),
+        createLedge(),
+        createLedge()
+    ];
+    layers.push(layer);
+}
+
+function createLayerTwo() {
+    var layer = [
+        createWoodenBridge()
+    ];
+    layers.push(layer);
+}
+
+function createLayerThree() {
+    var layer = [
+        createLedge()
+    ];
+    layers.push(layer);
+}
+
+function createLayerFour() {
+    var layer = [
+        createLedge(),
+        createLedge()
+    ];
+    layers.push(layer);
+}
+
+function createLayerFive() {
+    var layer = [
+        createLedge()
+    ];
+    layers.push(layer);
+}
+
+function createLayerSix() {
+    var layer = [
+        createLedge(),
+        createLedge()
+    ];
+    layers.push(layer);
+}
+
+function createLastLayer() {
+    var layer = [
+        createCeiling()
+    ];
+    layers.push(layer);
+}
 //this stuff kills you
 function createLavaPit(position) {
     var lavaPit;
     return lavaPit;
+}
+
+function createGround() {
+
+}
+
+function createCeiling() {
+
 }
 
 //this thing disintegrates and exposes the lava
@@ -308,7 +550,7 @@ function createPortal(position) {
 function createEgg(position, name) {
 
     var egg;
-    var eggProperties = DEBUG_ENTITY_PROPERTIES;
+    var eggProperties = getDebugProperties();
     eggProperties.color = WHITE;
     eggProperties.position = position;
     eggProperties.lifetime = EGG_HATCH_DELAY;
@@ -349,7 +591,7 @@ function createRider(color, parent) {
 function createBounder(position) {
     var bounder;
     var debugColor = RED;
-    var bounderProperties = DEBUG_ENTITY_PROPERTIES;
+    var bounderProperties = getDebugProperties();
     bounderProperties.color = debugColor;
     bounderProperties.position = position;
     // Bounders fly around the environment randomly, occasionally reacting to the protagonist.
@@ -359,21 +601,46 @@ function createBounder(position) {
 }
 
 function createHunter(position) {
+    print('SHOULD CREATE HUNTER')
     var hunter;
     var debugColor = PURPLE;
-    var hunterProperties = DEBUG_ENTITY_PROPERTIES;
+    var hunterProperties = getDebugProperties();
+    hunterProperties.name = 'joust-hunter';
     hunterProperties.color = debugColor;
     hunterProperties.position = position;
     // Hunters seek the player's character in an effort to collide. 
     //Hitting a Hunter from above makes an egg appear which you must pick up before it hatches in to a Shadow Lord
     hunter = Entities.addEntity(hunterProperties);
+    hunters.push(new Vehicle(hunter,'Hunter'));
+    addCollisionHandlerToEntity(hunter);
+    print('made a hunter:'+hunter)
     return hunter;
+}
+
+function tickEnemies(){
+    tickHunters();
+}
+
+function tickHunters(){
+    if(hunters.length===0){
+        return;
+    }
+    hunters.forEach(function(hunter){
+        var props = Entities.getEntityProperties(hunter);
+        hunter.updateState(props);
+        hunter.steer();
+        hunter.sendUpdate(hunter.entityID);
+        hunter.tickCount++
+        if(hunter.tickCount%25){
+            flapEnemy(hunter.entityID);
+        }
+    })
 }
 
 function createShadowLord(position) {
     var shadowLord;
     var debugColor = BLUE;
-    var shadowLordProperties = DEBUG_ENTITY_PROPERTIES;
+    var shadowLordProperties = getDebugProperties();
     shadowLordProperties.color = debugColor;
     shadowLordProperties.position = position;
     //  Shadow Lords fly quickly and closer to the top of the screen. Pfutzenrueter designed them to fly higher when close to the protagonist to increase the Shadow Lord's chances of victory against the player
@@ -386,7 +653,7 @@ function createShadowLord(position) {
 function createPterodactyl(position) {
     var pterodactyl;
     var debugColor = GREEN;
-    var pterodactylProperties = DEBUG_ENTITY_PROPERTIES;
+    var pterodactylProperties = getDebugProperties();
     pterodactylProperties.color = debugColor;
     pterodactylProperties.position = position;
     //The pterodactyl was designed to attack idle players and be difficult to defeat. The only vulnerability was attacking the creature in its open mouth during a specific animation frame. Newcomer and Pfutzenrueter designed the pterodactyl to quickly fly upward at the last moment when approaching a player waiting at the edge of a ledge.
@@ -413,6 +680,50 @@ function createLavaTroll(position) {
 }
 
 // # ARTIFICIAL INTELLIGENCE
+
+function Vehicle(entityID,enemyType) {
+    this.enemyType = enemyType;
+    this.entityID = entityID;
+    this.tickCount = 0;
+    return this;
+}
+
+Vehicle.prototype = {
+    tickCount:null,
+    entityID: null,
+    enemyType: null,
+    lastPosition: null,
+    lastRotation: null,
+    lastVelocity: null,
+    currentPosition: null,
+    currentRotation: null,
+    currentVelocity: null,
+    lastWander: null,
+    updateState: function(newProperties) {
+        this.lastPosition = this.currentPosition;
+        this.lastRotation = this.currentRotation;
+        this.lastVelocity = this.currentVelocity;
+        this.currentPosition = newProperties.pfosition;
+        this.currentRotation = newProperties.rotation;
+        this.currentVelocity = newProperties.velocity;
+    },
+    sendUpdate: function(entityID) {
+        Entities.editEntity(entityID, {
+            velocity: this.nextVelocity
+        })
+    },
+    steer: function() {
+        var steer;
+        if (this.enemyType === 'Bounder') {
+            steer = wander(this.entityID);
+        }
+        if (this.enemyType === 'Hunter') {
+            steer = seek(this.entityID, ostriches[0]);
+        }
+        this.nextVelocity = steer;
+       // this.sendUpdate(steer)
+    }
+}
 
 
 function flee(thisEntity, target) {
@@ -441,16 +752,15 @@ function flee(thisEntity, target) {
 
 
 function seek(thisEntity, target) {
-    var MAX_SPEED = 1;
-    var MAX_FORCE = 1;
-    var FLEE_RANGE = 2;
+    var MAX_SPEED = 5;
+    var MAX_FORCE = 5;
 
     var targetPosition = Entities.getEntityProperties(target, "position").position;
     var properties = Entities.getEntityProperties(thisEntity, ["position", "velocity"]);
     var location = properties.position;
     var velocity = properties.velocity;
-
-    var desired = Vec3.subtract(location, targetPosition);
+    var desired = Vec3.subtract(targetPosition, location);
+   // var desired = Vec3.subtract(location, targetPosition);
     desired = Vec3.normalize(desired);
     desired = Vec3.multiply(MAX_SPEED, desired);
 
@@ -460,7 +770,6 @@ function seek(thisEntity, target) {
     steer = steerVector.limit(MAX_FORCE);
 
     return steer;
-
 
 }
 
@@ -473,8 +782,6 @@ function wander(thisEntity) {
 
     var randomUp;
     var randomRight;
-
-
 
     var directionV = {
         x: Math.random() - 0.5,
@@ -507,10 +814,13 @@ function determineHighestParticipant(entityA, entityB, collision) {
         bounceAfterCollision(entityA, entityB);
         return "tie"
     } else if (aProps.position.y > bProps.position.y) {
-        createEgg(aProps.position, aProps.name)
+        if(entityA===ostriches[0]){
+            Entities.deleteEntity(entityB)
+        }
+       // createEgg(aProps.position, aProps.name)
         return entityA
     } else {
-        createEgg(bProps.position, bProps.name)
+       // createEgg(bProps.position, bProps.name)
         return entityB
     }
 }
@@ -528,12 +838,42 @@ function removeEggAndScore() {
     addToScore('eggInAir')
 }
 
+function connectEnemyUpdates(){
+Script.update.connect(tickEnemies);
+}
+
+function disconnectEnemyUpdates(){
+Script.update.disconnect(tickEnemies);
+}
+
+
+var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
+    x: 0,
+    y: 0.5,
+    z: 0
+}), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
+
 function setupArena() {
-    ostriches.push(createOstrich());
-    distributeLedges();
-    lavaPits.push(createLavaPit());
-    woodenBridges.push(createWoodenBridge());
+    // ostriches.push(createOstrich({
+    //     x: 0,
+    //     y: 0,
+    //     z: 0
+    // }));
+
+    ostriches.push(createOstrich(center))
+
+
     controllers.push(bindController());
+    cameras.push(createSimpleChaseCam(ostriches[0]));
+    activateChaseCam();
+    connectChaseCamUpdates();
+
+    createHunter({x:0,y:0,z:0});
+    createHunter({x:0,y:center.y+10,z:0});
+    createHunter({x:0,y:center.y+12,z:0});
+    createHunter({x:0,y:center.y+14,z:0});
+    createHunter({x:0,y:center.y+16,z:0});
+    connectEnemyUpdates();
 }
 
 function distributeLedges() {
@@ -598,7 +938,56 @@ function createScoreDisplay() {
     display = Entities.addEntity(displayProperties);
 }
 
+
+V3.prototype.scale = function(f) {
+    this.x *= f;
+    this.y *= f;
+    this.z *= f;
+    return this;
+};
+
+var v3 = new V3();
+
+// # CLEANUP
+
+
+Script.scriptEnding.connect(cleanup);
+
+
+function cleanup() {
+    unbindController();
+    disconnectEnemyUpdates();
+    hunters.forEach(function(hunter){
+        Entities.deleteEntity(hunter)
+    })
+    Entities.deleteEntity(ostriches[0])
+
+}
+
 //# UTILITIES
+
+function popEntityFromStack(stack, entityID) {
+
+    var index = stack.indexOf(entityID);
+    if (index > -1) {
+        stack.splice(index, 1);
+    }
+
+    var metaIndex = findWithAttr(vehices, 'entityID', entityID);
+    if (metaIndex > -1) {
+        vehices.splice(index, 1);
+    }
+
+}
+
+function findWithAttr(array, attr, value) {
+    for (var i = 0; i < array.length; i += 1) {
+        if (array[i][attr] === value) {
+            return i;
+        }
+    }
+}
+
 
 function randomSpherePoint(center, radius) {
     var u = Math.random();
@@ -637,16 +1026,29 @@ V3.prototype.limit = function(s) {
     return this;
 };
 
-V3.prototype.scale = function(f) {
-    this.x *= f;
-    this.y *= f;
-    this.z *= f;
-    return this;
+
+// ctor
+function Xform(rot, pos) {
+    this.rot = rot;
+    this.pos = pos;
+};
+Xform.mul = function(lhs, rhs) {
+    var rot = Quat.multiply(lhs.rot, rhs.rot);
+    var pos = Vec3.sum(lhs.pos, Vec3.multiplyQbyV(lhs.rot, rhs.pos));
+    return new Xform(rot, pos);
+};
+Xform.prototype.inv = function() {
+    var invRot = Quat.inverse(this.rot);
+    var invPos = Vec3.multiply(-1, this.pos);
+    return new Xform(invRot, Vec3.multiplyQbyV(invRot, invPos));
+};
+Xform.prototype.toString = function() {
+    var rot = this.rot;
+    var pos = this.pos;
+    return "Xform rot = (" + rot.x + ", " + rot.y + ", " + rot.z + ", " + rot.w + "), pos = (" + pos.x + ", " + pos.y + ", " + pos.z + ")";
 };
 
-var v3 = new V3();
 
-// # CLEANUP
-function cleanup() {
+/// # START THE GAME!!
 
-}
+setupArena();
