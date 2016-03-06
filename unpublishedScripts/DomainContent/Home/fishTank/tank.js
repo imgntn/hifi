@@ -1,3 +1,16 @@
+//
+//  tank.js
+//
+//  takes cares of the fish swimming around in the tank
+//  puts an attractor where the closest person has been looking, the fish will swim toward it.
+//
+//  Created by James B. Pollack @imgntn on 3/6/2016
+//  Copyright 2016 High Fidelity, Inc.
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//
+
 (function() {
 
     Script.include('../../../../examples/libraries/virtualBaton.js?' + Math.random());
@@ -18,6 +31,7 @@
         green: 0,
         blue: 255
     }
+    var ENTITY_ATTRACTOR_LIFETIME = 3;
 
     function FishTank() {
         _this = this;
@@ -111,9 +125,6 @@
             this.entityID = entityID;
             _entityID = entityID;
             this.initialize(entityID);
-            // if(_this.initTimeout!==null){
-            //     Script.clearTimeout(_this.initTimeout)
-            // }
             this.initTimeout = null;
 
         },
@@ -132,6 +143,7 @@
             }
 
         },
+
         update: function(deltaTime) {
 
             if (iOwn === false) {
@@ -272,37 +284,138 @@
             };
             _this.hasLookAttractor = true;
         },
+
         updateLookAttractor: function(position, distance) {
             _this.lookAttractor = {
                 position: position,
                 distance: distance
             };
         },
+
         clearLookAttractor: function() {
             _this.hasLookAttractor = false;
             _this.lookAttractor = null;
         },
-        createLookAttractorEntity: function() {
+
+        createLookAttractorEntity: function(position) {
+            var attractorProperties = {
+                name: 'hifi-home-fishtank-attractor-entity'
+                type: 'Sphere',
+                dimensions: {
+                    x: 0.15,
+                    y: 0.15,
+                    z: 0.15
+                },
+                color: {
+                    red: 255,
+                    green: 0,
+                    blue: 0
+                },
+                visible: true,
+                position: position,
+                lifetime: ENTITY_ATTRACTOR_LIFETIME
+            };
+
+            Entities.addEntity(attractorProperties);
+        },
+        updateLookAttractorEntity: function(attractor, position) {
+            //update its position and keep it alive
+            Entities.editEntity(attractor, {
+                position: position,
+                lifetime: ENTITY_ATTRACTOR_LIFETIME + props.age
+            })
+        },
+        findLookAttractorEntities: function(position) {
+            //return the first attractor or return false
+            var results = Entities.findEntities(position, TANK_SEARCH_RADIUS);
+            results.forEach(function(result) {
+                var properties = Entities.getEntityProperties(result);
+                if (properties.name === "hifi-home-fishtank-attractor-entity") {
+                    return result
+                }
+            });
+
+            return false
 
         },
-        findLookAttractorEntities: function() {
+        getGazeTankIntersection: function(rayOrigin, front) {
 
+            var pickRay = {
+                origin: rayOrigin,
+                direction: front
+            };
+
+            var brn = _this.userData['hifi-home-fishtank']['corners'].brn;
+            var tfl = _this.userData['hifi-home-fishtank']['corners'].tfl;
+            var innerContainer = _this.userData['hifi-home-fishtank'].innerContainer;
+
+            var intersection = Entities.findRayIntersection(pickRay, true, [innerContainer], [_this.entityID, brn, tfl]);
+
+            if (intersection.intersects && intersection.entityID === innerContainer) {
+
+                if (intersection.distance > LOOK_ATTRACTOR_DISTANCE) {
+                    return false;
+                } else {
+                    return intersection;
+
+                }
+
+            }
+        },
+        checkAvatarDistanceToTank: function(avatar) {
+            var distance = Vec3.subtract(avatar.position, _this.currentProperties.position);
+            return distance;
         },
         seeIfAnyoneIsLookingAtTheTank: function() {
 
-            // get avatars
-            // get their positions
-            // get their gazes
-            // check for intersection
-            // add attractor for closest person (?)
+            // find nearby avatars, get the closest, if within view range and looking at the tank, add an attractor for this person or update the one that's there
 
-            var intersection = Entities.findRayIntersection(pickRay, true, [_this.entityID]);
+            // get the nearest avatar
+            var avatars = AvatarList.getAvatarIdentifiers();
+            var nearestAvatar = null;
+            var nearestDistance = AVATAR_DETECTION_RANGE;
+            avatars.forEach(function(avatar) {
+                var _avatar = AvatarList.getAvatar(avatar);
+                var distance = _this.checkAvatarDistanceToTank(avatar);
+                if (distance < AVATAR_DETECTION_RANGE) {
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestAvatar = avatar;
+                    }
+                }
+            });
 
-            if (intersection.intersects && intersection.entityID === _this.entityID) {
-                print('intersecting a tank')
 
-                print('intersection:: ' + JSON.stringify(intersection));
+            //see if they're looking at the tank
+            var headposition;
+
+            // get gaze
+            // "headOrientation": {
+            //     "x": -0.025261571630835533,
+            //     "y": 0.4800575375556946,
+            //     "z": 0.013831551186740398,
+            //     "w": 0.8767641186714172
+            // },
+            // "headPitch": -3.3007307052612305,
+            // "headYaw": 0,
+            // "headRoll": 0,
+
+            var headOrientation;
+            var front = Quat.getFront(headOrientation);
+
+            var intersection = _this.getGazeTankIntersection(headPosition, front);
+            if (intersection === false) {
+                return;
             }
+
+            //if is no attractor, add one, otherwise just update the one that's there
+            var attractor = findLookAttractorEntities();
+            if (hasAttractor === false) {
+                _this.createLookAttractorEntity(intersection.intersection);
+            } else {
+                _this.updateLookAttractor(attractor, intersection.intersection);
+            }
+
         }
 
     };
@@ -354,7 +467,6 @@
     var sinceLastUpdate = 0;
 
     // var FISH_MODEL_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/Fish-1.fbx";
-
     // var FISH_MODEL_TWO_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/Fish-2.fbx";
     var FISH_MODEL_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/goodfish5.fbx";
     var FISH_MODEL_TWO_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/goodfish5.fbx";
@@ -387,8 +499,6 @@
                 return;
             }
         }
-
-
         //  print('has userdata fish??' + _this.userData['hifi-home-fishtank'].fishLoaded)
 
         if (_this.userData['hifi-home-fishtank'].fishLoaded === false) {
@@ -422,7 +532,6 @@
 
         }
 
-
         var fish = _this.fish;
         //   print('how many fish do i find?' + fish.length)
 
@@ -442,7 +551,6 @@
             y: 0,
             z: 0
         };
-
 
         var userData = JSON.parse(_this.currentProperties.userData);
         var innerContainer = userData['hifi-home-fishtank']['innerContainer'];
@@ -516,11 +624,6 @@
                     // Cohesion: Steer towards center of flock
                     var towardCenter = Vec3.subtract(averagePosition, position);
                     velocity = Vec3.mix(velocity, Vec3.multiply(Vec3.normalize(towardCenter), Vec3.length(velocity)), COHESION_FORCE);
-
-                    //attractors
-                    //[position, radius, force]
-
-
 
                 }
 

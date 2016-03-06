@@ -1,17 +1,17 @@
-var fishTank, bubbleSystem, innerContainer, bubbleInjector, lowerCorner, upperCorner, urchin, rocks;
+//
+//  createFishTank.js
+//
+//  generates a fish tank entity, with fish that swim around and look the same to everyone
+//
+//  Created by James B. Pollack @imgntn on 3/6/2016
+//  Copyright 2016 High Fidelity, Inc.
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//
 
+// should we cleanup the everything when this script stops
 var CLEANUP = true;
-var TANK_DIMENSIONS = {
-    x: 1.3393,
-    y: 1.3515,
-    z: 3.5914
-};
-
-var INNER_TANK_SCALE = 0.7;
-var INNER_TANK_DIMENSIONS = Vec3.multiply(INNER_TANK_SCALE, TANK_DIMENSIONS);
-INNER_TANK_DIMENSIONS.y = INNER_TANK_DIMENSIONS.y - 0.4;
-var TANK_WIDTH = TANK_DIMENSIONS.z;
-var TANK_HEIGHT = TANK_DIMENSIONS.y;
 
 var DEBUG_COLOR = {
     red: 255,
@@ -19,6 +19,29 @@ var DEBUG_COLOR = {
     blue: 255
 }
 
+//useful for seeing where the fish should swim
+var WANT_DEBUG_CORNERS = false;
+
+// the various parts of our tank ecosystem
+var fishTank, innerContainer, lowerCorner, upperCorner, bubbleSystem, bubbleSound, bubbleInjector, urchin, rocks;
+
+// # TANK SETUP
+var TANK_DIMENSIONS = {
+    x: 1.3393,
+    y: 1.3515,
+    z: 3.5914
+};
+
+var TANK_WIDTH = TANK_DIMENSIONS.z;
+var TANK_HEIGHT = TANK_DIMENSIONS.y;
+
+// make an inner tank to the visual one for the fish to swim around in -- they will overshoot the bounds just a little before coming smoothly back, so let's give them some space.
+var INNER_TANK_SCALE = 0.7;
+var INNER_TANK_DIMENSIONS = Vec3.multiply(INNER_TANK_SCALE, TANK_DIMENSIONS);
+INNER_TANK_DIMENSIONS.y = INNER_TANK_DIMENSIONS.y - 0.4;
+
+
+//if we just want to start it in front of us
 var center = Vec3.sum(MyAvatar.position, Vec3.multiply(Quat.getFront(MyAvatar.orientation), 1 * TANK_WIDTH));
 
 var TANK_POSITION = center;
@@ -27,22 +50,9 @@ var TANK_SCRIPT = Script.resolvePath('tank.js?' + Math.random())
 
 var TANK_MODEL_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/aquarium-6.fbx";
 
-var BUBBLE_SYSTEM_FORWARD_OFFSET = TANK_DIMENSIONS.x;
-//depth of tank
-var BUBBLE_SYSTEM_LATERAL_OFFSET = 0.15;
-var BUBBLE_SYSTEM_VERTICAL_OFFSET = -0.5;
-
-var BUBBLE_SYSTEM_DIMENSIONS = {
-    x: TANK_DIMENSIONS.x / 8,
-    y: TANK_DIMENSIONS.y,
-    z: TANK_DIMENSIONS.z / 8
-}
-
-var BUBBLE_SOUND_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/Sounds/aquarium_small.L.wav";
-var bubbleSound = SoundCache.getSound(BUBBLE_SOUND_URL);
-
+// # SEALIFE IN THE TANK
+// an urchin, which we can animate.
 var URCHIN_FORWARD_OFFSET = -TANK_DIMENSIONS.x;
-//depth of tank
 var URCHIN_LATERAL_OFFSET = -0.15;
 var URCHIN_VERTICAL_OFFSET = -0.37;
 
@@ -52,10 +62,10 @@ var URCHIN_DIMENSIONS = {
     x: 0.35,
     y: 0.35,
     z: 0.35
-}
+};
 
+// # TANK DECORATIONS
 var ROCKS_FORWARD_OFFSET = (TANK_DIMENSIONS.x / 2) - 0.75;
-//depth of tank
 var ROCKS_LATERAL_OFFSET = 0.0;
 var ROCKS_VERTICAL_OFFSET = (-TANK_DIMENSIONS.y / 2) + 0.25;
 
@@ -65,7 +75,24 @@ var ROCK_DIMENSIONS = {
     x: 0.88,
     y: 0.33,
     z: 2.9
+};
+
+// # TANK PARTICLE SYSTEMS
+//lets put some bubbles in the tank
+var BUBBLE_SYSTEM_FORWARD_OFFSET = TANK_DIMENSIONS.x;
+var BUBBLE_SYSTEM_LATERAL_OFFSET = 0.15;
+var BUBBLE_SYSTEM_VERTICAL_OFFSET = -0.5;
+
+var BUBBLE_SYSTEM_DIMENSIONS = {
+    x: TANK_DIMENSIONS.x / 8,
+    y: TANK_DIMENSIONS.y,
+    z: TANK_DIMENSIONS.z / 8
 }
+
+//and play a sound for them
+var BUBBLE_SOUND_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/Sounds/aquarium_small.L.wav";
+bubbleSound = SoundCache.getSound(BUBBLE_SOUND_URL);
+
 
 function createFishTank() {
     var tankProperties = {
@@ -163,7 +190,6 @@ function getOffsetFromTankCenter(VERTICAL_OFFSET, FORWARD_OFFSET, LATERAL_OFFSET
     var finalOffset = Vec3.sum(tankProperties.position, upOffset);
     finalOffset = Vec3.sum(finalOffset, frontOffset);
     finalOffset = Vec3.sum(finalOffset, rightOffset);
-    print('final offset is: ' + finalOffset)
     return finalOffset
 }
 
@@ -245,8 +271,6 @@ function createEntitiesAtCorners() {
 
     lowerCorner = Entities.addEntity(lowerProps);
     upperCorner = Entities.addEntity(upperProps);
-    print('CORNERS :::' + JSON.stringify(upperCorner))
-    print('CORNERS :::' + JSON.stringify(lowerCorner))
 }
 
 function createRocks() {
@@ -288,16 +312,17 @@ createInnerContainer();
 
 createBubbleSystem();
 
-createEntitiesAtCorners();
-
 createBubbleSound();
 
 createUrchin();
 
 createRocks();
 
-var customKey = 'hifi-home-fishtank';
+if (WANT_DEBUG_CORNERS === true) {
+    createEntitiesAtCorners();
+};
 
+var customKey = 'hifi-home-fishtank';
 
 var data = {
     fishLoaded: false,
@@ -311,16 +336,8 @@ var data = {
 
 }
 
-//fisthank initialize has a different UUID than the model that i see
 Script.setTimeout(function() {
-    print('CREATE TIMEOUT!!!')
-    print('TANK AT CREATE IS::: ' + fishTank)
-    print('DATA AT CREATE IS:::' + JSON.stringify(data));
-
     setEntityCustomData(customKey, fishTank, data);
-    // setEntityCustomData('grabbableKey', id, {
-    //     grabbable: false
-    // });
 }, 2000)
 
 
@@ -328,12 +345,15 @@ function cleanup() {
     Entities.deleteEntity(fishTank);
     Entities.deleteEntity(bubbleSystem);
     Entities.deleteEntity(innerContainer);
-    Entities.deleteEntity(lowerCorner);
-    Entities.deleteEntity(upperCorner);
     Entities.deleteEntity(urchin);
     Entities.deleteEntity(rocks);
     bubbleInjector.stop();
     bubbleInjector = null;
+
+    if (WANT_DEBUG_CORNERS === true) {
+        Entities.deleteEntity(lowerCorner);
+        Entities.deleteEntity(upperCorner);
+    }
 }
 
 
@@ -341,12 +361,7 @@ if (CLEANUP === true) {
     Script.scriptEnding.connect(cleanup);
 }
 
-//  Copyright 2016 High Fidelity, Inc.
-//
-//
-//  Distributed under the Apache License, Version 2.0.
-//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
-//
+// # UTILITIES
 
 function setEntityUserData(id, data) {
     var json = JSON.stringify(data)
@@ -369,7 +384,6 @@ function getEntityUserData(id) {
     }
     return results ? results : {};
 }
-
 
 // Non-destructively modify the user data of an entity.
 function setEntityCustomData(customKey, id, data) {
