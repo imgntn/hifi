@@ -93,7 +93,7 @@ void AvatarActionHold::prepareForPhysicsSimulation() {
     activateBody(true);
 }
 
-std::shared_ptr<Avatar> AvatarActionHold::getTarget(glm::quat& rotation, glm::vec3& position,
+std::shared_ptr<Avatar> AvatarActionHold::getTarget(float deltaTimeStep, glm::quat& rotation, glm::vec3& position,
                                                     glm::vec3& linearVelocity, glm::vec3& angularVelocity) {
     auto avatarManager = DependencyManager::get<AvatarManager>();
     auto holdingAvatar = std::static_pointer_cast<Avatar>(avatarManager->getAvatarBySessionID(_holderID));
@@ -106,16 +106,16 @@ std::shared_ptr<Avatar> AvatarActionHold::getTarget(glm::quat& rotation, glm::ve
         bool isRightHand = (_hand == "right");
         glm::vec3 palmPosition;
         glm::quat palmRotation;
-        glm::vec3 palmLinearVelocity;
-        glm::vec3 palmAngularVelocity;
 
         PalmData palmData = holdingAvatar->getHand()->getCopyOfPalmData(isRightHand ? HandData::RightHand : HandData::LeftHand);
 
-        // TODO: adjust according to _relativePosition and _relativeRotation?
-        linearVelocity = palmData.getVelocity();
-        angularVelocity = palmData.getAngularVelocity();
+        if (palmData.isValid()) {
+            // TODO: adjust according to _relativePosition and _relativeRotation?
+            linearVelocity = palmData.getVelocity();
+            angularVelocity = palmData.getAngularVelocity();
+        }
 
-        if (_ignoreIK && holdingAvatar->isMyAvatar()) {
+        if (_ignoreIK && holdingAvatar->isMyAvatar() && palmData.isValid()) {
             // We cannot ignore other avatars IK and this is not the point of this option
             // This is meant to make the grabbing behavior more reactive.
             palmPosition = palmData.getPosition();
@@ -183,7 +183,7 @@ void AvatarActionHold::updateActionWorker(float deltaTimeStep) {
         glm::quat rotationForAction;
         glm::vec3 positionForAction;
         glm::vec3 linearVelocityForAction, angularVelocityForAction;
-        std::shared_ptr<Avatar> holdingAvatar = holdAction->getTarget(rotationForAction, positionForAction, linearVelocityForAction, angularVelocityForAction);
+        std::shared_ptr<Avatar> holdingAvatar = holdAction->getTarget(deltaTimeStep, rotationForAction, positionForAction,  linearVelocityForAction, angularVelocityForAction);
         if (holdingAvatar) {
             holdCount ++;
             if (holdAction.get() == this) {
@@ -254,10 +254,12 @@ void AvatarActionHold::doKinematicUpdate(float deltaTimeStep) {
 
         _previousPositionalTarget = _positionalTarget;
         _previousRotationalTarget = _rotationalTarget;
+        _previousDeltaTimeStep = deltaTimeStep;
         _previousSet = true;
     });
 
     forceBodyNonStatic();
+    activateBody(true);
 }
 
 bool AvatarActionHold::updateArguments(QVariantMap arguments) {
