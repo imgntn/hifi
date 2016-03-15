@@ -1,4 +1,4 @@
-var HIFI_SIGN_NAME = 'playa_model_sign_rotatingHiFiSign'
+var HIFI_SIGN_NAME = 'playa_model_sign_rotatingHiFiSignTopOfCrane';
 
 var SIGN_POSITION = {
     x: -50.0,
@@ -42,6 +42,8 @@ function update(deltaTime) {
 
 }
 
+var neonUpdateConnected = false;
+
 function countEntities() {
 
     if (EntityViewer.getOctreeElementsCount() <= 1) {
@@ -53,7 +55,6 @@ function countEntities() {
 
     var results = Entities.findEntities(SIGN_POSITION, 32000);
     if (results.length === 0) {
-        print('NO RESULTS!')
         return;
     }
 
@@ -62,11 +63,12 @@ function countEntities() {
         if (properties.name === HIFI_SIGN_NAME) {
             hifiSign = result;
         }
+
     })
-    print('FOUND ENTITIES::: ' + results.length);
-    print('FOUND HIFI SIGN??' + hifiSign);
-    if (hifiSign !== null) {
+
+    if (hifiSign !== null && neonUpdateConnected === false) {
         Script.update.connect(updateNeon);
+        neonUpdateConnected = true;
     }
 }
 
@@ -80,17 +82,17 @@ var NEON_THROTTLE = true;
 var throttleRateNeon = 50;
 var sinceLastUpdateNeon = 0;
 
-
 function swapTextures() {
+
     if (neonTextureOn === true) {
         neonTextureOn = false;
         Entities.editEntity(hifiSign, {
-            textures: 'file2:"",\nfile1:"http://hifi-content.s3.amazonaws.com/highfidelity_diffusebaked.png"'
+            textures: 'file2:"",\nfile1:"https://s3-us-west-1.amazonaws.com/highfidelity_diffusebaked.png"'
         });
     } else {
         neonTextureOn = true;
         Entities.editEntity(hifiSign, {
-            textures: 'file2:"http://hifi-content.s3.amazonaws.com/highfidelitysign_white_emissive.png",\nfile1:"http://hifi-content.s3.amazonaws.com/highfidelity_diffusebaked.png"'
+            textures: 'file2:"https://s3-us-west-1.amazonaws.com/highfidelitysign_white_emissive.png",\nfile1:"https://s3-us-west-1.amazonaws.com/highfidelity_diffusebaked.png"'
         });
     }
 }
@@ -98,7 +100,7 @@ function swapTextures() {
 function updateNeon(deltaTime) {
     if (NEON_THROTTLE === true) {
         sinceLastUpdateNeon = sinceLastUpdateNeon + deltaTime * 10;
-        if (sinceLastUpdateNeon > throttleRate) {
+        if (sinceLastUpdateNeon > throttleRateNeon) {
             sinceLastUpdateNeon = 0;
             swapTextures();
             throttleRateNeon = getRandomInt(0, 10);
@@ -112,6 +114,8 @@ function updateNeon(deltaTime) {
 EntityViewer.setPosition(SIGN_POSITION);
 EntityViewer.setKeyholeRadius(32000);
 EntityViewer.setVoxelSizeScale(13107200000);
+// EntityViewer.setVoxelSizeScale(
+// 3.402823e+38);
 
 octreeQueryInterval = Script.setInterval(function() {
     // print('looking in the octree')
@@ -121,6 +125,7 @@ octreeQueryInterval = Script.setInterval(function() {
 Script.scriptEnding.connect(function() {
     Script.update.disconnect(update);
     Script.update.disconnect(updateNeon);
+    neonUpdateConnected = false;
     Script.clearInterval(octreeQueryInterval)
 });
 
