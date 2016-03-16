@@ -62,14 +62,15 @@ function countEntities() {
         var properties = Entities.getEntityProperties(result);
         if (properties.name === HIFI_SIGN_NAME) {
             hifiSign = result;
+            if(neonUpdateConnected===false){
+                Script.update.connect(updateNeon);
+                neonUpdateConnected = true;    
+            }
         }
-
+        return
     })
 
-    if (hifiSign !== null && neonUpdateConnected === false) {
-        Script.update.connect(updateNeon);
-        neonUpdateConnected = true;
-    }
+  
 }
 
 var neonTextureOn = true;
