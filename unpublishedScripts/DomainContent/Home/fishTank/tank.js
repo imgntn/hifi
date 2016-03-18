@@ -58,6 +58,26 @@
 
     }
 
+    function getOffsetFromTankCenter(VERTICAL_OFFSET, FORWARD_OFFSET, LATERAL_OFFSET) {
+
+        var tankProperties = Entities.getEntityProperties(_this.entityID);
+        print('GOT PROPERTIES FOR TANK!')
+
+        var upVector = Quat.getUp(tankProperties.rotation);
+        var frontVector = Quat.getFront(tankProperties.rotation);
+        var rightVector = Quat.getRight(tankProperties.rotation);
+
+        var upOffset = Vec3.multiply(upVector, VERTICAL_OFFSET);
+        var frontOffset = Vec3.multiply(frontVector, FORWARD_OFFSET);
+        var rightOffset = Vec3.multiply(rightVector, LATERAL_OFFSET);
+
+        var finalOffset = Vec3.sum(tankProperties.position, upOffset);
+        finalOffset = Vec3.sum(finalOffset, frontOffset);
+        finalOffset = Vec3.sum(finalOffset, rightOffset);
+        return finalOffset
+    }
+
+
     FishTank.prototype = {
         fish: null,
         tankLocked: false,
@@ -238,11 +258,11 @@
                 _this.overlayLineOn(pickRay.origin, Vec3.sum(pickRay.origin, Vec3.multiply(front, _this.overlayLineDistance)), INTERSECT_COLOR);
             };
 
-            var brn = _this.userData['hifi-home-fishtank']['corners'].brn;
-            var tfl = _this.userData['hifi-home-fishtank']['corners'].tfl;
+            // var brn = _this.userData['hifi-home-fishtank']['corners'].brn;
+            // var tfl = _this.userData['hifi-home-fishtank']['corners'].tfl;
             var innerContainer = _this.userData['hifi-home-fishtank'].innerContainer;
 
-            var intersection = Entities.findRayIntersection(pickRay, true, [innerContainer], [_this.entityID, brn, tfl]);
+            var intersection = Entities.findRayIntersection(pickRay, true, [innerContainer], [_this.entityID]);
 
             if (intersection.intersects && intersection.entityID === innerContainer) {
                 //print('intersecting a tank')
@@ -306,25 +326,25 @@
 
     };
 
-//
-//  flockOfFish.js
-//  examples
-//
-//  Philip Rosedale
-//  Copyright 2016 High Fidelity, Inc.   
-//  Fish smimming around in a space in front of you 
-//   
-//  Distributed under the Apache License, Version 2.0.
-//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+    //
+    //  flockOfFish.js
+    //  examples
+    //
+    //  Philip Rosedale
+    //  Copyright 2016 High Fidelity, Inc.   
+    //  Fish smimming around in a space in front of you 
+    //   
+    //  Distributed under the Apache License, Version 2.0.
+    //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 
     var FISHTANK_USERDATA_KEY = 'hifi-home-fishtank'
 
     var LIFETIME = 300; //  Fish live for 5 minutes 
     var NUM_FISH = 8;
     var TANK_DIMENSIONS = {
-        x: 1.3393,
-        y: 1.3515,
-        z: 3.5914
+        x: 0.8212,
+        y: 0.8116,
+        z: 2.1404
     };
 
     var TANK_WIDTH = TANK_DIMENSIONS.z / 2;
@@ -351,6 +371,16 @@
     var THROTTLE = false;
     var THROTTLE_RATE = 100;
     var sinceLastUpdate = 0;
+
+
+var LOWER_CORNER_VERTICAL_OFFSET = (-TANK_DIMENSIONS.y / 2) + 0.3;
+var LOWER_CORNER_FORWARD_OFFSET = TANK_DIMENSIONS.x;
+var LOWER_CORNER_LATERAL_OFFSET = -TANK_DIMENSIONS.z / 8;
+
+var UPPER_CORNER_VERTICAL_OFFSET = (TANK_DIMENSIONS.y / 2)-0.3;
+var UPPER_CORNER_FORWARD_OFFSET = -TANK_DIMENSIONS.x;
+var UPPER_CORNER_LATERAL_OFFSET = TANK_DIMENSIONS.z / 8;
+
 
     // var FISH_MODEL_URL = "http://hifi-content.s3.amazonaws.com/DomainContent/Home/fishTank/Fish-1.fbx";
 
@@ -398,11 +428,11 @@
             var data = {
                 fishLoaded: true,
                 bubbleSystem: _this.userData['hifi-home-fishtank'].bubbleSystem,
-                bubbleSound: _this.userData['hifi-home-fishtank'].bubbleSound,
-                corners: {
-                    brn: _this.userData['hifi-home-fishtank'].lowerCorner,
-                    tfl: _this.userData['hifi-home-fishtank'].upperCorner
-                },
+                // bubbleSound: _this.userData['hifi-home-fishtank'].bubbleSound,
+                // corners: {
+                //     brn: _this.userData['hifi-home-fishtank'].lowerCorner,
+                //     tfl: _this.userData['hifi-home-fishtank'].upperCorner
+                // },
                 innerContainer: _this.userData['hifi-home-fishtank'].innerContainer,
 
             }
@@ -445,9 +475,10 @@
 
         var userData = JSON.parse(_this.currentProperties.userData);
         var innerContainer = userData['hifi-home-fishtank']['innerContainer'];
-        var bounds = Entities.getEntityProperties(innerContainer, "boundingBox").boundingBox;
-        lowerCorner = bounds.brn;
-        upperCorner = bounds.tfl;
+        // var bounds = Entities.getEntityProperties(innerContainer, "boundingBox").boundingBox;
+
+        lowerCorner = getOffsetFromTankCenter(LOWER_CORNER_VERTICAL_OFFSET, LOWER_CORNER_FORWARD_OFFSET, LOWER_CORNER_LATERAL_OFFSET);
+        upperCorner = getOffsetFromTankCenter(UPPER_CORNER_VERTICAL_OFFSET, UPPER_CORNER_FORWARD_OFFSET, UPPER_CORNER_LATERAL_OFFSET);
 
         // First pre-load an array with properties  on all the other fish so our per-fish loop
         // isn't doing it. 

@@ -113,6 +113,13 @@ var TREASURE_DIMENSIONS = {
     z: 0.1020
 }
 
+var LOWER_CORNER_VERTICAL_OFFSET = (-TANK_DIMENSIONS.y / 2) + 0.3;
+var LOWER_CORNER_FORWARD_OFFSET = TANK_DIMENSIONS.x;
+var LOWER_CORNER_LATERAL_OFFSET = -TANK_DIMENSIONS.z / 8;
+
+var UPPER_CORNER_VERTICAL_OFFSET = (TANK_DIMENSIONS.y / 2)-0.3;
+var UPPER_CORNER_FORWARD_OFFSET = -TANK_DIMENSIONS.x;
+var UPPER_CORNER_LATERAL_OFFSET = TANK_DIMENSIONS.z / 8;
 
 function createFishTank() {
     var tankProperties = {
@@ -193,7 +200,7 @@ function createBubbleSystems() {
     bubbleProperties.position.x += -0.076;
     thirdBubbleSystem = Entities.addEntity(bubbleProperties)
 
-    createBubbleSound(finalOffset);
+    // createBubbleSound(finalOffset);
 }
 
 function getOffsetFromTankCenter(VERTICAL_OFFSET, FORWARD_OFFSET, LATERAL_OFFSET) {
@@ -267,8 +274,8 @@ function createEntitiesAtCorners() {
             blue: 0
         },
         collisionless: true,
-        position: bounds.brn,
-        visible: false
+        position: getOffsetFromTankCenter(LOWER_CORNER_VERTICAL_OFFSET, LOWER_CORNER_FORWARD_OFFSET, LOWER_CORNER_LATERAL_OFFSET),
+        visible: true
     }
 
     var upperProps = {
@@ -286,8 +293,8 @@ function createEntitiesAtCorners() {
             blue: 0
         },
         collisionless: true,
-        position: bounds.tfl,
-        visible: false
+        position: getOffsetFromTankCenter(UPPER_CORNER_VERTICAL_OFFSET, UPPER_CORNER_FORWARD_OFFSET, UPPER_CORNER_LATERAL_OFFSET),
+        visible: true
     }
 
     lowerCorner = Entities.addEntity(lowerProps);
@@ -393,11 +400,11 @@ var customKey = 'hifi-home-fishtank';
 var data = {
     fishLoaded: false,
     bubbleSystem: bubbleSystem,
-    bubbleSound: bubbleSound,
-    corners: {
-        brn: lowerCorner,
-        tfl: upperCorner
-    },
+    // bubbleSound: bubbleSound,
+    // corners: {
+    //     brn: lowerCorner,
+    //     tfl: upperCorner
+    // },
     innerContainer: innerContainer,
 
 }
@@ -418,8 +425,8 @@ function cleanup() {
     Entities.deleteEntity(upperCorner);
     Entities.deleteEntity(anemone);
     Entities.deleteEntity(rocks);
-    bubbleInjector.stop();
-    bubbleInjector = null;
+    // bubbleInjector.stop();
+    // bubbleInjector = null;
 }
 
 
