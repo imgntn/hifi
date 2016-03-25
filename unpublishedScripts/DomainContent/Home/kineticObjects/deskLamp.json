@@ -99,44 +99,44 @@
                 "z": -0.0011547321919351816
             }
         },
-        {
-            "color": {
-                "blue": 68,
-                "green": 252,
-                "red": 243
-            },
-            "created": "2016-03-24T22:21:38Z",
-            "cutoff": 90,
-            "dimensions": {
-                "x": 4,
-                "y": 4,
-                "z": 4
-            },
-            "falloffRadius": 0.30000001192092896,
-            "id": "{1f15e48e-66cd-4ecd-8d60-a391f050ec8d}",
-            "intensity": 20,
-            "isSpotlight": 1,
-            "name": "hifi-home-living-room-desk-lamp-spotlight",
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0.727783203125
-            },
-            "queryAACube": {
-                "scale": 6.9282031059265137,
-                "x": -3.4641015529632568,
-                "y": -3.4641015529632568,
-                "z": -2.7363183498382568
-            },
-            "rotation": {
-                "w": 0.63591969013214111,
-                "x": 0.26338601112365723,
-                "y": -0.27760738134384155,
-                "z": -0.67016100883483887
-            },
-            "type": "Light",
-            "userData": "{\"hifiHomeKey\":{\"reset\":true}}"
-        },
+       {
+          "color": {
+              "blue": 90,
+              "green": 194,
+              "red": 256
+          },
+          "created": "2016-03-24T22:21:38Z",
+          "cutoff": 90,
+          "dimensions": {
+              "x": 9.0160,
+              "y": 9.0160,
+              "z": 9.0160
+          },
+          "falloffRadius": 0.20000001192092896,
+          "id": "{9e8b645d-f70f-4339-aa37-22d97a462a76}",
+          "intensity": 20,
+          "isSpotlight": 0,
+          "name": "hifi-home-living-room-desk-lamp-spotlight",
+          "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0.727783203125
+          },
+          "queryAACube": {
+              "scale": 6.9282031059265137,
+              "x": -3.4641015529632568,
+              "y": -3.4641015529632568,
+              "z": -2.7363183498382568
+          },
+          "rotation": {
+              "w": 0.63591969013214111,
+              "x": 0.26338601112365723,
+              "y": -0.27760738134384155,
+              "z": -0.67016100883483887
+          },
+          "type": "Light",
+          "userData": "{\"hifiHomeKey\":{\"reset\":true}}"
+      },
         {
             "collisionless": 1,
             "color": {

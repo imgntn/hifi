@@ -257,9 +257,11 @@
 
 
             var livingRoomLampTriggerBoxName = "hifi-home-living-room-desk-lamp-trigger";
+            var livingRoomLampLightName = "hifi-home-living-room-desk-lamp-spotlight";
             var livingRoomLampModelName = "hifi-home-model-bulldog-base";
             Script.setTimeout(function() {
                 attachChildToParent(livingRoomLampTriggerBoxName, livingRoomLampModelName, MyAvatar.position, 20);
+                attachChildToParent(livingRoomLampLightName, livingRoomLampModelName, MyAvatar.position, 20);
             }, 1000);
 
         },
