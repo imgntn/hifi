@@ -429,7 +429,6 @@ FishTank = function(spawnPosition, spawnRotation) {
 
     var data = {
         fishLoaded: false,
-        bubbleSystem: bubbleSystem,
         innerContainer: innerContainer,
     }
 
@@ -438,13 +437,12 @@ FishTank = function(spawnPosition, spawnRotation) {
         'reset': true
     };
 
-
     Script.setTimeout(function() {
         setEntityCustomData(customKey, fishTank, data);
+    }, 1500)
+    Script.setTimeout(function() {
         setEntityCustomData(resetKey, fishTank, resetData);
-    }, 2000)
-
-
+    }, 3000)
     function cleanup() {
         Entities.deleteEntity(fishTank);
         Entities.deleteEntity(tankBase);

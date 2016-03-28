@@ -20,6 +20,8 @@
 
     var utilsPath = Script.resolvePath('utils.js');
 
+    var kineticPath = Script.resolvePath("kineticObjects/wrapper.js?" + Math.random());
+
     var fishTankPath = Script.resolvePath('fishTank/wrapper.js?' + Math.random());
 
     var tiltMazePath = Script.resolvePath("tiltMaze/wrapper.js?" + Math.random())
@@ -30,27 +32,27 @@
 
     var cuckooClockPath = Script.resolvePath("cuckooClock/wrapper.js?" + Math.random());
 
-
     var pingPongGunPath = Script.resolvePath("pingPongGun/wrapper.js?" + Math.random());
 
-    var kineticPath = Script.resolvePath("kineticObjects/wrapper.js?" + Math.random());
+    var transformerPath = Script.resolvePath("dressingRoom/wrapper.js?" + Math.random());
+
+    Script.include(utilsPath);
 
     Script.include(kineticPath);
 
-    Script.include(utilsPath);
     Script.include(fishTankPath);
     Script.include(tiltMazePath);
     Script.include(whiteboardPath);
     Script.include(plantPath);
     Script.include(cuckooClockPath);
-
     Script.include(pingPongGunPath);
+    Script.include(transformerPath);
 
-    var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
-        x: 0,
-        y: 0.5,
-        z: 0
-    }), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
+    var TRANSFORMER_URL_ARTEMIS = 'http://hifi-public.s3.amazonaws.com/ryan/DefaultAvatarFemale2/0314HiFiFemAviHeightChange.fbx';
+    var TRANSFORMER_URL_ALBERT = 'https://s3.amazonaws.com/hifi-public/ozan/avatars/albert/albert/albert.fbx';
+    var TRANSFORMER_URL_BEING_OF_LIGHT = 'http://hifi-public.s3.amazonaws.com/ryan/0318HiFiBoL/0318HiFiBoL.fbx';
+    var TRANSFORMER_URL_KATE = 'https://hifi-public.s3.amazonaws.com/ozan/avatars/kate/kate/kate.fbx';
+    var TRANSFORMER_URL_WILL = 'https://s3.amazonaws.com/hifi-public/models/skeletons/Will/Will.fbx';
 
     Reset.prototype = {
         tidying: false,
@@ -98,6 +100,7 @@
                 Script.setTimeout(function() {
                     _this.createKineticEntities();
                     _this.createDynamicEntities();
+                    _this.createTransformers();
                 }, 750)
 
 
@@ -117,9 +120,6 @@
         },
 
         createDynamicEntities: function() {
-
-            print("EBL CREATE DYNAMIC ENTITIES");
-
             var fishTank = new FishTank({
                 x: 1098.9254,
                 y: 460.5814,
@@ -156,7 +156,7 @@
                 z: 0
             });
 
-            var pingPongGun = new _PingPongGun({
+            var pingPongGun = new HomePingPongGun({
                 x: 1101.2123,
                 y: 460.2328,
                 z: -65.8513
@@ -183,6 +183,7 @@
 
 
         createKineticEntities: function() {
+
             var blocks = new Blocks({
                 x: 1097.1383,
                 y: 460.3790,
@@ -244,15 +245,15 @@
             });
 
             var cellPoster = new PosterCell({
-                x:1103.78,
-                y:461,
-                z:-70.3
+                x: 1103.78,
+                y: 461,
+                z: -70.3
             });
 
             var playaPoster = new PosterPlaya({
-                x:1101.8,
-                y:461,
-                z:-73.3
+                x: 1101.8,
+                y: 461,
+                z: -73.3
             });
 
 
@@ -266,6 +267,71 @@
 
         },
 
+        createTransformers: function() {
+            print('CREATING TRANSFORMERS!')
+            var firstDollPosition = {
+                x: 1107.61,
+                y: 460.8,
+                z: -77.34
+            }
+
+            var dollRotation = {
+                x: 0,
+                y: -55.86,
+                z: 0,
+            }
+
+            var rotationAsQuat = Quat.fromPitchYawRollDegrees(dollRotation.x, dollRotation.y, dollRotation.z);
+
+            var dolls = [
+                TRANSFORMER_URL_ARTEMIS,
+                TRANSFORMER_URL_ALBERT,
+                TRANSFORMER_URL_BEING_OF_LIGHT,
+                TRANSFORMER_URL_KATE,
+                TRANSFORMER_URL_WILL
+            ];
+
+            var dollDimensions = [{
+                //artemis
+                x: 0.8120,
+                y: 0.8824,
+                z: 0.1358
+            }, {
+                //albert
+                x: 0.9283,
+                y: 0.9178,
+                z: 0.2097
+            }, {
+                //being of light
+                x: 0.9419,
+                y: 0.8932,
+                z: 0.1383
+            }, {
+                //kate
+                x: 0.8387,
+                y: 0.9009,
+                z: 0.1731
+            }, {
+                //will
+                x: 0.8163,
+                y: 0.8382,
+                z: 0.1303
+            }];
+            var dollLateralSeparation = 1.0;
+            dolls.forEach(function(doll, index) {
+
+                var separation = index * dollLateralSeparation;
+                print('separation: ' + separation)
+                var left = Quat.getRight(rotationAsQuat);
+                var distanceToLeft = Vec3.multiply(separation, left);
+                var dollPosition = Vec3.sum(firstDollPosition, distanceToLeft)
+                var transformer = new TransformerDoll(doll, dollPosition, dollRotation,
+                    dollDimensions[index]);
+
+            });
+
+        },
+
         findAndDeleteHomeEntities: function() {
             print('JBP trying to find home entities to delete')
             var resetProperties = Entities.getEntityProperties(_this.entityID);
@@ -273,12 +339,18 @@
             var found = [];
             results.forEach(function(result) {
                 var properties = Entities.getEntityProperties(result);
+
+                if (properties.userData === "" || properties.userData === undefined) {
+                    print('no userdata -- its blank or undefined')
+                    return;
+                }
+
                 var userData = null;
                 try {
                     userData = JSON.parse(properties.userData);
                 } catch (err) {
-                    // print('error parsing json');
-                    // print('properties are:' + properties.userData);
+                    print('error parsing json in resetscript for: ' + properties.name);
+                    //print('properties are:' + properties.userData);
                     return;
                 }
                 if (userData.hasOwnProperty('hifiHomeKey')) {
@@ -291,8 +363,9 @@
             })
             print('JBP after deleting home entities')
         },
+
         unload: function() {
-            this.findAndDeleteHomeEntities();
+            // this.findAndDeleteHomeEntities();
         }
 
     }
