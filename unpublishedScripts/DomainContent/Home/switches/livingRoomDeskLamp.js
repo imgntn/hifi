@@ -121,7 +121,6 @@
 
 
         preload: function(entityID) {
-            print("EBL PRELOAD LIGHT SWITCH SCRIPT");
             this.entityID = entityID;
             setEntityCustomData('grabbableKey', this.entityID, {
                 wantsTrigger: true

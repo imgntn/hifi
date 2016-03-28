@@ -214,18 +214,6 @@
                 z: -80.2837
             });
 
-            // var rightDeskDrawer = new RightDeskDrawer({
-            //     x: 1105.1735,
-            //     y: 460.0446,
-            //     z: -81.3612
-            // });
-
-            // var leftDeskDrawer = new LeftDeskDrawer({
-            //     x: 1104.6478,
-            //     y: 460.0463,
-            //     z: -82.1095
-            // });
-
             var chair = new Chair({
                 x: 1105.2716,
                 y: 459.7251,
@@ -260,10 +248,15 @@
             var livingRoomLampTriggerBoxName = "hifi-home-living-room-desk-lamp-trigger";
             var livingRoomLampLightName = "hifi-home-living-room-desk-lamp-spotlight";
             var livingRoomLampModelName = "hifi-home-model-bulldog-base";
+
+            var cellPosterName = "home_model_posterCellScience";
+            var cellPosterPortkeyName = "home_sphere_cellsciencePortkey";
             Script.setTimeout(function() {
                 attachChildToParent(livingRoomLampTriggerBoxName, livingRoomLampModelName, MyAvatar.position, 20);
                 attachChildToParent(livingRoomLampLightName, livingRoomLampModelName, MyAvatar.position, 20);
-            }, 1000);
+
+                attachChildToParent(cellPosterPortkeyName, cellPosterName, MyAvatar.position, 20);
+            }, 2000);
 
         },
 

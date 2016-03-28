@@ -23,7 +23,6 @@
 
 
     function startUpdate() {
-        print("EBL Start CLOCK Update")
             //when the baton is claimed;
             //   print('trying to claim the object' + _entityID)
         iOwn = true;
