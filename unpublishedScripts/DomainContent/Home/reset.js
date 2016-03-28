@@ -251,11 +251,15 @@
 
             var cellPosterName = "home_model_posterCellScience";
             var cellPosterPortkeyName = "home_sphere_cellsciencePortkey";
+
+            var playaPosterName = "home_model_posterPlaya";
+            var playaPosterPortkeyName = "home_sphere_playaPortkey";
             Script.setTimeout(function() {
                 attachChildToParent(livingRoomLampTriggerBoxName, livingRoomLampModelName, MyAvatar.position, 20);
                 attachChildToParent(livingRoomLampLightName, livingRoomLampModelName, MyAvatar.position, 20);
 
                 attachChildToParent(cellPosterPortkeyName, cellPosterName, MyAvatar.position, 20);
+                attachChildToParent(playaPosterPortkeyName, playaPosterName, MyAvatar.position, 20);
             }, 2000);
 
         },

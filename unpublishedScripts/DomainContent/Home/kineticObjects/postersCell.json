@@ -41,12 +41,7 @@
             "y": 1.1607639789581299,
             "z": 0.87844705581665039
         },
-        "dynamic": 1,
-        "gravity": {
-            "x": 0,
-            "y": -5,
-            "z": 0
-        },
+        "dynamic": 0,
         "id": "{9eec1faa-9e1a-4d76-abeb-a1b1175a44d5}",
         "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Cellscience-Poster-2.fbx",
         "name": "home_model_posterCellScience",
@@ -68,13 +63,12 @@
                 "red": 255
             },
             "name": "home_sphere_cellsciencePortkey",
-            "created": "2016-03-28T21:58:13Z",
+            "href": "hifi://cellscience",
             "dimensions": {
                 "x": 0.111,
                 "y": 0.111,
                 "z": 0.111
             },
-            "id": "{c419ad0a-d5c2-42f7-872f-06173e8d4b20}",
             "position": {
                 "x": 0.0,
                 "y": -0.2,
