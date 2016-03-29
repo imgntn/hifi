@@ -5,7 +5,7 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     z: 0
 }), Vec3.multiply(2, Quat.getFront(Camera.getOrientation())));
 
-var SCRIPT_URL = Script.resolvePath('atp:/scripts/reset.js');
+var SCRIPT_URL = 'atp:/scripts/reset.js';
 
 function createTidyGuy() {
     var properties = {

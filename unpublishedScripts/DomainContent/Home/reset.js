@@ -12,25 +12,27 @@
 //
 
 (function() {
+    print("EBL RESET SCRIPT 2");
+    Assets.downloadData("atp:/scripts/reset.js", function(data) { print(JSON.stringify(data)); });
     var _this;
 
     function Reset() {
         _this = this;
     }
 
-    var utilsPath = Script.resolvePath('atp:/scripts/utils.js');
+    var utilsPath = 'atp:/scripts/utils.js';
 
-    var kineticPath = Script.resolvePath("kineticObjects/wrapper.js?" + Math.random());
+    var kineticPath = "atp:/scripts/kineticWrapper.js";
 
     var fishTankPath = Script.resolvePath('fishTank/wrapper.js?' + Math.random());
 
     var tiltMazePath = Script.resolvePath("tiltMaze/wrapper.js?" + Math.random())
 
-    var whiteboardPath = Script.resolvePath("atp:/scripts/whiteboardWrapper.js");
+    var whiteboardPath = "atp:/scripts/whiteboardWrapper.js";
 
-    var plantPath = Script.resolvePath("atp:/scripts/growingPlantWrapper.js");
+    var plantPath = "atp:/scripts/growingPlantWrapper.js";
 
-    var cuckooClockPath = Script.resolvePath("cuckooClock/wrapper.js?" + Math.random());
+    var cuckooClockPath = "atp:/scripts/cuckooClockWrapper.js";
 
     var pingPongGunPath = Script.resolvePath("pingPongGun/wrapper.js?" + Math.random());
 

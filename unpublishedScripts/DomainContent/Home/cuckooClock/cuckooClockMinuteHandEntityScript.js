@@ -124,10 +124,6 @@
             if (seconds === 0 && minutes === 0) {
                 _this.popCuckooOut();
             }
-            // if (seconds % 30 === 0) {
-            //     _this.popCuckooOut();
-            // }
-
         },
 
         popCuckooOut: function() {

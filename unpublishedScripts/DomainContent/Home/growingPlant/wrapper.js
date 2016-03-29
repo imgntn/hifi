@@ -9,8 +9,8 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
-var PLANT_SCRIPT_URL = Script.resolvePath("atp:/scripts/growingPlantEntityScript.js");
-var WATER_CAN_SCRIPT_URL = Script.resolvePath("atp:/scripts/waterCanEntityScript.js");
+var PLANT_SCRIPT_URL = "atp:/scripts/growingPlantEntityScript.js";
+var WATER_CAN_SCRIPT_URL = "atp:/scripts/waterCanEntityScript.js";
 
 Plant = function(spawnPosition, spawnRotation) {
   var WATER_SPOUT_NAME= "home_box_waterSpout"

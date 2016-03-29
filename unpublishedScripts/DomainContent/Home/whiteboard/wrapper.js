@@ -10,12 +10,12 @@
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
-var ERASER_SCRIPT_URL = Script.resolvePath("atp:/scripts/eraserEntityScript.js");
+var ERASER_SCRIPT_URL = "atp:/scripts/eraserEntityScript.js";
 
-var MARKER_SCRIPT_URL = Script.resolvePath("atp:/scripts/markerEntityScript.js");
+var MARKER_SCRIPT_URL = "atp:/scripts/markerEntityScript.js";
 
 Whiteboard = function(spawnPosition, spawnRotation) {
-
+    print("EBL NEW VERSION OF WHITEBOARD SCRIPT");
     var orientation = Quat.fromPitchYawRollDegrees(spawnRotation.x, spawnRotation.y, spawnRotation.z);
     var markers = [];
     var markerRotation = Quat.fromVec3Degrees({
