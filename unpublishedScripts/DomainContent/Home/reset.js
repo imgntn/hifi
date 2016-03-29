@@ -105,7 +105,7 @@
                 Script.setTimeout(function() {
                     _this.createKineticEntities();
                     _this.createDynamicEntities();
-                    _this.createTransformers();
+                    _this.setupDressingRoom();
                 }, 750)
 
 
@@ -131,7 +131,7 @@
                 z: -79.1103
             }, {
                 x: 0,
-                y: 123,
+                y: 0,
                 z: 0
             });
 
@@ -269,11 +269,91 @@
 
         },
 
+        setupDressingRoom: function() {
+            print('HOME setup dressing room')
+            this.createRotatorBlock();
+            this.createTransformingDais();
+            this.createTransformers();
+        },
+
+        createRotatorBlock: function() {
+            var rotatorBlockProps = {
+                name: 'hifi-home-dressing-room-rotator-block',
+                type: 'Box',
+                visible: true,
+                color: {
+                    red: 0,
+                    green: 255,
+                    blue: 0
+                },
+                dimensions: {
+                    x: 0.5,
+                    y: 0.5,
+                    z: 0.5
+                },
+                collisionless: true,
+                angularDamping: 0,
+                angularVelocity: {
+                    x: 0,
+                    y: 6,
+                    z: 0
+                },
+                dynamic: false,
+                userData: JSON.stringify({
+                    'hifiHomeKey': {
+                        'reset': true
+                    }
+                }),
+                position: {
+                    x: 1107.0330,
+                    y: 460.4326,
+                    z: -74.5704
+                }
+            }
+
+            var rotatorBlock = Entities.addEntity(rotatorBlockProps);
+            print('HOME created rotator block')
+        },
+
+        createTransformingDais: function() {
+            var DAIS_MODEL_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/dressingRoom/Dressing-Dais.fbx';
+            var COLLISION_HULL_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/dressingRoom/Dressing-Dais.obj';
+
+            var DAIS_DIMENSIONS = {
+                x: 1.0654,
+                y: 0.4679,
+                z: 1.0654
+            };
+
+            var DAIS_POSITION = {
+                x: 1107.0330,
+                y: 459.4326,
+                z: -74.5704
+            };
+
+            var daisProperties = {
+                name: 'hifi-home-dressing-room-transformer-collider',
+                type: 'Model',
+                modelURL: DAIS_MODEL_URL,
+                dimensions: DAIS_DIMENSIONS,
+                compoundShapeURL: COLLISION_HULL_URL,
+                position: DAIS_POSITION,
+                dynamic: false,
+                userData: JSON.stringify({
+                    'hifiHomeKey': {
+                        'reset': true
+                    }
+                }),
+            };
+
+            var dais = Entities.addEntity(daisProperties);
+            print('HOME created dais : ' + dais)
+        },
+
         createTransformers: function() {
-            print('CREATING TRANSFORMERS!')
             var firstDollPosition = {
                 x: 1107.61,
-                y: 460.8,
+                y: 460.5,
                 z: -77.34
             }
 
@@ -327,11 +407,10 @@
                 dollDimensions[index] = scaled;
             })
 
-            var dollLateralSeparation = 1.0;
-            dolls.forEach(function(doll, index) {
+            var dollLateralSeparation = 0.8;
 
+            dolls.forEach(function(doll, index) {
                 var separation = index * dollLateralSeparation;
-                print('separation: ' + separation)
                 var left = Quat.getRight(rotationAsQuat);
                 var distanceToLeft = Vec3.multiply(separation, left);
                 var dollPosition = Vec3.sum(firstDollPosition, distanceToLeft)
@@ -342,7 +421,7 @@
         },
 
         findAndDeleteHomeEntities: function() {
-            print('JBP trying to find home entities to delete')
+            print('HOME trying to find home entities to delete')
             var resetProperties = Entities.getEntityProperties(_this.entityID);
             var results = Entities.findEntities(resetProperties.position, 1000);
             var found = [];
@@ -370,7 +449,7 @@
 
 
             })
-            print('JBP after deleting home entities')
+            print('HOME after deleting home entities')
         },
 
         unload: function() {
