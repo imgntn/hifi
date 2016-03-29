@@ -21,7 +21,7 @@
         _this.waterSound = SoundCache.getSound("atp:/sounds/watering_can_pour.L.wav");
         _this.POUR_ANGLE_THRESHOLD = 0;
         _this.waterPouring = false;
-        _this.WATER_SPOUT_NAME = "hifi-water-spout";
+        _this.WATER_SPOUT_NAME = "home_box_waterSpout";
         _this.GROWABLE_ENTITIES_SEARCH_RANGE = 100;
 
     };
