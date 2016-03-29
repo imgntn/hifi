@@ -1,6 +1,6 @@
 (function() {
-    Script.include('../utils.js');
-    Script.include('../../../../examples/libraries/virtualBaton.js');
+    Script.include('atp:/utils.js');
+    Script.include('atp:/virtualBaton.js');
     var _this;
 
     var d = new Date();
