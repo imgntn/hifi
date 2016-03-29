@@ -311,3 +311,39 @@ clamp = function(val, min, max){
      return Math.max(min, Math.min(max, val))
  } 
 
+ attachChildToParent = function(childName, parentName, position, searchRadius) {
+    var childEntity, parentEntity;
+    var entities = Entities.findEntities(position, searchRadius)
+    for (var i = 0; i < entities.length; i++) {
+        // first go through and find the entity we want to attach to its parent
+        var entity = entities[i];
+        var name = Entities.getEntityProperties(entity, "name").name;
+        if (name === childName) {
+            childEntity = entity;
+            break;
+        }
+    }
+
+    if (!childEntity) {
+        print("You are trying to attach an entity that doesn't exist! Returning");
+    }
+
+    for (var i = 0; i < entities.length; i++) {
+        // first go through and find the entity we want to attach to its parent
+        var entity = entities[i];
+        var name = Entities.getEntityProperties(entity, "name").name;
+        if (name === parentName) {
+            parentEntity = entity;
+            break;
+        }
+    }
+
+    if (!parentEntity) {
+        print("You are trying to attach an entity to a parent that doesn't exist! Returning");
+        return;
+    }
+
+    print("Successfully attached " + childName + " to " + parentName);
+    Entities.editEntity(childEntity, {parentID: parentEntity});
+}
+

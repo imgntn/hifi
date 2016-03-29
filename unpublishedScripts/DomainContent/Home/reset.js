@@ -12,25 +12,27 @@
 //
 
 (function() {
+    print("EBL RESET SCRIPT 2");
+    Assets.downloadData("atp:/scripts/reset.js", function(data) { print(JSON.stringify(data)); });
     var _this;
 
     function Reset() {
         _this = this;
     }
 
-    var utilsPath = Script.resolvePath('utils.js');
+    var utilsPath = 'atp:/scripts/utils.js';
 
-    var kineticPath = Script.resolvePath("kineticObjects/wrapper.js?" + Math.random());
+    var kineticPath = "atp:/scripts/kineticWrapper.js";
 
     var fishTankPath = Script.resolvePath('fishTank/wrapper.js?' + Math.random());
 
     var tiltMazePath = Script.resolvePath("tiltMaze/wrapper.js?" + Math.random())
 
-    var whiteboardPath = Script.resolvePath("whiteboard/wrapper.js?" + Math.random());
+    var whiteboardPath = "atp:/scripts/whiteboardWrapper.js";
 
-    var plantPath = Script.resolvePath("growingPlant/wrapper.js?" + Math.random());
+    var plantPath = "atp:/scripts/growingPlantWrapper.js";
 
-    var cuckooClockPath = Script.resolvePath("cuckooClock/wrapper.js?" + Math.random());
+    var cuckooClockPath = "atp:/scripts/cuckooClockWrapper.js";
 
     var pingPongGunPath = Script.resolvePath("pingPongGun/wrapper.js?" + Math.random());
 
@@ -217,18 +219,6 @@
                 z: -80.2837
             });
 
-            var rightDeskDrawer = new RightDeskDrawer({
-                x: 1105.1735,
-                y: 460.0446,
-                z: -81.3612
-            });
-
-            var leftDeskDrawer = new LeftDeskDrawer({
-                x: 1104.6478,
-                y: 460.0463,
-                z: -82.1095
-            });
-
             var chair = new Chair({
                 x: 1105.2716,
                 y: 459.7251,
@@ -259,11 +249,23 @@
                 z: -73.3
             });
 
-            var livingRoomLampTriggerBoxName = "hifi-home-living-room-desk-lamp-trigger";
-            var livingRoomLampModelName = "hifi-home-model-bulldog-base";
+            var livingRoomLampTriggerBoxName = "home_box_livingRoomDeskLampTrigger";
+            var livingRoomLampLightName = "home_light_livingRoomDeskLampLight";
+            var livingRoomLampModelName = "home_model_livingRoomDeskLampModel";
+
+            var cellPosterName = "home_model_posterCellScience";
+            var cellPosterPortkeyName = "home_sphere_cellsciencePortkey";
+
+            var playaPosterName = "home_model_posterPlaya";
+            var playaPosterPortkeyName = "home_sphere_playaPortkey";
+
             Script.setTimeout(function() {
                 attachChildToParent(livingRoomLampTriggerBoxName, livingRoomLampModelName, MyAvatar.position, 20);
-            }, 1000);
+                attachChildToParent(livingRoomLampLightName, livingRoomLampModelName, MyAvatar.position, 20);
+
+                attachChildToParent(cellPosterPortkeyName, cellPosterName, MyAvatar.position, 20);
+                attachChildToParent(playaPosterPortkeyName, playaPosterName, MyAvatar.position, 20);
+            }, 2000);
 
         },
 

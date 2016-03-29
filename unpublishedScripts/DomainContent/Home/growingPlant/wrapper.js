@@ -9,28 +9,34 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
-var PLANT_SCRIPT_URL = Script.resolvePath("atp:/scripts/growingPlantEntityScript.js?v1" + Math.random());
-var WATER_CAN_SCRIPT_URL = Script.resolvePath("atp:/scripts/waterCanEntityScript.js?v1" + Math.random());
+var PLANT_SCRIPT_URL = "atp:/scripts/growingPlantEntityScript.js";
+var WATER_CAN_SCRIPT_URL = "atp:/scripts/waterCanEntityScript.js";
+
 Plant = function(spawnPosition, spawnRotation) {
+  var WATER_SPOUT_NAME= "home_box_waterSpout"
   var orientation;
   if (spawnRotation !== undefined) {
     orientation = Quat.fromPitchYawRollDegrees(spawnRotation.x, spawnRotation.y, spawnRotation.z);
   } else {
     orientation = Camera.getOrientation();
   }
-  print("EBL ORIENTATION " + JSON.stringify(orientation));
   var bowlPosition = spawnPosition;
-  var BOWL_MODEL_URL = "atp:/models/Flowers-Bowl.fbx";
   var bowlDimensions = {
     x: 0.518,
     y: 0.1938,
     z: 0.5518
   };
+  var BOWL_MODEL_URL = "atp:/models/Flowers-Bowl.fbx";
+  var BOWL_COLLISION_HULL_URL = "atp:/collision-hulls/bowl.obj";
   var bowl = Entities.addEntity({
     type: "Model",
+    shapeType: "compound",
+    compoundShapeURL: BOWL_COLLISION_HULL_URL,
+    dynamic: true,
+    gravity: {x: 0, y: -5, z: 0},
     modelURL: BOWL_MODEL_URL,
     dimensions: bowlDimensions,
-    name: "plant bowl",
+    name: "home_model_plantBowl",
     position: bowlPosition,
     userData: JSON.stringify({
       'hifiHomeKey': {
@@ -41,7 +47,7 @@ Plant = function(spawnPosition, spawnRotation) {
 
 
   var PLANT_MODEL_URL = "atp:/models/Flowers-Rock.fbx";
-
+  var PLANT_COLLISION_HULL_URL = "atp:/collision-hulls/plant-rock.obj";
   var plantDimensions = {
     x: 0.52,
     y: 0.2600,
@@ -55,7 +61,7 @@ Plant = function(spawnPosition, spawnRotation) {
   var plant = Entities.addEntity({
     type: "Model",
     modelURL: PLANT_MODEL_URL,
-    name: "hifi-growable-plant",
+    name: "home_model_growablePlant",
     dimensions: plantDimensions,
     position: plantPosition,
     script: PLANT_SCRIPT_URL,
@@ -69,13 +75,14 @@ Plant = function(spawnPosition, spawnRotation) {
 
 
   var WATER_CAN_MODEL_URL = "atp:/models/waterCan.fbx";
-
+  var WATER_CAN_COLLISION_HULL_URL = "atp:/collision-hulls/can.obj";
   var waterCanPosition = Vec3.sum(plantPosition, Vec3.multiply(0.6, Quat.getRight(orientation)));
   var waterCanRotation = orientation;
   var waterCan = Entities.addEntity({
     type: "Model",
-    shapeType: 'box',
-    name: "hifi-water-can",
+    shapeType: 'compound',
+    compoundShapeURL: WATER_CAN_COLLISION_HULL_URL,
+    name: "home_model_waterCan",
     modelURL: WATER_CAN_MODEL_URL,
     script: WATER_CAN_SCRIPT_URL,
     dimensions: {
@@ -130,7 +137,7 @@ Plant = function(spawnPosition, spawnRotation) {
   var waterSpoutRotation = Quat.multiply(waterCanRotation, Quat.fromPitchYawRollDegrees(10, 0, 0));
   var waterSpout = Entities.addEntity({
     type: "Box",
-    name: "hifi-water-spout",
+    name: WATER_SPOUT_NAME,
     dimensions: {
       x: 0.02,
       y: 0.02,

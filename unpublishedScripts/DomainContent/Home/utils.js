@@ -88,6 +88,7 @@ getEntityUserData = function(id) {
 
 // Non-destructively modify the user data of an entity.
 setEntityCustomData = function(customKey, id, data) {
+    print("EBL SETTING CUSTOM DATA " + JSON.stringify(data))
     var userData = getEntityUserData(id);
     if (data == null) {
         delete userData[customKey];
@@ -324,7 +325,7 @@ attachChildToParent = function(childName, parentName, position, searchRadius) {
     }
 
     if (!childEntity) {
-        print("You are trying to attach an entity that doesn't exist! Returning");
+        print("EBL You are trying to attach an entity that doesn't exist! Returning");
     }
 
     for (var i = 0; i < entities.length; i++) {
@@ -338,10 +339,10 @@ attachChildToParent = function(childName, parentName, position, searchRadius) {
     }
 
     if (!parentEntity) {
-        print("You are trying to attach an entity to a parent that doesn't exist! Returning");
+        print("EBL You are trying to attach an entity to a parent that doesn't exist! Returning");
         return;
     }
 
-    print("Successfully attached " + childName + " to " + parentName);
+    print("EBL Successfully attached " + childName + " to " + parentName);
     Entities.editEntity(childEntity, {parentID: parentEntity});
 }

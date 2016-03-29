@@ -1,22 +1,17 @@
 {
     "Entities": [{
         "collisionsWillMove": 1,
-        "compoundShapeURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Poster2.obj",
+        "compoundShapeURL": "atp:/collision-hulls/Poster2.obj",
         "created": "2016-03-23T17:16:12Z",
         "dimensions": {
             "x": 0.047816216945648193,
             "y": 1.2243480682373047,
             "z": 0.92656642198562622
         },
-        "dynamic": 1,
-        "gravity": {
-            "x": 0,
-            "y": -2,
-            "z": 0
-        },
-        "name": "hifi-home-poster-playa",
+        "dynamic": 0,
+        "name": "home_model_posterPlaya",
         "id": "{2b5ca0a0-9115-4916-bee6-63f88d3909b1}",
-        "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Playa-Poster.fbx",
+        "modelURL": "atp:/models/Playa-Poster.fbx",
         "queryAACube": {
             "scale": 1.5361770391464233,
             "x": 1101.1051025390625,
@@ -66,6 +61,35 @@
         },
         "type": "Box",
         "userData": "{\"hifiHomeKey\":{\"reset\":true}}"
+    },
+    {
+        "color": {
+            "blue": 255,
+            "green": 0,
+            "red": 255
+        },
+        "name": "home_sphere_playaPortkey",
+        "href": "hifi://playa",
+        "script": "atp:/scripts/portkey.js",
+        "visible": false,
+        "dimensions": {
+            "x": 0.111,
+            "y": 0.111,
+            "z": 0.111
+        },
+        "position": {
+            "x": 0.0,
+            "y": -0.2,
+            "z": 0.0
+        },
+        "queryAACube": {
+            "scale": 0.25831151008605957,
+            "x": -0.12915575504302979,
+            "y": -0.12915575504302979,
+            "z": -0.10074388980865479
+        },
+        "type": "Sphere",
+        "userData": "{\"hifiHomeKey\":{\"reset\":true}, \"grabbableKey\": {\"wantsTrigger\": true}}"
     }],
     "Version": 57
 }

@@ -1,20 +1,16 @@
 (function() {
     var SEARCH_RADIUS = 10;
 
-    var EMISSIVE_TEXTURE_URL = "http://hifi-content.s3.amazonaws.com/highfidelitysign_white_emissive.png";
-
-    var DIFFUSE_TEXTURE_URL = "http://hifi-content.s3.amazonaws.com/highfidelity_diffusebaked.png";
-
     var _this;
-    var utilitiesScript = Script.resolvePath('../../../../libraries/utils.js');
-    Script.include(utilitiesScript);
+    Script.include('atp:/scripts/utils.js');
     Switch = function() {
         _this = this;
         this.switchSound = SoundCache.getSound("https://hifi-public.s3.amazonaws.com/sounds/Switches%20and%20sliders/lamp_switch_2.wav");
     };
 
     Switch.prototype = {
-        prefix: 'hifi-home-living-room-desk-lamp-',
+        lightName: "home_light_livingRoomDeskLampLight",
+        modelName: 'home_model_livingRoomDeskLampModel',
         clickReleaseOnEntity: function(entityID, mouseEvent) {
             if (!mouseEvent.isLeftButton) {
                 return;
@@ -27,25 +23,22 @@
         },
 
         modelEmitOn: function(discModel) {
-            Entities.editEntity(glowDisc, {
-
-            })
+      
         },
 
         modelEmitOff: function(discModel) {
-            Entities.editEntity(glowDisc, {
-
-            })
+     
         },
 
         masterLightOn: function(masterLight) {
+              print("EBL TURN LIGHT ON");
             Entities.editEntity(masterLight, {
                 visible: true
             });
         },
 
         masterLightOff: function(masterLight) {
-            print("EBL TURN LIGHT OFF");
+            print("EBL YANA TURN LIGHT OFF");
             Entities.editEntity(masterLight, {
                 visible: false
             });
@@ -57,8 +50,8 @@
             var results = Entities.findEntities(_this.position, SEARCH_RADIUS);
             results.forEach(function(result) {
                 var properties = Entities.getEntityProperties(result);
-                if (properties.name === _this.prefix + "spotlight") {
-                    print("EBL FOUND THE SPOTLIGHT!");
+                if (properties.name === _this.lightName) {
+                    print("EBL FOUND THE BULLDOG LIGHT!");
                     found.push(result);
                 }
             });
@@ -70,7 +63,7 @@
             var results = Entities.findEntities(this.position, SEARCH_RADIUS);
             results.forEach(function(result) {
                 var properties = Entities.getEntityProperties(result);
-                if (properties.name === _this.prefix + "model") {
+                if (properties.name === _this.modelName) {
                     found.push(result);
                 }
             });
@@ -78,7 +71,6 @@
         },
 
         toggleLights: function() {
-            print("EBL TOGGLE LIGHTS");
 
             this._switch = getEntityCustomData('home-switch', this.entityID, {
                 state: 'off'
@@ -86,28 +78,27 @@
 
             var masterLights = this.findMasterLights();
             var emitModels = this.findEmitModels();
-
-            if (this._switch.state === 'off') {
-                print("EBL TURN LIGHTS ON");
+            if (_this._switch.state === 'off') {
                 masterLights.forEach(function(masterLight) {
                     _this.masterLightOn(masterLight);
                 });
                 emitModels.forEach(function(emitModel) {
                     _this.modelEmitOn(emitModel);
                 });
-                setEntityCustomData('home-switch', this.entityID, {
+               print("SHNUUUR  TURN ON SWITCH");
+                setEntityCustomData('home-switch', _this.entityID, {
                     state: 'on'
                 });
 
             } else {
-                print("EBL TURN LIGHTS OFF");
                 masterLights.forEach(function(masterLight) {
                     _this.masterLightOff(masterLight);
                 });
                 emitModels.forEach(function(emitModel) {
                     _this.modelEmitOff(emitModel);
                 });
-                setEntityCustomData('home-switch', this.entityID, {
+                print("SHNUUUR  TURN OFF SWITCH");
+                setEntityCustomData('home-switch', _this.entityID, {
                     state: 'off'
                 });
             }
@@ -121,7 +112,7 @@
 
 
         preload: function(entityID) {
-            print("EBL PRELOAD LIGHT SWITCH SCRIPT");
+            print("EBL  YAYAYAY PRELOAD BULLDOG HBBBBIIIIIDYYY")
             this.entityID = entityID;
             setEntityCustomData('grabbableKey', this.entityID, {
                 wantsTrigger: true

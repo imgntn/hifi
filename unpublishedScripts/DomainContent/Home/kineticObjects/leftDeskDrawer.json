@@ -1,7 +1,7 @@
 {
     "Entities": [{
         "name":"hifi_home_model_desk_drawer_left",
-        "compoundShapeURL": "http://hifi-content.s3.amazonaws.com/alan/dev/desk-drawer-1.obj",
+        "compoundShapeURL": "atp:/collision-hulls/desk-drawer-1.obj",
         "created": "2016-03-15T21:26:11Z",
         "dimensions": {
             "x": 0.87835502624511719,
@@ -15,7 +15,7 @@
         },
         "dynamic": 1,
         "id": "{a87cc972-aaf5-48a4-b720-d79ee7bd68d9}",
-        "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/desk-drawer-1.fbx",
+        "modelURL": "atp:/models/desk-drawer-1.fbx",
         "queryAACube": {
             "scale": 1.1802177429199219,
             "x": -0.59010887145996094,
