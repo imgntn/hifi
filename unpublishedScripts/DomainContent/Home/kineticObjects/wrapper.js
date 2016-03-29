@@ -1,6 +1,6 @@
 print('KINETIC INCLUDING WRAPPER')
 
-var BOOKS_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/books.json' + "?" + Math.random();
+var BOOKS_URL = 'atp:/JSON/books.json';
 var UPPER_BOOKSHELF_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/upperBookShelf.json' + "?" + Math.random();
 var LOWER_BOOKSHELF_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/lowerBookShelf.json' + "?" + Math.random();
 var RIGHT_DESK_DRAWER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/rightDeskDrawer.json' + "?" + Math.random();
