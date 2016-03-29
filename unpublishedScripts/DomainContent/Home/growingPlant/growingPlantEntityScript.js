@@ -12,7 +12,7 @@
 
 
 (function() {
-    Script.include('../utils.js');
+    Script.include('atp:/scripts/utils.js');
 
     var _this;
 
@@ -34,9 +34,7 @@
             max: 1000
         };
         _this.canCreateFlower = true;
-        // _this.SHADER_URL = "https://s3-us-west-1.amazonaws.com/hifi-content/eric/shaders/flower.fs";
         _this.SHADER_URL = "atp:/shaders/flower.fs";
-        // _this.SHADER_URL = "file:///C:/Users/Eric/hifi/unpublishedScripts/DomainContent/Home/plant/flower.fs";
 
         _this.flowerHSLColors = [{
             hue: 19 / 360,
@@ -93,16 +91,6 @@
                 startingPosition: position,
                 rotation: Quat.rotationBetween(Vec3.UNIT_Y, surfaceNormal),
                 maxYDimension: randFloat(0.4, 1.1),
-                // startingHSLColor: {
-                //     hue: 80 / 360,
-                //     saturation: 0.47,
-                //     light: 0.48
-                // },
-                // endingHSLColor: {
-                //     hue: 19 / 260,
-                //     saturation: 0.92,
-                //     light: 0.41
-                // },
                 hslColor: Math.random() < 0.5 ? _this.flowerHSLColors[0] : _this.flowerHSLColors[1],
                 growthRate: growthRate
             };
@@ -121,7 +109,7 @@
             };
             flower.id = Entities.addEntity({
                 type: "Sphere",
-                name: "flower",
+                name: "home_sphere_flower",
                 lifetime: 3600,
                 position: position,
                 collisionless: true,
@@ -136,12 +124,6 @@
                 }
                 flower.dimensions = Vec3.sum(flower.dimensions, flower.growthRate);
                 flower.position = Vec3.sum(flower.startingPosition, Vec3.multiply(Quat.getUp(flower.rotation), flower.dimensions.y / 2));
-                //As we grow we must also move ourselves in direction we grow!
-                //TODO: Add this color changing back once we fix bug https://app.asana.com/0/inbox/31759584831096/96943843100173/98022172055918
-                // var newHue = map(flower.dimensions.y, _this.STARTING_FLOWER_DIMENSIONS.y, flower.maxYDimension, flower.startingHSLColor.hue, flower.endingHSLColor.hue);
-                // var newSaturation = map(flower.dimensions.y, _this.STARTING_FLOWER_DIMENSIONS.y, flower.maxYDimension, flower.startingHSLColor.saturation, flower.endingHSLColor.saturation);
-                // var newLight = map(flower.dimensions.y, _this.STARTING_FLOWER_DIMENSIONS.y, flower.maxYDimension, flower.startingHSLColor.light, flower.endingHSLColor.light);
-                // flower.userData.PrsoceduralEntity.uniforms.iHSLColor = [newHue, newSaturation, newLight];
                 Entities.editEntity(flower.id, {
                     dimensions: flower.dimensions,
                     position: flower.position,

@@ -12,7 +12,7 @@
 
 
 (function() {
-    Script.include('../utils.js');
+    Script.include('atp:/scripts/utils.js');
     var TRIGGER_CONTROLS = [
         Controller.Standard.LT,
         Controller.Standard.RT,
@@ -22,7 +22,7 @@
         _this = this;
 
         _this.ERASER_TRIGGER_THRESHOLD = 0.2;
-        _this.STROKE_NAME = "hifi-marker-stroke";
+        _this.STROKE_NAME = "home_polyline_markerStroke";
         _this.ERASER_TO_STROKE_SEARCH_RADIUS = 0.7;
         _this.ERASER_RESET_WAIT_TIME = 3000;
     };

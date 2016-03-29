@@ -12,7 +12,7 @@
 
 (function() {
 
-    Script.include('../utils.js');
+    Script.include('atp:/scripts/utils.js');
 
     var _this;
 

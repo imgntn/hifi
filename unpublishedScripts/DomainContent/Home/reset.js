@@ -26,9 +26,9 @@
 
     var tiltMazePath = Script.resolvePath("tiltMaze/wrapper.js?" + Math.random())
 
-    var whiteboardPath = Script.resolvePath("whiteboard/wrapper.js?" + Math.random());
+    var whiteboardPath = Script.resolvePath("atp:/scripts/whiteboardWrapper.js");
 
-    var plantPath = Script.resolvePath("growingPlant/wrapper.js?" + Math.random());
+    var plantPath = Script.resolvePath("atp:/scripts/growingPlantWrapper.js");
 
     var cuckooClockPath = Script.resolvePath("cuckooClock/wrapper.js?" + Math.random());
 
