@@ -247,7 +247,6 @@
                 z: -73.3
             });
 
-            print("EBL SHNUUUUUR")
             var livingRoomLampTriggerBoxName = "home_box_livingRoomDeskLampTrigger";
             var livingRoomLampLightName = "home_light_livingRoomDeskLampLight";
             var livingRoomLampModelName = "home_model_livingRoomDeskLampModel";
