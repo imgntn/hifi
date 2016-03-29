@@ -244,10 +244,10 @@
                 z: -73.3
             });
 
-
-            var livingRoomLampTriggerBoxName = "hifi-home-living-room-desk-lamp-trigger";
-            var livingRoomLampLightName = "hifi-home-living-room-desk-lamp-spotlight";
-            var livingRoomLampModelName = "hifi-home-model-bulldog-base";
+            print("EBL SHNUUUUUR")
+            var livingRoomLampTriggerBoxName = "home_box_livingRoomDeskLampTrigger";
+            var livingRoomLampLightName = "home_light_livingRoomDeskLampLight";
+            var livingRoomLampModelName = "home_model_livingRoomDeskLampModel";
 
             var cellPosterName = "home_model_posterCellScience";
             var cellPosterPortkeyName = "home_sphere_cellsciencePortkey";

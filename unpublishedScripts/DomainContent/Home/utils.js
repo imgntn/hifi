@@ -88,6 +88,7 @@ getEntityUserData = function(id) {
 
 // Non-destructively modify the user data of an entity.
 setEntityCustomData = function(customKey, id, data) {
+    print("EBL SETTING CUSTOM DATA " + JSON.stringify(data))
     var userData = getEntityUserData(id);
     if (data == null) {
         delete userData[customKey];

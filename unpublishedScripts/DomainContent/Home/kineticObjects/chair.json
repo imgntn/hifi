@@ -1,7 +1,7 @@
 {
     "Entities": [{
         "userData": "{\"hifiHomeKey\":{\"reset\":true}}",
-        "name": "hifi-home-model-chair",
+        "name": "home_model_chair",
         "compoundShapeURL": "atp:/collision-hulls/simple-chair2.obj",
         "created": "2016-03-07T21:07:29Z",
         "dimensions": {

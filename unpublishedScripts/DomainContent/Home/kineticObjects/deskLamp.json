@@ -22,7 +22,7 @@
             },
             "id": "{747a8714-3cc5-4336-bac3-de3c8ec1494d}",
             "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Lamp-Bulldog-Shade.fbx",
-            "name": "hifi-home-model-bulldog-shade",
+            "name": "home_model_bulldogShade",
             "position": {
                 "x": 0.085205078125,
                 "y": 0.5194091796875,
@@ -72,7 +72,7 @@
             },
             "id": "{5dcc642f-34a6-44a7-8da8-275cbbbef9d6}",
             "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Lamp-Bulldog-Base.fbx",
-            "name": "hifi-home-model-bulldog-base",
+            "name": "home_model_livingRoomDeskLampModel",
             "position": {
                 "x": 0.08642578125,
                 "y": 0.306884765625,
@@ -101,9 +101,9 @@
         },
        {
           "color": {
+              "red": 254,
               "blue": 90,
-              "green": 194,
-              "red": 256
+              "green": 194
           },
           "created": "2016-03-24T22:21:38Z",
           "cutoff": 90,
@@ -116,7 +116,7 @@
           "id": "{9e8b645d-f70f-4339-aa37-22d97a462a76}",
           "intensity": 20,
           "isSpotlight": 0,
-          "name": "hifi-home-living-room-desk-lamp-spotlight",
+          "name": "home_light_livingRoomDeskLampLight",
           "position": {
               "x": 0,
               "y": 0,
@@ -152,7 +152,7 @@
             },
             "id": "{51eb700c-62ba-4e1d-813a-2c23deb02e26}",
             "ignoreForCollisions": 1,
-            "name": "hifi-home-living-room-desk-lamp-trigger",
+            "name": "home_box_livingRoomDeskLampTrigger",
             "position": {
                 "x": 0.09033203125,
                 "y": 0.149169921875,
@@ -170,8 +170,7 @@
                 "y": -1.52587890625e-05,
                 "z": -1.52587890625e-05
             },
-            "script": "https://rawgit.com/ericrius1/hifi/homereset/unpublishedScripts/DomainContent/Home/switches/livingRoomDeskLamp.js",
-            "scriptTimestamp": 1458860464095,
+            "script": "atp:/scripts/livingRoomDeskLamp.js",
             "type": "Box",
             "userData": "{\"hifiHomeKey\":{\"reset\":true},\"grabbableKey\":{\"wantsTrigger\":true},\"home-switch\":{\"state\":\"on\"}}",
             "visible": 0
