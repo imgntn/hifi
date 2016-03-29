@@ -12,11 +12,10 @@ var LAB_LAMP_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kine
 var LIVING_ROOM_LAMP_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/deskLamp.json' + "?" + Math.random();
 var TRASHCAN_URL = 'atp:/JSON/trashcan.json';
 var BLOCKS_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/blocks.json' + "?" + Math.random();
-// var PLAYA_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersPlaya.json' + "?" + Math.random();
-var PLAYA_POSTER_URL = 'http://localhost:8080/unpublishedScripts/DomainContent/Home/kineticObjects/postersPlaya.json' + "?" + Math.random();
-// var CELL_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersCell.json' + "?" + Math.random();
-var CELL_POSTER_URL = 'http://localhost:8080/unpublishedScripts/DomainContent/Home/kineticObjects/postersCell.json' + "?" + Math.random();
-// "href": "Hifi://cellscience",
+var PLAYA_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersPlaya.json' + "?" + Math.random();
+// var PLAYA_POSTER_URL = 'http://localhost:8080/unpublishedScripts/DomainContent/Home/kineticObjects/postersPlaya.json' + "?" + Math.random();
+var CELL_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersCell.json' + "?" + Math.random();
+// var CELL_POSTER_URL = 'http://localhost:8080/unpublishedScripts/DomainContent/Home/kineticObjects/postersCell.json' + "?" + Math.random();
 
 FruitBowl = function(spawnLocation, spawnRotation) {
     print('CREATE FRUIT BOWL')

@@ -64,6 +64,8 @@
             },
             "name": "home_sphere_cellsciencePortkey",
             "href": "hifi://cellscience",
+            "script": "atp:/scripts/portkey.js",
+            "visible": false,
             "dimensions": {
                 "x": 0.111,
                 "y": 0.111,
@@ -81,7 +83,7 @@
                 "z": -0.10074388980865479
             },
             "type": "Sphere",
-            "userData": "{\"hifiHomeKey\":{\"reset\":true}}"
+            "userData": "{\"hifiHomeKey\":{\"reset\":true}, \"grabbableKey\": {\"wantsTrigger\": true}}"
         }],
     "Version": 57
 }

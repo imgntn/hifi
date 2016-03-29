@@ -14,6 +14,7 @@
 
 (function() {
 
+    Script.include("atp:/scripts/utils.js");
     var _this = this;
 
 
@@ -25,22 +26,19 @@
         _this.teleport();
     }
 
-    this.clickReleaseOnEntity = function() {
-        print("EBL CLICK RELEASE ENTOTIY")
-        _this.teleport();
-    }
-
     this.startNearGrab = function() {
         _this.teleport();
     }
 
     this.teleport = function() {
         print("EBL TELEPORT")
+        Window.location = _this.portkeyLink;
     }
 
     this.preload = function(entityID) {
         print("EBL PRELOAD PORTKEY!");
         _this.entityID = entityID;
+        _this.portkeyLink = Entities.getEntityProperties(_this.entityID, "href").href;
     }
 
 });

@@ -69,7 +69,9 @@
             "red": 255
         },
         "name": "home_sphere_playaPortkey",
-        "script": "http://localhost:8080/unpublishedScripts/DomainContent/Home/switches/portkey.js?v1",
+        "href": "hifi://playa",
+        "script": "atp:/scripts/portkey.js",
+        "visible": false,
         "dimensions": {
             "x": 0.111,
             "y": 0.111,
