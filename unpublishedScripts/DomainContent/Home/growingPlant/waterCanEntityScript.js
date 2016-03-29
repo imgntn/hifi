@@ -38,11 +38,12 @@
 
         startHold: function() {
             if (_this.waterSpout) {
+                print("EBL FOUND THE WATER SPOUT!")
                 _this.waterSpoutPosition = Entities.getEntityProperties(_this.waterSpout, "position").position;
                 _this.waterSpoutRotation = Entities.getEntityProperties(_this.waterSpout, "rotation").rotation;
                 _this.createWaterEffect();
             } else {
-                print("EBL NO WATER SPOUT FOUND RETURNING");
+                print("EBL NO WATER SPOUT FOUND RETURNING SO SAD");
                 return;
             }
             _this.findGrowableEntities();
@@ -220,15 +221,17 @@
         },
 
         preload: function(entityID) {
+            print("EBL LOADING WATER CAN");
             _this.entityID = entityID;
             _this.position = Entities.getEntityProperties(_this.entityID, "position").position;
             // Wait a a bit for spout to spawn for case where preload is initial spawn, then save it 
             Script.setTimeout(function() {
-                var entities = Entities.findEntities(_this.position, 1);
+                var entities = Entities.findEntities(_this.position, 5);
                 entities.forEach(function(entity) {
                     var name = Entities.getEntityProperties(entity, "name").name;
                     if (name === _this.WATER_SPOUT_NAME) {
                         _this.waterSpout = entity;
+                        print("EBL FOUND WATER SPOUT")
                     }
                 });
 

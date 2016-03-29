@@ -18,7 +18,7 @@
         _this = this;
     }
 
-    var utilsPath = Script.resolvePath('utils.js');
+    var utilsPath = Script.resolvePath('atp:/scripts/utils.js');
 
     var kineticPath = Script.resolvePath("kineticObjects/wrapper.js?" + Math.random());
 

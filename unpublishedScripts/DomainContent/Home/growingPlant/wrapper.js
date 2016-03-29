@@ -9,11 +9,11 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
-// var PLANT_SCRIPT_URL = Script.resolvePath("atp:/scripts/growingPlantEntityScript.js?v1" + Math.random());
-// var WATER_CAN_SCRIPT_URL = Script.resolvePath("atp:/scripts/waterCanEntityScript.js?v1" + Math.random());
-var PLANT_SCRIPT_URL = Script.resolvePath("growingPlantEntityScript.js?v1" + Math.random());
-var WATER_CAN_SCRIPT_URL = Script.resolvePath("waterCanEntityScript.js?v1" + Math.random());
+var PLANT_SCRIPT_URL = Script.resolvePath("atp:/scripts/growingPlantEntityScript.js");
+var WATER_CAN_SCRIPT_URL = Script.resolvePath("atp:/scripts/waterCanEntityScript.js");
+
 Plant = function(spawnPosition, spawnRotation) {
+  var WATER_SPOUT_NAME= "home_box_waterSpout"
   var orientation;
   if (spawnRotation !== undefined) {
     orientation = Quat.fromPitchYawRollDegrees(spawnRotation.x, spawnRotation.y, spawnRotation.z);
@@ -137,7 +137,7 @@ Plant = function(spawnPosition, spawnRotation) {
   var waterSpoutRotation = Quat.multiply(waterCanRotation, Quat.fromPitchYawRollDegrees(10, 0, 0));
   var waterSpout = Entities.addEntity({
     type: "Box",
-    name: "home_box_waterSpout",
+    name: WATER_SPOUT_NAME,
     dimensions: {
       x: 0.02,
       y: 0.02,
