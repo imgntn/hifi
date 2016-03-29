@@ -1,7 +1,7 @@
 {
     "Entities": [{
         "collisionsWillMove": 1,
-        "compoundShapeURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Poster2.obj",
+        "compoundShapeURL": "atp:/collision-hulls/Poster2.obj",
         "created": "2016-03-23T17:16:12Z",
         "dimensions": {
             "x": 0.047816216945648193,
@@ -11,7 +11,7 @@
         "dynamic": 0,
         "name": "home_model_posterPlaya",
         "id": "{2b5ca0a0-9115-4916-bee6-63f88d3909b1}",
-        "modelURL": "http://hifi-content.s3.amazonaws.com/alan/dev/Playa-Poster.fbx",
+        "modelURL": "atp:/models/Playa-Poster.fbx",
         "queryAACube": {
             "scale": 1.5361770391464233,
             "x": 1101.1051025390625,

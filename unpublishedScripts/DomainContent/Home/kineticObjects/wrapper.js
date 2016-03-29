@@ -12,8 +12,8 @@ var LAB_LAMP_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kine
 var LIVING_ROOM_LAMP_URL = 'atp:/JSON/deskLamp.json';
 var TRASHCAN_URL = 'atp:/JSON/trashcan.json'; 
 var BLOCKS_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/blocks.json' + "?" + Math.random();
-var PLAYA_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersPlaya.json' + "?" + Math.random();
-var CELL_POSTER_URL = 'http://hifi-content.s3.amazonaws.com/DomainContent/Home/kineticObjects/postersCell.json' + "?" + Math.random();
+var PLAYA_POSTER_URL = 'atp:/JSON/postersPlaya.json';
+var CELL_POSTER_URL = 'atp:/JSON/postersCell.json';
 
 FruitBowl = function(spawnLocation, spawnRotation) {
     print('CREATE FRUIT BOWL')
