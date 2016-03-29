@@ -145,7 +145,7 @@
             var waterEffectPosition = Vec3.sum(_this.waterSpoutPosition, Vec3.multiply(Quat.getFront(_this.waterSpoutRotation), -0.04));
             _this.waterEffect = Entities.addEntity({
                 type: "ParticleEffect",
-                name: "water particle effect",
+                name: "home_particleEffect_waterParticles",
                 position: waterEffectPosition,
                 isEmitting: false,
                 parentID: _this.waterSpout,
