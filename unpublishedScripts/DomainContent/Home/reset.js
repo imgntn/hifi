@@ -34,6 +34,8 @@
 
     var pingPongGunPath = Script.resolvePath("pingPongGun/wrapper.js?" + Math.random());
 
+    var musicBoxPath = Script.resolvePath("musicBox/wrapper.js?" + Math.random());
+
     var transformerPath = Script.resolvePath("dressingRoom/wrapper.js?" + Math.random());
 
     Script.include(utilsPath);
@@ -46,6 +48,7 @@
     Script.include(plantPath);
     Script.include(cuckooClockPath);
     Script.include(pingPongGunPath);
+    // Script.include(musicBoxPath);
     Script.include(transformerPath);
 
     var TRANSFORMER_URL_ARTEMIS = 'http://hifi-public.s3.amazonaws.com/ryan/DefaultAvatarFemale2/0314HiFiFemAviHeightChange.fbx';
@@ -254,6 +257,7 @@
 
             var playaPosterName = "home_model_posterPlaya";
             var playaPosterPortkeyName = "home_sphere_playaPortkey";
+
             Script.setTimeout(function() {
                 attachChildToParent(livingRoomLampTriggerBoxName, livingRoomLampModelName, MyAvatar.position, 20);
                 attachChildToParent(livingRoomLampLightName, livingRoomLampModelName, MyAvatar.position, 20);
@@ -314,6 +318,14 @@
                 y: 0.8382,
                 z: 0.1303
             }];
+
+            var TRANSFORMER_SCALE = 0.5;
+
+            dollDimensions.forEach(function(vector, index) {
+                var scaled = Vec3.multiply(vector, TRANSFORMER_SCALE);
+                dollDimensions[index] = scaled;
+            })
+
             var dollLateralSeparation = 1.0;
             dolls.forEach(function(doll, index) {
 
@@ -324,7 +336,6 @@
                 var dollPosition = Vec3.sum(firstDollPosition, distanceToLeft)
                 var transformer = new TransformerDoll(doll, dollPosition, dollRotation,
                     dollDimensions[index]);
-
             });
 
         },

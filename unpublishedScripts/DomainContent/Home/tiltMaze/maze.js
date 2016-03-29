@@ -47,6 +47,10 @@
         blue: 0
     };
 
+    var THROTTLE = true;
+    var THROTTLE_RATE = 1000;
+    var sinceLastUpdate = 0;
+
     var _this;
 
     function Maze() {
@@ -60,22 +64,28 @@
         preload: function(entityID) {
             this.entityID = entityID;
             VICTORY_SOUND = SoundCache.getSound("http://hifi-content.s3.amazonaws.com/DomainContent/Home/tiltMaze/levelUp.wav");
+            Script.update.connect(this.update);
         },
+
         startNearGrab: function() {
             //check to make sure a ball is in range, otherwise create one
             this.testBallDistance();
         },
+
         continueNearGrab: function() {
             this.testWinDistance();
             this.testBallDistance();
         },
+
         continueDistantGrab: function() {
             this.testBallDistance();
             this.testWinDistance();
         },
+
         releaseGrab: function() {
             this.testBallDistance();
         },
+
         getBallStartLocation: function() {
             var mazeProps = Entities.getEntityProperties(this.entityID);
             var right = Quat.getRight(mazeProps.rotation);
@@ -91,6 +101,7 @@
             var location = Vec3.sum(mazeProps.position, finalOffset);
             return location;
         },
+
         createBall: function() {
             if (this.ballLocked === true) {
                 return;
@@ -122,6 +133,7 @@
 
             this.ball = Entities.addEntity(properties);
         },
+
         destroyBall: function() {
             var results = Entities.findEntities(MyAvatar.position, 10);
             results.forEach(function(result) {
@@ -132,6 +144,7 @@
                 }
             })
         },
+
         testBallDistance: function() {
             if (this.ballLocked === true) {
                 return;
@@ -166,6 +179,7 @@
                 this.createBall();
             }
         },
+
         testWinDistance: function() {
             if (this.ballLocked === true) {
                 return;
@@ -203,6 +217,7 @@
                 }, 1500)
             }
         },
+
         playVictorySound: function() {
             var position = Entities.getEntityProperties(this.entityID, "position").position;
 
@@ -213,6 +228,22 @@
             Audio.playSound(VICTORY_SOUND, audioProperties);
 
         },
+
+        update: function(deltaTime) {
+            if (THROTTLE === true) {
+                sinceLastUpdate = sinceLastUpdate + deltaTime * 100;
+                if (sinceLastUpdate > THROTTLE_RATE) {
+                    sinceLastUpdate = 0;
+                } else {
+                    return;
+                }
+            }
+            _this.testBallDistance();
+        },
+
+        unload: function() {
+            Script.update.disconnect(_this.update);
+        }
     };
 
     return new Maze();
