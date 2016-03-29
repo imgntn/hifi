@@ -26,6 +26,7 @@
             "z": -0.88293278217315674
         },
         "type": "Box",
+        "name": "home_box_lowerBookshelf",
         "userData": "{\"hifiHomeKey\":{\"reset\":true}}"
     }],
     "Version": 57
