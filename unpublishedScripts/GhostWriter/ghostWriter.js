@@ -93,6 +93,8 @@ var symbolMapping = {
 // options.letterSize = 
 // options.letterSpacing =
 // options.maxWidth = 
+// options.fillplane =
+// options.fillcube = 
 // writer.write(options)
 
 // would be sweet if the letters did something when you looked at them.
