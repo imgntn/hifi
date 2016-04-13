@@ -2,7 +2,7 @@ GhostWriter = function() {}
 
 GhostWriter.prototype = {
     options:{
-        
+
     },
     write:function(){
 
@@ -15,16 +15,13 @@ GhostWriter.prototype = {
     },
 
     //not really necessary for v1
-    rotateLetters:function()(){},
-    rotateWords:function()(){},
-    rotateWhole:function(){},
-    growLetters:function(){},
-    growWords:function(){},
-    growWhole:function(){},
-    shrinkLetters:function(){},
-    shrinkWords:function(){},
-    shrinkWhole:function(){},
-    moveTo:function(){},
+    // transforms should be applied at letter, word, and whole level
+    rotate:function(){},
+    grow:function(){},
+    shrink:function(){},
+    bounce:function(){},
+    changeColor:function(){},
+    changeTexture:function(){},
 }
 
 function hasLowerCase(str) {
@@ -95,6 +92,7 @@ var symbolMapping = {
 // options.texture = url
 // options.letterSize = 
 // options.letterSpacing =
+// options.maxWidth = 
 // writer.write(options)
 
 // would be sweet if the letters did something when you looked at them.
