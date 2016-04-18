@@ -50,7 +50,7 @@ selectionManager.addEventListener(function() {
     lightOverlayManager.updatePositions();
 }); 
 
-var toolIconUrl = HIFI_PUBLIC_BUCKET + "images/tools/";
+var toolIconUrl = Script.resolvePath("assets/images/tools/");
 var toolHeight = 50;
 var toolWidth = 50;
 
@@ -109,7 +109,7 @@ IMPORTING_SVO_OVERLAY_HEIGHT = 30;
 IMPORTING_SVO_OVERLAY_MARGIN = 5;
 IMPORTING_SVO_OVERLAY_LEFT_MARGIN = 34;
 var importingSVOImageOverlay = Overlays.addOverlay("image", {
-    imageURL: HIFI_PUBLIC_BUCKET + "images/hourglass.svg",
+    imageURL: Script.resolvePath("assets") + "/images/hourglass.svg",
     width: 20,
     height: 20,
     alpha: 1.0,

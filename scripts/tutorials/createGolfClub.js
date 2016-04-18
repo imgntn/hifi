@@ -2,7 +2,7 @@
 //  golfClub.js
 //
 //  Created by Philip Rosedale on April 11, 2016.
-//  Copyright 2015 High Fidelity, Inc.
+//  Copyright 2016 High Fidelity, Inc.
 //
 //
 //  Distributed under the Apache License, Version 2.0.

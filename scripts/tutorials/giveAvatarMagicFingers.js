@@ -1,3 +1,16 @@
+//
+//
+//  Created by Chris Collins on April 11, 2016.
+//  Copyright 2016 High Fidelity, Inc.
+//
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//
+//  A simple golf club.  If you have equipped it, and pull trigger, it will either make 
+//  you a new golf ball, or take you to your ball if one is not made. 
+
+
 var handiness = 'both'; // left, right or both
 var particleFingers = ['HandPinky4', 'HandRing4', 'HandIndex4', 'HandThumb4', 'HandMiddle4'];
 

@@ -1,13 +1,12 @@
 //
-//
 //  Created by James B. Pollack @imgntn on April 18, 2016.
-//  Copyright 2015 High Fidelity, Inc.
+//  Copyright 2016 High Fidelity, Inc.
 //
+// This script shows how to create an entity with a picture texture on it that you can change either in script or in the entity's textures property.
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
-
 //  familiar code to put the entity in front of us
 
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
@@ -16,12 +15,11 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     z: 0
 }), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
 
-// this is just a model exported from blender with a texture named 'Picture' on one face.  
+// this is just a model exported from blender with a texture named 'Picture' on one face.  also made it emissive so it doesn't require lighting.
 var MODEL_URL = "http://hifi-production.s3.amazonaws.com/tutorials/pictureFrame/finalFrame.fbx";
 
 //this is where we are going to get our image from.  the stuff at the end is our API key.
 var NASA_API_ENDPOINT = "https://api.nasa.gov/planetary/apod?api_key=XNmgPJvVK8hGroZHB19PaQtlqKZk4q8GorWViuND";
-
 
 //actually go get the data and return it
 function getDataFromNASA() {
@@ -35,13 +33,19 @@ function getDataFromNASA() {
 
 //make the picture frame and set its texture url to the picture of the day from NASA
 function makePictureFrame() {
-    var url = getDataFromNASA().url;
+    var data = getDataFromNASA();
     var pictureFrameProperties = {
         name: 'Tutorial Picture Frame',
+        description: data.explanation,
         type: 'Model',
+        dimensions: {
+            x: 4,
+            y: 3,
+            z: 0.25
+        },
         position: center,
         textures: JSON.stringify({
-            Picture: url
+            Picture: data.url
         }),
         modelURL: MODEL_URL,
         lifetime: 86400,

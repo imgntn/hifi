@@ -19,7 +19,7 @@ var OVERLAY_RATIO = OVERLAY_WIDTH / OVERLAY_HEIGHT;
 var OVERLAY_DATA = {
     width: OVERLAY_WIDTH,
     height: OVERLAY_HEIGHT,
-    imageURL: "http://hifi-content.s3.amazonaws.com/alan/production/images/images/Overlay-Viz-blank.png",
+    imageURL: Script.resolvePath("assets/images/Overlay-Viz-blank.png"),
     color: {red: 255, green: 255, blue: 255},
     alpha: 1
 };
@@ -29,7 +29,7 @@ var OVERLAY_DATA_HMD = {
     position: lastOverlayPosition,
     width: OVERLAY_WIDTH,
     height: OVERLAY_HEIGHT,
-    url: "http://hifi-content.s3.amazonaws.com/alan/production/images/images/Overlay-Viz-blank.png",
+    url: Script.resolvePath("assets/images/Overlay-Viz-blank.png"),
     color: {red: 255, green: 255, blue: 255},
     alpha: 1,
     scale: 2,
