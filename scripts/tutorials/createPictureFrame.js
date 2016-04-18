@@ -1,11 +1,14 @@
-var SCRIPT_URL = Script.resolvePath('entity_scripts/pictureFrame.js');
-var MODEL_URL = "";
+//
+//
+//  Created by James B. Pollack @imgntn on April 18, 2016.
+//  Copyright 2015 High Fidelity, Inc.
+//
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+//
 
-var NASA_API_ENDPOINT = ""
-
-function getPictureOfTheDay(){
-
-}
+//  familiar code to put the entity in front of us
 
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,
@@ -13,17 +16,52 @@ var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     z: 0
 }), Vec3.multiply(1, Quat.getFront(Camera.getOrientation())));
 
-var soundMakerProperties = {
-    position: center,
-    dimensions: {
-        x: 1,
-        y: 1,
-        z: 1
-    },
-    modelURL:MODEL_URL,
-    script: SCRIPT_URL
+// this is just a model exported from blender with a texture named 'Picture' on one face.  
+var MODEL_URL = "http://hifi-production.s3.amazonaws.com/tutorials/pictureFrame/finalFrame.fbx";
+
+//this is where we are going to get our image from.  the stuff at the end is our API key.
+var NASA_API_ENDPOINT = "https://api.nasa.gov/planetary/apod?api_key=XNmgPJvVK8hGroZHB19PaQtlqKZk4q8GorWViuND";
+
+
+//actually go get the data and return it
+function getDataFromNASA() {
+    var request = new XMLHttpRequest();
+    request.open("GET", NASA_API_ENDPOINT, false);
+    request.send();
+
+    var response = JSON.parse(request.responseText);
+    return response;
+};
+
+//make the picture frame and set its texture url to the picture of the day from NASA
+function makePictureFrame() {
+    var url = getDataFromNASA().url;
+    var pictureFrameProperties = {
+        name: 'Tutorial Picture Frame',
+        type: 'Model',
+        position: center,
+        textures: JSON.stringify({
+            Picture: url
+        }),
+        modelURL: MODEL_URL,
+        lifetime: 86400,
+        dynamic: true,
+    }
+    var pictureFrame = Entities.addEntity(pictureFrameProperties);
+    Script.stop();
 }
 
-var soundMaker = Entities.addEntity(soundMakerProperties);
 
-Script.stop();
+makePictureFrame();
+
+//the data the NASA API returns looks like this: 
+//
+// {
+// date: "2016-04-18",
+// explanation: "The International Space Station is the largest object ever constructed by humans in space. The station perimeter extends over roughly the area of a football field, although only a small fraction of this is composed of modules habitable by humans. The station is so large that it could not be launched all at once -- it continues to be built piecemeal. To function, the ISS needs huge trusses, some over 15 meters long and with masses over 10,000 kilograms, to keep it rigid and to route electricity and liquid coolants. Pictured above, the immense space station was photographed from the now-retired space shuttle Atlantis after a week-long stay in 2010. Across the image top hangs part of a bright blue Earth, in stark contrast to the darkness of interstellar space across the bottom.",
+// hdurl: "http://apod.nasa.gov/apod/image/1604/ISS02_NASA_4288.jpg",
+// media_type: "image",
+// service_version: "v1",
+// title: "The International Space Station over Earth",
+// url: "http://apod.nasa.gov/apod/image/1604/ISS02_NASA_960.jpg"
+// }
