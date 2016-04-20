@@ -52,6 +52,18 @@ function makePictureFrame() {
         dynamic: true,
     }
     var pictureFrame = Entities.addEntity(pictureFrameProperties);
+    
+    var OUTER_FRAME_MODEL_URL = "http://hifi-content.s3.amazonaws.com/alan/dev/Picture-Frame.fbx";
+    var outerFrameProps = {
+        name: "Tutorial Outer Frame",
+        type: "Model",
+        position: center,
+        modelURL: OUTER_FRAME_MODEL_URL,
+        lifetime: 86400,
+        dynamic: true,
+        parentID: pictureFrame // A parentd object will move, rotate, and scale with its parent.
+    }
+    var outerFrame = Entities.addEntity(outerFrameProps);
     Script.stop();
 }
 

@@ -20,6 +20,7 @@ orientation.x = 0;
 orientation = Quat.fromVec3Degrees(orientation);
 var center = Vec3.sum(MyAvatar.getHeadPosition(), Vec3.multiply(2, Quat.getFront(orientation)));
 
+// An entity is described and created by specifying a map of properties
 var cow = Entities.addEntity({
   type: "Model",
   modelURL: MODEL_URL,

@@ -1,6 +1,6 @@
 (function(){ 
 
-    var soundURL ='http://hifi-production.s3.amazonaws.com/tutorials/soundMaker/belltone.wav';
+    var soundURL ='http://hifi-production.s3.amazonaws.com/tutorials/soundMaker/bell.wav';
     var ringSound;
 
     this.preload = function(entityID) { 
