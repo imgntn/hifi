@@ -15,14 +15,10 @@ var handiness = 'both'; // left, right or both
 var particleFingers = ['HandPinky4', 'HandRing4', 'HandIndex4', 'HandThumb4', 'HandMiddle4'];
 
 var particleEntities = [];
-
+var PARICLE_NAME_BASE = 'spawnedFingerParticle'
 var particleProperties = {
-    name: 'spawnedFingerParticle' + jointName,
     type: 'ParticleEffect',
-    position: Vec3.sum(MyAvatar.getAbsoluteJointRotationInObjectFrame(jointID), MyAvatar.position),
     parentID: MyAvatar.sessionUUID,
-    parentJointIndex: jointID,
-    position: MyAvatar.getJointPosition(jointName),
     color: {
         red: 125,
         green: 125,
@@ -84,6 +80,9 @@ var particleProperties = {
 
 function createParticleAtFinger(jointName) {
     var jointID = MyAvatar.jointNames.indexOf(jointName);
+    particleProperties.name = PARICLE_NAME_BASE + jointName; 
+    particleProperties.parentJointIndex = jointID;
+    position =  MyAvatar.getJointPosition(jointName);
     return Entities.addEntity(particleProperties);
 }
 
