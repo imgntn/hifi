@@ -9,6 +9,7 @@
 //
 //  familiar code to put the entity in front of us
 
+
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,
     y: 0.5,
@@ -33,6 +34,9 @@ function getDataFromNASA() {
 
 //make the picture frame and set its texture url to the picture of the day from NASA
 function makePictureFrame() {
+    var rotation = Quat.multiply(Quat.fromPitchYawRollDegrees(0, 180, 0), Camera.getOrientation());
+    rotation.x=0;
+    rotation.z = 0;
     var data = getDataFromNASA();
     var pictureFrameProperties = {
         name: 'Tutorial Picture Frame',
@@ -44,6 +48,7 @@ function makePictureFrame() {
             z: 0.25
         },
         position: center,
+        rotation: rotation,
         textures: JSON.stringify({
             Picture: data.url
         }),
