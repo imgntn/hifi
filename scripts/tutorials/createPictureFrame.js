@@ -34,6 +34,7 @@ function getDataFromNASA() {
 
 //make the picture frame and set its texture url to the picture of the day from NASA
 function makePictureFrame() {
+    // Calculate rotation necessary to face picture towards user at spawn time.
     var rotation = Quat.multiply(Quat.fromPitchYawRollDegrees(0, 180, 0), Camera.getOrientation());
     rotation.x=0;
     rotation.z = 0;

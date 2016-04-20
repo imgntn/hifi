@@ -1,5 +1,5 @@
 var SCRIPT_URL = Script.resolvePath('entity_scripts/soundMaker.js');
-var MODEL_URL = "http://hifi-production.s3.amazonaws.com/tutorials/soundMaker/bell.fbx";
+var MODEL_URL = "http://hifi-production.s3.amazonaws.com/tutorials/soundMaker/Front-Desk-Bell.fbx";
 
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
     x: 0,

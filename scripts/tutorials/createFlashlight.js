@@ -11,7 +11,7 @@
 
 
 var SCRIPT_URL = Script.resolvePath('entity_scripts/flashlight.js');
-var MODEL_URL = "https://hifi-public.s3.amazonaws.com/models/props/flashlight.fbx";
+var MODEL_URL = "http://hifi-production.s3.amazonaws.com/tutorials/flashlight/flashlight.fbx";
 
 var center = Vec3.sum(Vec3.sum(MyAvatar.position, {
   x: 0,
