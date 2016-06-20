@@ -570,15 +570,18 @@ var usersWindow = (function() {
             visibilityControl.setVisible(false);
             displayControl.setVisible(false);
         } else {
-            if (isMinimized === true) {
+            if (isMinimized === 'true' || isMinimized === true) {
                 return;
+            } else {
+                Overlays.editOverlay(friendsButton, {
+                    visible: true
+                });
+                visibilityControl.setVisible(true);
+                displayControl.setVisible(true);
             }
-            Overlays.editOverlay(friendsButton, {
-                visible: true
-            });
-            visibilityControl.setVisible(true);
-            displayControl.setVisible(true);
+
         }
+
     }
 
 
@@ -660,19 +663,15 @@ var usersWindow = (function() {
             visible: isVisible && isUsingScrollbars && !isMinimized
         });
 
-        if (loggedIn === true) {
-            Overlays.editOverlay(friendsButton, {
-                visible: isVisible && !isMinimized
-            });
-            displayControl.setVisible(isVisible && !isMinimized);
-            visibilityControl.setVisible(isVisible && !isMinimized);
-        }
-
+        Overlays.editOverlay(friendsButton, {
+            visible: isVisible && !isMinimized
+        });
+        displayControl.setVisible(isVisible && !isMinimized);
+        visibilityControl.setVisible(isVisible && !isMinimized);
     }
 
     function setVisible(visible) {
         isVisible = visible;
-
         if (isVisible) {
             if (usersTimer === null) {
                 pollUsers();
@@ -681,9 +680,7 @@ var usersWindow = (function() {
             Script.clearTimeout(usersTimer);
             usersTimer = null;
         }
-
         updateOverlayVisibility();
-
     }
 
     function setMinimized(minimized) {
