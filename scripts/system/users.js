@@ -663,11 +663,14 @@ var usersWindow = (function() {
             visible: isVisible && isUsingScrollbars && !isMinimized
         });
 
-        Overlays.editOverlay(friendsButton, {
-            visible: isVisible && !isMinimized
-        });
-        displayControl.setVisible(isVisible && !isMinimized);
-        visibilityControl.setVisible(isVisible && !isMinimized);
+        if (loggedIn === true) {
+            Overlays.editOverlay(friendsButton, {
+                visible: isVisible && !isMinimized
+            });
+            displayControl.setVisible(isVisible && !isMinimized);
+            visibilityControl.setVisible(isVisible && !isMinimized);
+        }
+
     }
 
     function setVisible(visible) {
@@ -1142,7 +1145,8 @@ var usersWindow = (function() {
         pollUsers();
 
         // Set minimized at end - setup code does not handle `minimized == false` correctly
-        setMinimized(Settings.getValue(SETTING_USERS_WINDOW_MINIMIZED, false));
+        var wasMinimized = Settings.getValue(SETTING_USERS_WINDOW_MINIMIZED, false);
+        setMinimized(wasMinimized);
     }
 
     function tearDown() {
