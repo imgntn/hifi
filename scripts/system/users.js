@@ -661,15 +661,12 @@ var usersWindow = (function() {
         });
 
         if (loggedIn === true) {
-            print('logged in')
             Overlays.editOverlay(friendsButton, {
                 visible: isVisible && !isMinimized
             });
             displayControl.setVisible(isVisible && !isMinimized);
             visibilityControl.setVisible(isVisible && !isMinimized);
         }
-
-        print('update overlay vis')
 
     }
 
