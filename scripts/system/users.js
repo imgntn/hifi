@@ -369,8 +369,8 @@ var usersWindow = (function() {
         MENU_ITEM = "Users Online",
         MENU_ITEM_AFTER = "Chat...",
 
-        SETTING_USERS_WINDOW_MINIMIZED = "UsersWindow.Minimized",
-        SETINGS_USERS_WINDOW_OFFSET = "UsersWindow.Offset",
+        SETTING_USERS_WINDOW_MINIMIZED = "UsersWindow.Minimized.Rev.1",
+        SETINGS_USERS_WINDOW_OFFSET = "UsersWindow.Offset.Rev.1",
         // +ve x, y values are offset from left, top of screen; -ve from right, bottom.
 
         isVisible = true,
@@ -571,16 +571,13 @@ var usersWindow = (function() {
             displayControl.setVisible(false);
         } else {
             if (isMinimized === true) {
-                loggedIn = true;
-                return
+                return;
             }
             Overlays.editOverlay(friendsButton, {
                 visible: true
             });
             visibilityControl.setVisible(true);
             displayControl.setVisible(true);
-            loggedIn = true;
-
         }
     }
 
@@ -664,12 +661,15 @@ var usersWindow = (function() {
         });
 
         if (loggedIn === true) {
+            print('logged in')
             Overlays.editOverlay(friendsButton, {
                 visible: isVisible && !isMinimized
             });
             displayControl.setVisible(isVisible && !isMinimized);
             visibilityControl.setVisible(isVisible && !isMinimized);
         }
+
+        print('update overlay vis')
 
     }
 
