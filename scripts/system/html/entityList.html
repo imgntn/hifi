@@ -12,6 +12,9 @@
 <head>
     <link rel="stylesheet" type="text/css" href="edit-style.css">
     <script src="list.min.js"></script>
+    <script type="text/javascript" src="jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="jquery.tablesporter.widgets.js"></script>
     <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
     <script type="text/javascript" src="eventBridgeLoader.js"></script>
     <script type="text/javascript" src="spinButtons.js"></script>
@@ -65,6 +68,10 @@
               document.getElementById("entity-visible").onclick = function () {
                   setSortColumn('visible');
               };
+
+              $('#entity-table').tablesorter({
+                widgets:['resizable']
+              });
               
               function onRowClicked(clickEvent) {
                   var id = this.dataset.entityId;
@@ -338,8 +345,8 @@
                 <input type="number" id="radius" value="100" />
             </div>
         </div>
-        <div id="entity-table-scroll">
-            <table id="entity-table">
+        <div id="entity-table-scroll" class='tablesorter'>
+            <table id="entity-table" >
                 <colgroup>
                     <col span="1" id="col-type" />
                     <col span="1" id="col-name" />
