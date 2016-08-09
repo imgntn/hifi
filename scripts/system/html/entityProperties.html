@@ -282,7 +282,13 @@
 
         }
 
-        function userDataChanger(groupName, keyName, checkBoxElement, userDataElement, defaultValue) {
+
+        function setTextareaScrolling(element) {
+            var isScrolling = element.scrollHeight > element.offsetHeight;
+            element.setAttribute("scrolling", isScrolling ? "true" : "false");
+        }
+
+        function userDataChanger(groupName, keyName, checkBoxElement, userDataElement, defaultValue,equippable) {
             var properties = {};
             var parsedData = {};
             try {
@@ -295,6 +301,9 @@
             delete parsedData[groupName][keyName];
             if (checkBoxElement.checked !== defaultValue) {
                 parsedData[groupName][keyName] = checkBoxElement.checked;
+            }
+            if(equippable===true){
+                parsedData[groupName][keyname] = formatEquippableData();
             }
 
             if (Object.keys(parsedData[groupName]).length == 0) {
@@ -316,9 +325,94 @@
             );
         };
 
-        function setTextareaScrolling(element) {
-            var isScrolling = element.scrollHeight > element.offsetHeight;
-            element.setAttribute("scrolling", isScrolling ? "true" : "false");
+        function formatEquippableData(){
+           var elements= getEquippableElements();
+           var data={
+                LeftHand: [{
+                    x: elements[0][0].x,
+                    y: elements[0][0].y,
+                    z: elements[0][0].z
+                }, {
+                    x: elements[0][1].x,
+                    y: elements[0][1].y,
+                    z:  elements[0][1].z,
+                    w:  elements[0][1].w,
+                }],
+                RightHand: [{
+                    x: elements[1][0].x,
+                    y: elements[1][0].y,
+                    z: elements[1][0].z
+                }, {
+                    x: elements[1][1].x,
+                    y: elements[1][1].y,
+                    z:  elements[1][1].z,
+                    w:  elements[1][1].w,
+                }]
+            };
+
+            return data;
+        }
+
+        function setEquippableInputValues(parsedUserData){
+             var leftHand = parsedUserData.wearableKey.joints.LeftHand;
+             var rightHand = parsedUserData.wearableKey.joints.RightHand;
+             var elements = getEquippableElements();
+
+            elements[0][0].value=leftHand[0].x;
+            elements[0][1].value=leftHand[0].y;
+            elements[0][2].value=leftHand[0].z;
+            elements[0][3].value=leftHand[1].x;
+            elements[0][4].value=leftHand[1].y;
+            elements[0][5].value=leftHand[1].z;
+            elements[0][6].value=leftHand[1].w;
+
+            elements[1][0].value=rightHand[0].x;
+            elements[1][1].value=rightHand[0].y;
+            elements[1][2].value=rightHand[0].z;
+            elements[1][3].value=rightHand[1].x;
+            elements[1][4].value=rightHand[1].y;
+            elements[1][5].value=rightHand[1].z;
+            elements[1][6].value=rightHand[1].w;
+        }
+
+        function getEquippableElements(){
+        var leftPositionX =  document.getElementById("property-equip-left-position-x");
+        var leftPositionY =  document.getElementById("property-equip-left-position-y");
+        var leftPositionZ =  document.getElementById("property-equip-left-position-z");
+        var leftRotationX =  document.getElementById("property-equip-left-rotation-x");
+        var leftRotationY =  document.getElementById("property-equip-left-rotation-y");
+        var leftRotationZ =  document.getElementById("property-equip-left-rotation-z");
+        var leftRotationW =  document.getElementById("property-equip-left-rotation-w");
+
+        var rightPositionX =  document.getElementById("property-equip-right-position-x");
+        var rightPositionY =  document.getElementById("property-equip-right-position-y");
+        var rightPositionZ =  document.getElementById("property-equip-right-position-z");
+        var rightRotationX =  document.getElementById("property-equip-right-rotation-x");
+        var rightRotationY =  document.getElementById("property-equip-right-rotation-y");
+        var rightRotationZ =  document.getElementById("property-equip-right-rotation-z");
+        var rightRotationW =  document.getElementById("property-equip-right-rotation-w");
+
+        var leftElements = [
+        leftPositionX,leftPositionY,leftPositionZ,
+        leftRotationX,leftRotationY,leftRotationZ,leftRotationW
+        ]
+
+        var rightElements = [
+        rightPositionX,rightPositionY,rightPositionZ,
+        rightRotationX,rightRotationY,rightRotationZ,rightRotationW
+        ]
+        return [leftElements,rightElements]
+
+        }
+
+        function clearEquippableFields(){
+            var elements = getEquippableElements();
+            elements[0].forEach(function(el){
+                el.value='';
+            })
+            elements[1].forEach(function(el){
+                el.value='';
+            })
         }
 
         function loaded() { 
@@ -386,6 +480,7 @@
                 var elCollisionSoundURL = document.getElementById("property-collision-sound-url");
 
                 var elGrabbable = document.getElementById("property-grabbable");
+                 var elEquippable = document.getElementById("property-equippable");
                 var elWantsTrigger = document.getElementById("property-wants-trigger");
                 var elIgnoreIK = document.getElementById("property-ignore-ik");
 
@@ -623,9 +718,23 @@
                                 elGrabbable.checked = properties.dynamic;
                                 elWantsTrigger.checked = false;
                                 elIgnoreIK.checked = false;
-                                var parsedUserData = {}
+                                elGrabbable.checked = false;
+                                var parsedUserData = {};
                                 try {
                                     parsedUserData = JSON.parse(properties.userData);
+
+                                    if ("wearableKey" in parsedUserData) {
+                                        if("joints" in parsedUserData['wearableKey']){
+                                            if("LeftHand" in parsedUserData['wearableKey']['joints']){
+                                                            elEquippable.checked = true;
+                                     setEquippableInfo(parsedUserData); 
+                                            }
+                        
+                                        }
+                                        else{
+                                            elEquippable.checked=false;
+                                        }
+                                    }
                                                             
                                     if ("grabbableKey" in parsedUserData) {
                                         if ("grabbable" in parsedUserData["grabbableKey"]) {
@@ -637,6 +746,7 @@
                                         if ("ignoreIK" in parsedUserData["grabbableKey"]) {
                                             elIgnoreIK.checked = parsedUserData["grabbableKey"].ignoreIK;
                                         }
+
                                     }
                                 } catch(e) {}
 
@@ -908,7 +1018,9 @@
                 elIgnoreIK.addEventListener('change', function() {
                     userDataChanger("grabbableKey", "ignoreIK", elIgnoreIK, elUserData, false);
                 });
-
+               elEquippable.addEventListener('change', function() {
+                    userDataChanger("wearableKey", "joints", elEquippable, elUserData, false);
+                });
                 elCollisionSoundURL.addEventListener('change', createEmitTextPropertyUpdateFunction('collisionSoundURL'));
     
                 elLifetime.addEventListener('change', createEmitNumberPropertyUpdateFunction('lifetime'));
@@ -1608,9 +1720,43 @@
                         <input type="checkbox" id="property-ignore-ik">
                         <label for="property-ignore-ik">Ignore inverse kinematics</label>
                     </div>
+      
                 </div>
             </div>
 
+        </div>
+        <div class="property checkbox">
+        <input type="checkbox" id="property-equippable">
+        <label for="property-equippable">Equippable</label>
+        </div>
+        <div class="behavior-group ">  
+        <label >Left Hand Position</label>
+        <div class="tuple">
+        <div><input type="number" class="x" id="property-equip-left-position-x"><label for="property-equip-left-position-x">X:</label></div>
+        <div><input type="number" class="y" id="property-equip-left-position-y"><label for="property-equip-left-position-y">Y:</label></div>
+        <div><input type="number" class="z" id="property-equip-left-position-z"><label for="property-equip-left-position-z">Z:</label></div>
+        </div>
+        <label>Left Hand Rotation</label>
+        <div class="tuple">
+        <div><input type="number" class="x" id="property-equip-left-rotation-x"><label for="property-equip-left-rotation-x">X:</label></div>
+        <div><input type="number" class="y" id="property-equip-left-rotation-y"><label for="property-equip-left-rotation-y">Y:</label></div>
+        <div><input type="number" class="z" id="property-equip-left-rotation-z"><label for="property-equip-left-rotation-z">Z:</label></div>
+        <div><input type="number" class="w" id="property-equip-left-rotation-w"><label for="property-equip-left-rotation-w">W:</label></div>
+        </div>
+        <label>Right Hand Position</label>
+        <div class="tuple">
+        <div><input type="number" class="x" id="property-equip-right-position-x"><label for="property-equip-right-position-x">X:</label></div>
+        <div><input type="number" class="y" id="property-equip-right-position-y"><label for="property-equip-right-position-y">Y:</label></div>
+        <div><input type="number" class="z" id="property-equip-right-position-z"><label for="property-equip-right-position-z">Z:</label></div>
+        </div>
+        <label>Left Hand Rotation</label>
+        <div class="tuple">
+        <div><input type="number" class="x" id="property-equip-right-rotation-x"><label for="property-equip-right-rotation-x">X:</label></div>
+        <div><input type="number" class="y" id="property-equip-right-rotation-y"><label for="property-equip-right-rotation-y">Y:</label></div>
+        <div><input type="number" class="z" id="property-equip-right-rotation-z"><label for="property-equip-right-rotation-z">Z:</label></div>
+        <div><input type="number" class="w" id="property-equip-right-rotation-w"><label for="property-equip-right-rotation-w">W:</label></div>
+        </div>
+        <input type="button" id="bakeEquipPoints" value="Store Currently Equipped Location">
         </div>
 
         <hr class="behavior-group" />
