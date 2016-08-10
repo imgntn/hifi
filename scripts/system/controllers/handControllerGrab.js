@@ -1736,7 +1736,8 @@ function MyController(hand) {
 
             Messages.sendMessage('Hifi-Object-Manipulation', JSON.stringify({
                 action: 'equip',
-                grabbedEntity: this.grabbedEntity
+                grabbedEntity: this.grabbedEntity,
+                joint:this.hand === RIGHT_HAND ? "RightHand" : "LeftHand"
             }));
         }
 

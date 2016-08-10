@@ -439,7 +439,38 @@
             elements[1].forEach(function(el){
                 el.value='';
             })
-        }
+        };
+
+        function setLocalPositionAndRotation(){
+            var equipData = formatEquippableData();
+            console.log('equip data in setLocalPositionAndRotation',equipData)
+            var localPosition, localRotation;
+            if(currentlyEquippedHand==='LeftHand'){
+                localPosition=equipData.LeftHand[0],
+                localRotation=equipData.LeftHand[1]
+            }
+            if(currentlyEquippedHand==='RightHand'){
+                localPosition=equipData.RightHand[0],
+                localRotation=equipData.RightHand[1]
+            }
+
+            var properties = {
+                localPosition:localPosition,
+                localRotation:localRotation
+            }
+
+            console.log('setting local position and rotation',properties);
+     
+            EventBridge.emitWebEvent(
+                JSON.stringify({
+                    type: "update",
+                    properties: properties,
+                })
+            );
+        };
+
+        var currentlyEquipped=false;
+        var currentlyEquippedHand='none';
 
         function loaded() { 
             openEventBridge(function() {
@@ -631,6 +662,20 @@
                     var properties;
                     EventBridge.scriptEventReceived.connect(function(data) {
                         data = JSON.parse(data);
+                        if(data.hasOwnProperty('action') && data.hasOwnProperty('grabbedEntity')){
+                            console.log('got an event bridge message about grabbing things')
+                            if(data.action==='release'){
+                                console.log('got a release message')
+                                setLocalPositionAndRotation();
+                                currentlyEquippedHand='none';
+                                currentlyEquipped=false;
+                            }
+                            if(data.action==='equip'){
+                                console.log('got an equip message')
+                                currentlyEquipped=data.grabbedEntity;
+                                currentlyEquippedHand=data.joint;
+                            }
+                        }
                         if (data.type == "update") {
                             if (data.selections.length == 0) {
                                 elTypeIcon.style.display = "none";
@@ -1058,6 +1103,9 @@
                 elIgnoreIK.addEventListener('change', function() {
                     userDataChanger("grabbableKey", "ignoreIK", elIgnoreIK, elUserData, false);
                 });
+
+                 var equipElements = getEquippableElements();
+
                 elEquippable.addEventListener('change', function() {
                 if(elEquippable.checked===false){
                     var equipGroup = document.getElementsByClassName('equippable')
@@ -1069,18 +1117,31 @@
                 if(elEquippable.checked===true){
                     var equipGroup = document.getElementsByClassName('equippable')
                     equipGroup[0].style.display='block';
+                    equipElements[0].forEach(function(el){
+                        el.value=0;
+                    });
+                   equipElements[1].forEach(function(el){
+                        el.value=0;
+                    });
+                    userDataChanger("wearable", "joints", elEquippable, elUserData, false,true);
                 }
                 });
 
-                var equipElements = getEquippableElements();
+               
                 equipElements[0].forEach(function(el){
                     el.addEventListener('change', function() {
                     userDataChanger("wearable", "joints", elEquippable, elUserData, false,true);
+                    if(currentlyEquipped!==false){
+                        setLocalPositionAndRotation()
+                    }
                 });
                 });
                 equipElements[1].forEach(function(el){
                     el.addEventListener('change', function() {
                     userDataChanger("wearable", "joints", elEquippable, elUserData, false,true);
+                    if(currentlyEquipped!==false){
+                        setLocalPositionAndRotation()
+                    }
                 });
                 });            
                 elCollisionSoundURL.addEventListener('change', createEmitTextPropertyUpdateFunction('collisionSoundURL'));
@@ -1818,7 +1879,7 @@
             </div>
         </div>
         <div class="behavior-group property xyz">
-            <label>Left Hand Rotation</label>
+            <label>Right Hand Rotation</label>
             <div class="tuple">
             <div><input type="number" class="x" id="property-equip-right-rotation-x"><label for="property-equip-right-rotation-x">X:</label></div>
             <div><input type="number" class="y" id="property-equip-right-rotation-y"><label for="property-equip-right-rotation-y">Y:</label></div>
@@ -1826,8 +1887,6 @@
             <div><input type="number" class="w" id="property-equip-right-rotation-w"><label for="property-equip-right-rotation-w">W:</label></div>
             </div>
         </div>
-
-        <input type="button" id="bakeEquipPoints" value="Store Currently Equipped Location">
         </div>
 
         <hr class="behavior-group" />

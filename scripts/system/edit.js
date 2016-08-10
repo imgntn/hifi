@@ -1329,6 +1329,8 @@ function pushCommandForSelections(createdEntityData, deletedEntityData) {
     UndoStack.pushCommand(applyEntityProperties, undoData, applyEntityProperties, redoData);
 }
 
+var entityPropertiesWebView;
+
 var PropertiesTool = function (opts) {
     var that = {};
 
@@ -1342,7 +1344,7 @@ var PropertiesTool = function (opts) {
     var visible = false;
 
     webView.setVisible(visible);
-
+    entityPropertiesWebView=webView;
     that.setVisible = function (newVisible) {
         visible = newVisible;
         webView.setVisible(visible);
@@ -1726,3 +1728,29 @@ entityListTool.webView.webEventReceived.connect(function (data) {
         }
     }
 });
+
+var handleHandMessages = function(channel, message, sender) {
+    var data;
+    print('edit.js got a message about object manipulation')
+    if (sender === MyAvatar.sessionUUID) {
+        print('from me')
+        if (channel === 'Hifi-Object-Manipulation') {
+            print('on the right channel')
+            try {
+                data = JSON.parse(message);
+            } catch (e) {
+                return
+            }
+            print('and with data: ' + JSON.stringify(data));
+            if (data.action === 'release' || data.action==='equip') {
+                print('got release or equip message!')
+                //send message to update edit.js UI
+                //also to change equipped item
+                entityPropertiesWebView.emitScriptEvent(JSON.stringify(data));
+            }
+        }
+
+    }
+}
+Messages.subscribe('Hifi-Object-Manipulation');
+Messages.messageReceived.connect(handleHandMessages);
