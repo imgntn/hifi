@@ -1380,7 +1380,12 @@ var PropertiesTool = function (opts) {
             if (data.message) {
                 print(data.message);
             }
-        } else if (data.type === "update") {
+        } else if(data.type==='releaseGrab'){
+                     Messages.sendLocalMessage('Hifi-Hand-Release',JSON.stringify({
+                    hand:data.hand
+                  }));
+        }
+        else if (data.type === "update") {
             selectionManager.saveProperties();
             if (selectionManager.selections.length > 1) {
                 properties = {

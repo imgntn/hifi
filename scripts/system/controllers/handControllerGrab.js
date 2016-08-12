@@ -2341,6 +2341,7 @@ function update(deltaTime) {
 
 Messages.subscribe('Hifi-Hand-Disabler');
 Messages.subscribe('Hifi-Hand-Grab');
+Messages.subscribe('Hifi-Hand-Release');
 Messages.subscribe('Hifi-Hand-RayPick-Blacklist');
 Messages.subscribe('Hifi-Object-Manipulation');
 
@@ -2364,7 +2365,21 @@ var handleHandMessages = function(channel, message, sender) {
                 }
                 handToDisable = message;
             }
-        } else if (channel === 'Hifi-Hand-Grab') {
+        } else if(channel==='Hifi-Hand-Release'){
+             try {
+                data = JSON.parse(message);
+                if(data.hand==='LeftHand'){
+                    leftController.release();
+                }
+                if(data.hand==='RightHand'){
+                    rightController.release();
+                }
+            }
+            catch(e){
+                print('error parsing hand release message')
+            }
+        }
+        else if (channel === 'Hifi-Hand-Grab') {
             try {
                 data = JSON.parse(message);
                 var selectedController = (data.hand === 'left') ? leftController : rightController;

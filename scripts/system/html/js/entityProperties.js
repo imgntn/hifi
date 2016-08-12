@@ -1,4 +1,3 @@
-
 //  entityProperties.js
 //
 //  Created by Ryan Huffman on 13 Nov 2014
@@ -331,33 +330,33 @@ function userDataChanger(groupName, keyName, checkBoxElement, userDataElement, d
 };
 
 function Vector3(x, y, z) {
-  this.x = x;
-  this.y = y;
-  this.z = z;
-  this.getLength = function(){
-    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2));
-  }
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.getLength = function() {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2));
+    }
 }
 
- //this needs to be set to the near grab distance
- var ALLOWED_EQUIP_FACTOR=1.1;
+//this needs to be set to the near grab distance
+var ALLOWED_EQUIP_FACTOR = 1.1;
 
- function getAllowedEquipDistance() {
-     var largestDimension;
-     var elDimensionsX = document.getElementById("property-dim-x");
-     var elDimensionsY = document.getElementById("property-dim-y");
-     var elDimensionsZ = document.getElementById("property-dim-z");
-     largestDimension = elDimensionsX.value;
-     if (elDimensionsY.value > largestDimension) {
-         largestDimension = elDimensionsY.value;
-     }
-     if (elDimensionsZ.value > largestDimension) {
-         largestDimension = elDimensionsZ.value;
-     }
+function getAllowedEquipDistance() {
+    var largestDimension;
+    var elDimensionsX = document.getElementById("property-dim-x");
+    var elDimensionsY = document.getElementById("property-dim-y");
+    var elDimensionsZ = document.getElementById("property-dim-z");
+    largestDimension = elDimensionsX.value;
+    if (elDimensionsY.value > largestDimension) {
+        largestDimension = elDimensionsY.value;
+    }
+    if (elDimensionsZ.value > largestDimension) {
+        largestDimension = elDimensionsZ.value;
+    }
 
-     var allowed = ALLOWED_EQUIP_FACTOR * largestDimension;
-     return allowed;
- }
+    var allowed = ALLOWED_EQUIP_FACTOR * largestDimension;
+    return allowed;
+}
 
 function testIfEquippableAtLocation() {
     var data = formatEquippableData();
@@ -367,14 +366,14 @@ function testIfEquippableAtLocation() {
     if (localLeft.getLength() > getAllowedEquipDistance()) {
         return false
     }
-    if (localRight.getLength() >getAllowedEquipDistance()) {
+    if (localRight.getLength() > getAllowedEquipDistance()) {
         return false
     }
 
     return true
 }
 
-function handleUnequippable(hand){
+function handleUnequippable(hand) {
     restoreLastGoodEquippedValues();
     alert('Position is too far to equip, please choose smaller ' + hand + ' hand position values.')
 }
@@ -428,17 +427,17 @@ function setEquippableInputValues(parsedUserData) {
     elements[1][5].value = Number(rightHand[1].z).toFixed(4);
     elements[1][6].value = Number(rightHand[1].w).toFixed(4);
 
-  
+
 }
 
-var lastGoodEquippableValues=[];
+var lastGoodEquippableValues = [];
+
 function storeLastGoodEquippedValues() {
     var elements = document.getElementsByClassName('equipstore');
 
     if (elements.length !== 6) {
         return
-    } else {
-    }
+    } else {}
     lastGoodEquippableValues = [];
 
 
@@ -446,11 +445,12 @@ function storeLastGoodEquippedValues() {
         lastGoodEquippableValues.push(el.value);
     })
 }
-function restoreLastGoodEquippedValues(){
-     var elements = document.getElementsByClassName('equipstore');
-     [].forEach.call(elements,function(el,index){
-       el.value = lastGoodEquippableValues[index];
-     })
+
+function restoreLastGoodEquippedValues() {
+    var elements = document.getElementsByClassName('equipstore');
+    [].forEach.call(elements, function(el, index) {
+        el.value = lastGoodEquippableValues[index];
+    })
 }
 
 function getEquippableElements() {
@@ -480,7 +480,7 @@ function getEquippableElements() {
         rightRotationX, rightRotationY, rightRotationZ, rightRotationW
     ]
 
-    var results =[leftElements, rightElements];
+    var results = [leftElements, rightElements];
     return results;
 
 }
@@ -496,7 +496,7 @@ function clearEquippableFields() {
 };
 
 function setLocalPositionAndRotation() {
-   
+
     var equipData = formatEquippableData();
     var localPosition, localRotation;
     if (currentlyEquippedHand === 'LeftHand') {
@@ -1157,7 +1157,18 @@ function loaded() {
                 var equipGroup = document.getElementsByClassName('equippable')
                 equipGroup[0].style.display = 'none';
                 clearEquippableFields();
-                clearUserDataForGroup('wearable', elUserData);;
+                clearUserDataForGroup('wearable', elUserData);
+                if (currentlyEquipped !== false) {
+
+                    EventBridge.emitWebEvent(JSON.stringify({
+                        type: "releaseGrab",
+                        hand: currentlyEquippedHand,
+                    }));
+                }
+
+                currentlyEquipped=false;
+                currentlyEquippedHand='none';
+
             }
             if (elEquippable.checked === true) {
                 var equipGroup = document.getElementsByClassName('equippable')
@@ -1182,8 +1193,7 @@ function loaded() {
                     if (currentlyEquipped !== false) {
                         setLocalPositionAndRotation()
                     }
-                }
-                else{
+                } else {
                     handleUnequippable('left');
                 }
 
@@ -1197,8 +1207,7 @@ function loaded() {
                     if (currentlyEquipped !== false) {
                         setLocalPositionAndRotation()
                     }
-                }
-                else{
+                } else {
                     handleUnequippable('right');
                 }
 
