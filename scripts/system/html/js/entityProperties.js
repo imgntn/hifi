@@ -419,21 +419,21 @@ function setEquippableInputValues(parsedUserData) {
     var rightHand = parsedUserData.wearable.joints.RightHand;
     var elements = getEquippableElements();
 
-    elements[0][0].value = leftHand[0].x;
-    elements[0][1].value = leftHand[0].y;
-    elements[0][2].value = leftHand[0].z;
-    elements[0][3].value = leftHand[1].x;
-    elements[0][4].value = leftHand[1].y;
-    elements[0][5].value = leftHand[1].z;
-    elements[0][6].value = leftHand[1].w;
+    elements[0][0].value = Number(leftHand[0].x).toFixed(4);
+    elements[0][1].value = Number(leftHand[0].y).toFixed(4);
+    elements[0][2].value = Number(leftHand[0].z).toFixed(4);
+    elements[0][3].value = Number(leftHand[1].x).toFixed(4);
+    elements[0][4].value = Number(leftHand[1].y).toFixed(4);
+    elements[0][5].value = Number(leftHand[1].z).toFixed(4);
+    elements[0][6].value = Number(leftHand[1].w).toFixed(4);
 
-    elements[1][0].value = rightHand[0].x;
-    elements[1][1].value = rightHand[0].y;
-    elements[1][2].value = rightHand[0].z;
-    elements[1][3].value = rightHand[1].x;
-    elements[1][4].value = rightHand[1].y;
-    elements[1][5].value = rightHand[1].z;
-    elements[1][6].value = rightHand[1].w;
+    elements[1][0].value = Number(rightHand[0].x).toFixed(4);
+    elements[1][1].value = Number(rightHand[0].y).toFixed(4);
+    elements[1][2].value = Number(rightHand[0].z).toFixed(4);
+    elements[1][3].value = Number(rightHand[1].x).toFixed(4);
+    elements[1][4].value = Number(rightHand[1].y).toFixed(4);
+    elements[1][5].value = Number(rightHand[1].z).toFixed(4);
+    elements[1][6].value = Number(rightHand[1].w).toFixed(4);
 
   
 }
