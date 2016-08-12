@@ -396,7 +396,7 @@ EntityPropertiesCache.prototype._updateCacheEntry = function(entityID) {
         try {
             userData = JSON.parse(props.userData);
         } catch (err) {
-            print("WARNING: malformed userData on " + entityID + ", name = " + props.name + ", error = " + err);
+           // print("WARNING: malformed userData on " + entityID + ", name = " + props.name + ", error = " + err);
         }
     }
     props.userData = userData;

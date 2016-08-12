@@ -6,7 +6,6 @@
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
-console.log('JBP TEST YO')
 var PI = 3.14159265358979;
 var DEGREES_TO_RADIANS = PI / 180.0;
 var RADIANS_TO_DEGREES = 180.0 / PI;
@@ -357,7 +356,6 @@ function Vector3(x, y, z) {
      }
 
      var allowed = ALLOWED_EQUIP_FACTOR * largestDimension;
-     console.log('allowed distance is::: ', allowed)
      return allowed;
  }
 
@@ -367,21 +365,18 @@ function testIfEquippableAtLocation() {
     var localRight = new Vector3(data.RightHand[0].x, data.RightHand[0].y, data.RightHand[0].z);
 
     if (localLeft.getLength() > getAllowedEquipDistance()) {
-        console.log('LEFT IS NOT A VALID EQUIP POINT')
         return false
     }
     if (localRight.getLength() >getAllowedEquipDistance()) {
-        console.log('RIGHT IS NOT A VALID EQUIP POINT')
         return false
     }
 
-    console.log('EQUIP POINT IS VALID',localLeft.getLength(),localRight.getLength());
     return true
 }
 
 function handleUnequippable(hand){
     restoreLastGoodEquippedValues();
-    alert('Too far to equip, please choose smaller ' + hand + ' hand position values.')
+    alert('Position is too far to equip, please choose smaller ' + hand + ' hand position values.')
 }
 
 function formatEquippableData() {
@@ -408,13 +403,11 @@ function formatEquippableData() {
             w: elements[1][6].value,
         }]
     };
-    console.log('formatted equippable data', data);
     return data;
 }
 
 
 function setEquippableInputValues(parsedUserData) {
-    console.log('setting equippable values', parsedUserData)
     var leftHand = parsedUserData.wearable.joints.LeftHand;
     var rightHand = parsedUserData.wearable.joints.RightHand;
     var elements = getEquippableElements();
@@ -443,10 +436,8 @@ function storeLastGoodEquippedValues() {
     var elements = document.getElementsByClassName('equipstore');
 
     if (elements.length !== 6) {
-        console.log('dont store too short')
         return
     } else {
-        console.log('has 6 elemens', elements)
     }
     lastGoodEquippableValues = [];
 
@@ -454,16 +445,12 @@ function storeLastGoodEquippedValues() {
     [].forEach.call(elements, function(el) {
         lastGoodEquippableValues.push(el.value);
     })
-    console.log('STORED GOOD EQUIP VALUES:', lastGoodEquippableValues)
 }
 function restoreLastGoodEquippedValues(){
-    console.log('RESTORING GOOD EQUIPS',lastGoodEquippableValues)
      var elements = document.getElementsByClassName('equipstore');
      [].forEach.call(elements,function(el,index){
        el.value = lastGoodEquippableValues[index];
      })
-  
-     console.log('RESTORED GOOD EQUIPS')
 }
 
 function getEquippableElements() {
@@ -494,13 +481,11 @@ function getEquippableElements() {
     ]
 
     var results =[leftElements, rightElements];
-    console.log('equip dom elements'+results.length )
     return results;
 
 }
 
 function clearEquippableFields() {
-    console.log('clearing equippable elements')
     var elements = getEquippableElements();
     elements[0].forEach(function(el) {
         el.value = '';
@@ -513,7 +498,6 @@ function clearEquippableFields() {
 function setLocalPositionAndRotation() {
    
     var equipData = formatEquippableData();
-    console.log('equip data in setLocalPositionAndRotation', equipData)
     var localPosition, localRotation;
     if (currentlyEquippedHand === 'LeftHand') {
         localPosition = equipData.LeftHand[0],
@@ -528,8 +512,6 @@ function setLocalPositionAndRotation() {
         localPosition: localPosition,
         localRotation: localRotation
     }
-
-    console.log('setting local position and rotation', properties);
 
     EventBridge.emitWebEvent(
         JSON.stringify({
@@ -733,15 +715,12 @@ function loaded() {
             EventBridge.scriptEventReceived.connect(function(data) {
                 data = JSON.parse(data);
                 if (data.hasOwnProperty('action') && data.hasOwnProperty('grabbedEntity')) {
-                    console.log('got an event bridge message about grabbing things')
                     if (data.action === 'release') {
-                        console.log('got a release message')
                         setLocalPositionAndRotation();
                         currentlyEquippedHand = 'none';
                         currentlyEquipped = false;
                     }
                     if (data.action === 'equip') {
-                        console.log('got an equip message')
                         currentlyEquipped = data.grabbedEntity;
                         currentlyEquippedHand = data.joint;
                     }
@@ -869,11 +848,9 @@ function loaded() {
                             parsedUserData = JSON.parse(properties.userData);
 
                             if ("wearable" in parsedUserData) {
-                                console.log('has wearable keys')
                                 if ("joints" in parsedUserData['wearable']) {
                                     var hasLeft = false;
                                     var hasRight = false;
-                                    console.log('has joints')
                                     if ("LeftHand" in parsedUserData['wearable']['joints'] && parsedUserData['wearable']['joints']['LeftHand'][0].x !== '') {
                                         hasLeft = true;
                                     }
@@ -1199,7 +1176,6 @@ function loaded() {
 
         equipElements[0].forEach(function(el) {
             el.addEventListener('change', function() {
-                console.log('EQUIP EL CHANGED')
                 if (testIfEquippableAtLocation() === true) {
                     storeLastGoodEquippedValues();
                     userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
@@ -1215,7 +1191,6 @@ function loaded() {
         });
         equipElements[1].forEach(function(el) {
             el.addEventListener('change', function() {
-                 console.log('EQUIP EL CHANGED')
                 if (testIfEquippableAtLocation() === true) {
                     storeLastGoodEquippedValues();
                     userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);

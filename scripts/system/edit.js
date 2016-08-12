@@ -1731,7 +1731,6 @@ entityListTool.webView.webEventReceived.connect(function (data) {
 
 var handleHandMessages = function(channel, message, sender) {
     var data;
-    print('edit.js got a message about object manipulation')
     if (sender === MyAvatar.sessionUUID) {
         print('from me')
         if (channel === 'Hifi-Object-Manipulation') {
@@ -1743,7 +1742,6 @@ var handleHandMessages = function(channel, message, sender) {
             }
             print('and with data: ' + JSON.stringify(data));
             if (data.action === 'release' || data.action==='equip') {
-                print('got release or equip message!')
                 //send message to update edit.js UI
                 //also to change equipped item
                 entityPropertiesWebView.emitScriptEvent(JSON.stringify(data));
