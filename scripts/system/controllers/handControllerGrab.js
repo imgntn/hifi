@@ -2370,10 +2370,13 @@ var handleHandMessages = function(channel, message, sender) {
                 data = JSON.parse(message);
                 if(data.hand==='LeftHand'){
                     leftController.release();
+                    leftController.setState(STATE_OFF, "released by message")
                 }
                 if(data.hand==='RightHand'){
                     rightController.release();
+                    rightController.setState(STATE_OFF, "released by message");
                 }
+
             }
             catch(e){
                 print('error parsing hand release message')
