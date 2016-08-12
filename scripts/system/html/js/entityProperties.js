@@ -1,4 +1,4 @@
-<!--
+
 //  entityProperties.js
 //
 //  Created by Ryan Huffman on 13 Nov 2014
@@ -6,7 +6,7 @@
 //
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
--->
+console.log('JBP TEST YO')
 var PI = 3.14159265358979;
 var DEGREES_TO_RADIANS = PI / 180.0;
 var RADIANS_TO_DEGREES = 180.0 / PI;
@@ -331,6 +331,59 @@ function userDataChanger(groupName, keyName, checkBoxElement, userDataElement, d
     );
 };
 
+function Vector3(x, y, z) {
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.getLength = function(){
+    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2));
+  }
+}
+
+ //this needs to be set to the near grab distance
+ var ALLOWED_EQUIP_FACTOR=1.1;
+
+ function getAllowedEquipDistance() {
+     var largestDimension;
+     var elDimensionsX = document.getElementById("property-dim-x");
+     var elDimensionsY = document.getElementById("property-dim-y");
+     var elDimensionsZ = document.getElementById("property-dim-z");
+     largestDimension = elDimensionsX.value;
+     if (elDimensionsY.value > largestDimension) {
+         largestDimension = elDimensionsY.value;
+     }
+     if (elDimensionsZ.value > largestDimension) {
+         largestDimension = elDimensionsZ.value;
+     }
+
+     var allowed = ALLOWED_EQUIP_FACTOR * largestDimension;
+     console.log('allowed distance is::: ', allowed)
+     return allowed;
+ }
+
+function testIfEquippableAtLocation() {
+    var data = formatEquippableData();
+    var localLeft = new Vector3(data.LeftHand[0].x, data.LeftHand[0].y, data.LeftHand[0].z);
+    var localRight = new Vector3(data.RightHand[0].x, data.RightHand[0].y, data.RightHand[0].z);
+
+    if (localLeft.getLength() > getAllowedEquipDistance()) {
+        console.log('LEFT IS NOT A VALID EQUIP POINT')
+        return false
+    }
+    if (localRight.getLength() >getAllowedEquipDistance()) {
+        console.log('RIGHT IS NOT A VALID EQUIP POINT')
+        return false
+    }
+
+    console.log('EQUIP POINT IS VALID',localLeft.getLength(),localRight.getLength());
+    return true
+}
+
+function handleUnequippable(hand){
+    restoreLastGoodEquippedValues();
+    alert('Too far to equip, please choose smaller ' + hand + ' hand position values.')
+}
+
 function formatEquippableData() {
     var elements = getEquippableElements();
     var data = {
@@ -359,8 +412,9 @@ function formatEquippableData() {
     return data;
 }
 
+
 function setEquippableInputValues(parsedUserData) {
-    print('setting equippable values', parsedUserData)
+    console.log('setting equippable values', parsedUserData)
     var leftHand = parsedUserData.wearable.joints.LeftHand;
     var rightHand = parsedUserData.wearable.joints.RightHand;
     var elements = getEquippableElements();
@@ -380,7 +434,36 @@ function setEquippableInputValues(parsedUserData) {
     elements[1][4].value = rightHand[1].y;
     elements[1][5].value = rightHand[1].z;
     elements[1][6].value = rightHand[1].w;
-    console.log('set equippable input values')
+
+  
+}
+
+var lastGoodEquippableValues=[];
+function storeLastGoodEquippedValues() {
+    var elements = document.getElementsByClassName('equipstore');
+
+    if (elements.length !== 6) {
+        console.log('dont store too short')
+        return
+    } else {
+        console.log('has 6 elemens', elements)
+    }
+    lastGoodEquippableValues = [];
+
+
+    [].forEach.call(elements, function(el) {
+        lastGoodEquippableValues.push(el.value);
+    })
+    console.log('STORED GOOD EQUIP VALUES:', lastGoodEquippableValues)
+}
+function restoreLastGoodEquippedValues(){
+    console.log('RESTORING GOOD EQUIPS',lastGoodEquippableValues)
+     var elements = document.getElementsByClassName('equipstore');
+     [].forEach.call(elements,function(el,index){
+       el.value = lastGoodEquippableValues[index];
+     })
+  
+     console.log('RESTORED GOOD EQUIPS')
 }
 
 function getEquippableElements() {
@@ -410,13 +493,14 @@ function getEquippableElements() {
         rightRotationX, rightRotationY, rightRotationZ, rightRotationW
     ]
 
-    console.log('equip dom elements', [leftElements, rightElements])
-    return [leftElements, rightElements]
+    var results =[leftElements, rightElements];
+    console.log('equip dom elements'+results.length )
+    return results;
 
 }
 
 function clearEquippableFields() {
-    print('clearing equippable elements')
+    console.log('clearing equippable elements')
     var elements = getEquippableElements();
     elements[0].forEach(function(el) {
         el.value = '';
@@ -427,6 +511,7 @@ function clearEquippableFields() {
 };
 
 function setLocalPositionAndRotation() {
+   
     var equipData = formatEquippableData();
     console.log('equip data in setLocalPositionAndRotation', equipData)
     var localPosition, localRotation;
@@ -799,6 +884,7 @@ function loaded() {
                                         elEquippable.checked = true;
                                         equipGroup[0].style.display = 'block';
                                         setEquippableInputValues(parsedUserData);
+                                        storeLastGoodEquippedValues();
                                     }
                                 }
 
@@ -1106,26 +1192,44 @@ function loaded() {
                     el.value = 0;
                 });
                 userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
+                storeLastGoodEquippedValues();
             }
         });
 
 
         equipElements[0].forEach(function(el) {
             el.addEventListener('change', function() {
-                userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
-                if (currentlyEquipped !== false) {
-                    setLocalPositionAndRotation()
+                console.log('EQUIP EL CHANGED')
+                if (testIfEquippableAtLocation() === true) {
+                    storeLastGoodEquippedValues();
+                    userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
+                    if (currentlyEquipped !== false) {
+                        setLocalPositionAndRotation()
+                    }
                 }
+                else{
+                    handleUnequippable('left');
+                }
+
             });
         });
         equipElements[1].forEach(function(el) {
             el.addEventListener('change', function() {
-                userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
-                if (currentlyEquipped !== false) {
-                    setLocalPositionAndRotation()
+                 console.log('EQUIP EL CHANGED')
+                if (testIfEquippableAtLocation() === true) {
+                    storeLastGoodEquippedValues();
+                    userDataChanger("wearable", "joints", elEquippable, elUserData, false, true);
+                    if (currentlyEquipped !== false) {
+                        setLocalPositionAndRotation()
+                    }
                 }
+                else{
+                    handleUnequippable('right');
+                }
+
             });
         });
+
         elCollisionSoundURL.addEventListener('change', createEmitTextPropertyUpdateFunction('collisionSoundURL'));
 
         elLifetime.addEventListener('change', createEmitNumberPropertyUpdateFunction('lifetime'));

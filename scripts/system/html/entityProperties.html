@@ -54,10 +54,6 @@
             <label for="property-name">Name</label>
             <input type="text" id="property-name">
         </div>
-        <div class="property text">
-            <label for="property-description">Description</label>
-            <input type="text" id="property-description">
-        </div>
         <div class="property textarea">
             <label for="property-user-data">User data</label>
             <textarea id="property-user-data"></textarea>
@@ -74,27 +70,14 @@
             <label for="property-hyperlink-href">Href - hifi://address</label>
             <input type="text" id="property-hyperlink-href">
         </div>
-
+        <div class="hyperlink-group hyperlink-section property text">
+            <label for="property-hyperlink-description">Description</label>
+            <input type="text" id="property-hyperlink-description">
+        </div>
 
 
         <div class="section-header spatial-group">
             <label>Spatial</label><span>M</span>
-        </div>
-        <div class="spatial-group property xyz">
-            <label>Position <span class="unit">m</span></label>
-            <div class="tuple">
-                <div><input type="number" class="x" id="property-pos-x"><label for="property-pos-x">X:</label></div>
-                <div><input type="number" class="y" id="property-pos-y"><label for="property-pos-y">Y:</label></div>
-                <div><input type="number" class="z" id="property-pos-z"><label for="property-pos-z">Z:</label></div>
-            </div>
-        </div>
-        <div class="spatial-group property pyr">
-            <label>Rotation <span class="unit">deg</span></label>
-            <div class="tuple">
-                <div><input type="number" class="pitch" id="property-rot-x" step="0.1"><label for="property-rot-x">Pitch:</label></div>
-                <div><input type="number" class="yaw" id="property-rot-y" step="0.1"><label for="property-rot-y">Yaw:</label></div>
-                <div><input type="number" class="roll" id="property-rot-z" step="0.1"><label for="property-rot-z">Roll:</label></div>
-            </div>
         </div>
         <div class="spatial-group property xyz">
             <label>Dimensions <span class="unit">m</span></label>
@@ -104,20 +87,37 @@
                 <div><input type="number" class="z" id="property-dim-z" step="0.1"><label for="property-dim-z">Z:</label></div>
             </div>
         </div>
-        <div class="spatial-group property xyz">
-            <label>Registration <span class="unit">(pivot offset as ratio of dimension)</span></label>
-            <div class="tuple">
-                <div><input type="number" class="x" id="property-reg-x" step="0.1"><label for="property-reg-x">X:</label></div>
-                <div><input type="number" class="y" id="property-reg-y" step="0.1"><label for="property-reg-y">Y:</label></div>
-                <div><input type="number" class="z" id="property-reg-z" step="0.1"><label for="property-reg-z">Z:</label></div>
-            </div>
-        </div>
         <div class="spatial-group property gen">
             <label>Scale <span class="unit">%</span></label>
             <div class="row">
                 <input type="number" id="dimension-rescale-pct" value=100>
                 <input type="button" class="blue" id="dimension-rescale-button" value="Rescale">
                 <input type="button" class="red" id="reset-to-natural-dimensions" value="Reset Dimensions">
+            </div>
+        </div>
+
+        <hr class="spatial-group" />
+        <div class="spatial-group property pyr">
+            <label>Rotation <span class="unit">deg</span></label>
+            <div class="tuple">
+                <div><input type="number" class="pitch" id="property-rot-x" step="0.1"><label for="property-rot-x">Pitch:</label></div>
+                <div><input type="number" class="yaw" id="property-rot-y" step="0.1"><label for="property-rot-y">Yaw:</label></div>
+                <div><input type="number" class="roll" id="property-rot-z" step="0.1"><label for="property-rot-z">Roll:</label></div>
+            </div>
+        </div>
+
+        <hr class="spatial-group" />
+        <div class="spatial-group property xyz">
+            <label>Position <span class="unit">m</span></label>
+            <div class="tuple">
+                <div><input type="number" class="x" id="property-pos-x"><label for="property-pos-x">X:</label></div>
+                <div><input type="number" class="y" id="property-pos-y"><label for="property-pos-y">Y:</label></div>
+                <div><input type="number" class="z" id="property-pos-z"><label for="property-pos-z">Z:</label></div>
+            </div>
+            <div class="buttons">
+                <input type="button" id="move-selection-to-grid" value="Selection to Grid">
+                <input type="button" id="move-all-to-grid" value="All to Grid">
+                <input type="button" id="preview-camera-button" value="Preview Camera">
             </div>
         </div>
         <div class="spatial-group row">
@@ -130,17 +130,15 @@
                 <input type="number" id="property-parent-joint-index">
             </div>
         </div>
-        <div class="spatial-group ">
-            <div class="property text">
-                <label>Align</label>
+        <div class="spatial-group property xyz">
+            <label>Registration <span class="unit">(pivot offset as ratio of dimension)</span></label>
+            <div class="tuple">
+                <div><input type="number" class="x" id="property-reg-x" step="0.1"><label for="property-reg-x">X:</label></div>
+                <div><input type="number" class="y" id="property-reg-y" step="0.1"><label for="property-reg-y">Y:</label></div>
+                <div><input type="number" class="z" id="property-reg-z" step="0.1"><label for="property-reg-z">Z:</label></div>
             </div>
-            <div class="row">
-                <div class="buttons">
-                    <input type="button" id="move-selection-to-grid" value="Selection to Grid">
-                    <input type="button" id="move-all-to-grid" value="All to Grid">
-                </div> 
-             </div>
         </div>
+
         <hr class="spatial-group poly-vox-section" />
         <div class="spatial-group poly-vox-section property xyz">
             <label>Voxel volume size <span class="unit">m</span></label>
@@ -301,9 +299,50 @@
                         <input type="checkbox" id="property-ignore-ik">
                         <label for="property-ignore-ik">Ignore inverse kinematics</label>
                     </div>
+      
                 </div>
             </div>
 
+        </div>
+        <div class="property checkbox">
+        <input type="checkbox" id="property-equippable">
+        <label for="property-equippable">Equippable</label><label id="equipErrorMessage">Too far to equip; choose smaller values
+        </div>
+        <div class="behavior-group equippable">  
+        <div class="behavior-group property xyz">
+            <label >Left Hand Position</label>
+            <div class="tuple">
+            <div><input type="number" step="0.01" class="x equipstore" id="property-equip-left-position-x"><label for="property-equip-left-position-x">X:</label></div>
+            <div><input type="number" step="0.01" class="y equipstore" id="property-equip-left-position-y"><label for="property-equip-left-position-y">Y:</label></div>
+            <div><input type="number" step="0.01" class="z equipstore" id="property-equip-left-position-z"><label for="property-equip-left-position-z">Z:</label></div>
+            </div>   
+            </div>
+        <div class="behavior-group property xyz">
+            <label>Left Hand Rotation</label>
+            <div class="tuple">
+            <div><input type="number" step="0.01" class="x" id="property-equip-left-rotation-x"><label for="property-equip-left-rotation-x">X:</label></div>
+            <div><input type="number" step="0.01" class="y" id="property-equip-left-rotation-y"><label for="property-equip-left-rotation-y">Y:</label></div>
+            <div><input type="number" step="0.01" class="z" id="property-equip-left-rotation-z"><label for="property-equip-left-rotation-z">Z:</label></div>
+            <div><input type="number" step="0.01" class="w" id="property-equip-left-rotation-w"><label for="property-equip-left-rotation-w">W:</label></div>
+            </div>
+        </div>
+        <div class="behavior-group property xyz">
+            <label>Right Hand Position</label>
+            <div class="tuple">
+            <div><input type="number" step="0.01" class="x equipstore" id="property-equip-right-position-x"><label for="property-equip-right-position-x">X:</label></div>
+            <div><input type="number" step="0.01" class="y equipstore" id="property-equip-right-position-y"><label for="property-equip-right-position-y">Y:</label></div>
+            <div><input type="number" step="0.01" class="z equipstore" id="property-equip-right-position-z"><label for="property-equip-right-position-z">Z:</label></div>
+            </div>
+        </div>
+        <div class="behavior-group property xyz">
+            <label>Right Hand Rotation</label>
+            <div class="tuple">
+            <div><input type="number" step="0.01" class="x" id="property-equip-right-rotation-x"><label for="property-equip-right-rotation-x">X:</label></div>
+            <div><input type="number" step="0.01" class="y" id="property-equip-right-rotation-y"><label for="property-equip-right-rotation-y">Y:</label></div>
+            <div><input type="number" step="0.01" class="z" id="property-equip-right-rotation-z"><label for="property-equip-right-rotation-z">Z:</label></div>
+            <div><input type="number" step="0.01" class="w" id="property-equip-right-rotation-w"><label for="property-equip-right-rotation-w">W:</label></div>
+            </div>
+        </div>
         </div>
 
         <hr class="behavior-group" />
