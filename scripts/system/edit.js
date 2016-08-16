@@ -49,7 +49,7 @@ gridTool.setVisible(false);
 
 var entityListTool = new EntityListTool();
 
-selectionManager.addEventListener(function () {
+selectionManager.addEventListener(function() {
     selectionDisplay.updateHandles();
     lightOverlayManager.updatePositions();
 });
@@ -164,7 +164,7 @@ function toggleMarketplace() {
     }
 }
 
-var toolBar = (function () {
+var toolBar = (function() {
     var EDIT_SETTING = "io.highfidelity.isEditting"; // for communication with other scripts
     var TOOL_ICON_URL = Script.resolvePath("assets/images/tools/");
     var that = {},
@@ -187,6 +187,7 @@ var toolBar = (function () {
         }
 
         selectionManager.clearSelections();
+        print('clear selections on create')
         entityListTool.sendUpdate();
         selectionManager.setSelections([entityID]);
 
@@ -196,7 +197,7 @@ var toolBar = (function () {
     function cleanup() {
         that.setActive(false);
         systemToolbar.removeButton(EDIT_TOGGLE_BUTTON);
-    }
+    } 
 
     function addButton(name, image, handler) {
         var imageUrl = TOOL_ICON_URL + image;
@@ -208,7 +209,7 @@ var toolBar = (function () {
             visible: true
         });
         if (handler) {
-            button.clicked.connect(function () {
+            button.clicked.connect(function() {
                 Script.setTimeout(handler, 100);
             });
         }
@@ -216,15 +217,14 @@ var toolBar = (function () {
     }
 
     function initialize() {
-        print("QQQ creating edit toolbar");
         Script.scriptEnding.connect(cleanup);
 
-        Window.domainChanged.connect(function () {
+        Window.domainChanged.connect(function() {
             that.setActive(false);
             that.clearEntityList();
         });
 
-        Entities.canAdjustLocksChanged.connect(function (canAdjustLocks) {
+        Entities.canAdjustLocksChanged.connect(function(canAdjustLocks) {
             if (isActive && !canAdjustLocks) {
                 that.setActive(false);
             }
@@ -240,7 +240,7 @@ var toolBar = (function () {
             hoverState: 3,
             defaultState: 1
         });
-        activeButton.clicked.connect(function () {
+        activeButton.clicked.connect(function() {
             that.setActive(!isActive);
             activeButton.writeProperty("buttonState", isActive ? 0 : 1);
             activeButton.writeProperty("defaultState", isActive ? 0 : 1);
@@ -249,11 +249,11 @@ var toolBar = (function () {
 
         toolBar = Toolbars.getToolbar(EDIT_TOOLBAR);
         toolBar.writeProperty("shown", false);
-        addButton("openAssetBrowserButton","assets-01.svg",function(){
+        addButton("openAssetBrowserButton", "assets-01.svg", function() {
             Window.showAssetServer();
         })
 
-        addButton("newModelButton", "model-01.svg", function () {
+        addButton("newModelButton", "model-01.svg", function() {
             var SHAPE_TYPE_NONE = 0;
             var SHAPE_TYPE_SIMPLE_HULL = 1;
             var SHAPE_TYPE_SIMPLE_COMPOUND = 2;
@@ -314,13 +314,21 @@ var toolBar = (function () {
                         modelURL: url,
                         shapeType: shapeType,
                         dynamic: dynamic,
-                        gravity: dynamic ? { x: 0, y: -10, z: 0 } : { x: 0, y: 0, z: 0 }
+                        gravity: dynamic ? {
+                            x: 0,
+                            y: -10,
+                            z: 0
+                        } : {
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        }
                     });
                 }
             }
         });
 
-        addButton("newCubeButton", "cube-01.svg", function () {
+        addButton("newCubeButton", "cube-01.svg", function() {
             createNewEntity({
                 type: "Box",
                 dimensions: DEFAULT_DIMENSIONS,
@@ -332,7 +340,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newSphereButton", "sphere-01.svg", function () {
+        addButton("newSphereButton", "sphere-01.svg", function() {
             createNewEntity({
                 type: "Sphere",
                 dimensions: DEFAULT_DIMENSIONS,
@@ -344,7 +352,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newLightButton", "light-01.svg", function () {
+        addButton("newLightButton", "light-01.svg", function() {
             createNewEntity({
                 type: "Light",
                 dimensions: DEFAULT_LIGHT_DIMENSIONS,
@@ -363,7 +371,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newTextButton", "text-01.svg", function () {
+        addButton("newTextButton", "text-01.svg", function() {
             createNewEntity({
                 type: "Text",
                 dimensions: {
@@ -386,7 +394,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newWebButton", "web-01.svg", function () {
+        addButton("newWebButton", "web-01.svg", function() {
             createNewEntity({
                 type: "Web",
                 dimensions: {
@@ -398,7 +406,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newZoneButton", "zone-01.svg", function () {
+        addButton("newZoneButton", "zone-01.svg", function() {
             createNewEntity({
                 type: "Zone",
                 dimensions: {
@@ -409,7 +417,7 @@ var toolBar = (function () {
             });
         });
 
-        addButton("newParticleButton", "particle-01.svg", function () {
+        addButton("newParticleButton", "particle-01.svg", function() {
             createNewEntity({
                 type: "ParticleEffect",
                 isEmitting: true,
@@ -436,11 +444,11 @@ var toolBar = (function () {
         that.setActive(false);
     }
 
-    that.clearEntityList = function () {
+    that.clearEntityList = function() {
         entityListTool.clearEntityList();
     };
 
-    that.setActive = function (active) {
+    that.setActive = function(active) {
         if (active === isActive) {
             return;
         }
@@ -459,6 +467,7 @@ var toolBar = (function () {
             grid.setEnabled(false);
             propertiesTool.setVisible(false);
             selectionManager.clearSelections();
+            print('clearing selections in setactive from  notactive')
             cameraManager.disable();
             selectionDisplay.triggerMapping.disable();
         } else {
@@ -694,6 +703,7 @@ function mouseClickEvent(event) {
         result = findClickedEntity(event);
         if (result === null || result === undefined) {
             if (!event.isShifted) {
+                print('clear selection on nothing click')
                 selectionManager.clearSelections();
             }
             return;
@@ -731,10 +741,10 @@ function mouseClickEvent(event) {
             var x = Vec3.dot(Vec3.subtract(P, A), B);
 
             var angularSize = 2 * Math.atan(halfDiagonal / Vec3.distance(Camera.getPosition(), properties.position)) *
-                              180 / Math.PI;
+                180 / Math.PI;
 
             var sizeOK = (allowLargeModels || angularSize < MAX_ANGULAR_SIZE) &&
-                         (allowSmallModels || angularSize > MIN_ANGULAR_SIZE);
+                (allowSmallModels || angularSize > MIN_ANGULAR_SIZE);
 
             if (0 < x && sizeOK) {
                 selectedEntityID = foundEntity;
@@ -949,7 +959,7 @@ function cleanupModelMenus() {
     Menu.removeMenuItem("Edit", MENU_SHOW_ZONES_IN_EDIT_MODE);
 }
 
-Script.scriptEnding.connect(function () {
+Script.scriptEnding.connect(function() {
     Settings.setValue(SETTING_AUTO_FOCUS_ON_SELECT, Menu.isOptionChecked(MENU_AUTO_FOCUS_ON_SELECT));
     Settings.setValue(SETTING_EASE_ON_FOCUS, Menu.isOptionChecked(MENU_EASE_ON_FOCUS));
     Settings.setValue(SETTING_SHOW_LIGHTS_IN_EDIT_MODE, Menu.isOptionChecked(MENU_SHOW_LIGHTS_IN_EDIT_MODE));
@@ -969,7 +979,7 @@ var lastOrientation = null;
 var lastPosition = null;
 
 // Do some stuff regularly, like check for placement of various overlays
-Script.update.connect(function (deltaTime) {
+Script.update.connect(function(deltaTime) {
     progressDialog.move();
     selectionDisplay.checkMove();
     var dOrientation = Math.abs(Quat.dot(Camera.orientation, lastOrientation) - 1);
@@ -987,8 +997,8 @@ Script.update.connect(function (deltaTime) {
 
 function insideBox(center, dimensions, point) {
     return (Math.abs(point.x - center.x) <= (dimensions.x / 2.0)) &&
-           (Math.abs(point.y - center.y) <= (dimensions.y / 2.0)) &&
-           (Math.abs(point.z - center.z) <= (dimensions.z / 2.0));
+        (Math.abs(point.y - center.y) <= (dimensions.y / 2.0)) &&
+        (Math.abs(point.z - center.z) <= (dimensions.z / 2.0));
 }
 
 function selectAllEtitiesInCurrentSelectionBox(keepIfTouching) {
@@ -1001,11 +1011,11 @@ function selectAllEtitiesInCurrentSelectionBox(keepIfTouching) {
         if (!keepIfTouching) {
             var isValid;
             if (selectionManager.localPosition === null || selectionManager.localPosition === undefined) {
-                isValid = function (position) {
+                isValid = function(position) {
                     return insideBox(selectionManager.worldPosition, selectionManager.worldDimensions, position);
                 };
             } else {
-                isValid = function (position) {
+                isValid = function(position) {
                     var localPosition = Vec3.multiplyQbyV(Quat.inverse(selectionManager.localRotation),
                         Vec3.subtract(position,
                             selectionManager.localPosition));
@@ -1045,6 +1055,7 @@ function deleteSelectedEntities() {
             Entities.deleteEntity(entityID);
         }
         SelectionManager.clearSelections();
+        print('clear selection on delete')
         pushCommandForSelections([], savedProperties);
     } else {
         print("  Delete Entity.... not holding...");
@@ -1143,10 +1154,10 @@ function getPositionToCreateEntity() {
     var HALF_TREE_SCALE = 16384;
 
     var cameraOutOfBounds = Math.abs(cameraPosition.x) > HALF_TREE_SCALE || Math.abs(cameraPosition.y) > HALF_TREE_SCALE ||
-                            Math.abs(cameraPosition.z) > HALF_TREE_SCALE;
+        Math.abs(cameraPosition.z) > HALF_TREE_SCALE;
     var placementOutOfBounds = Math.abs(placementPosition.x) > HALF_TREE_SCALE ||
-                               Math.abs(placementPosition.y) > HALF_TREE_SCALE ||
-                               Math.abs(placementPosition.z) > HALF_TREE_SCALE;
+        Math.abs(placementPosition.y) > HALF_TREE_SCALE ||
+        Math.abs(placementPosition.z) > HALF_TREE_SCALE;
 
     if (cameraOutOfBounds && placementOutOfBounds) {
         return null;
@@ -1211,13 +1222,13 @@ Window.svoImportRequested.connect(importSVO);
 
 Menu.menuItemEvent.connect(handeMenuEvent);
 
-Controller.keyPressEvent.connect(function (event) {
+Controller.keyPressEvent.connect(function(event) {
     if (isActive) {
         cameraManager.keyPressEvent(event);
     }
 });
 
-Controller.keyReleaseEvent.connect(function (event) {
+Controller.keyReleaseEvent.connect(function(event) {
     if (isActive) {
         cameraManager.keyReleaseEvent(event);
     }
@@ -1226,6 +1237,7 @@ Controller.keyReleaseEvent.connect(function (event) {
         deleteSelectedEntities();
     } else if (event.text === "ESC") {
         selectionManager.clearSelections();
+        print('clear selections on esc')
     } else if (event.text === "TAB") {
         selectionDisplay.toggleSpaceMode();
     } else if (event.text === "f") {
@@ -1333,7 +1345,7 @@ function pushCommandForSelections(createdEntityData, deletedEntityData) {
     UndoStack.pushCommand(applyEntityProperties, undoData, applyEntityProperties, redoData);
 }
 
-var PropertiesTool = function (opts) {
+var PropertiesTool = function(opts) {
     var that = {};
 
     var url = Script.resolvePath('html/entityProperties.html');
@@ -1347,15 +1359,16 @@ var PropertiesTool = function (opts) {
 
     webView.setVisible(visible);
 
-    that.setVisible = function (newVisible) {
+    that.setVisible = function(newVisible) {
         visible = newVisible;
         webView.setVisible(visible);
     };
 
-    selectionManager.addEventListener(function () {
+    selectionManager.addEventListener(function() {
         var data = {
             type: 'update'
         };
+        print('SELECTION UPDATE')
         var selections = [];
         for (var i = 0; i < selectionManager.selections.length; i++) {
             var entity = {};
@@ -1366,16 +1379,17 @@ var PropertiesTool = function (opts) {
             }
             if (entity.properties.keyLight !== undefined && entity.properties.keyLight.direction !== undefined) {
                 entity.properties.keyLight.direction = Vec3.multiply(RADIANS_TO_DEGREES,
-                                                                     Vec3.toPolar(entity.properties.keyLight.direction));
+                    Vec3.toPolar(entity.properties.keyLight.direction));
                 entity.properties.keyLight.direction.z = 0.0;
             }
             selections.push(entity);
         }
+
         data.selections = selections;
         webView.emitScriptEvent(JSON.stringify(data));
     });
 
-    webView.webEventReceived.connect(function (data) {
+    webView.webEventReceived.connect(function(data) {
         data = JSON.parse(data);
         var i, properties, dY, diff, newPosition;
         if (data.type === "print") {
@@ -1418,13 +1432,25 @@ var PropertiesTool = function (opts) {
                 }
                 Entities.editEntity(selectionManager.selections[0], data.properties);
                 if (data.properties.name !== undefined || data.properties.modelURL !== undefined ||
-                        data.properties.visible !== undefined || data.properties.locked !== undefined) {
+                    data.properties.visible !== undefined || data.properties.locked !== undefined) {
                     entityListTool.sendUpdate();
                 }
             }
             pushCommandForSelections();
             selectionManager._update();
-        } else if (data.type === "showMarketplace") {
+        } 
+
+        else if (data.type === "registrationPoint") {
+            print('GOT A REGISTRATION MESSAGE!!')
+            if (data.action === "createRegistration") {
+                print('ACTION IS CREATE')
+                createRegistrationPointOverlay(data);
+            }
+            if (data.action === "deleteRegistration") {
+                deleteRegistrationPointOverlay(data);
+            }
+        }
+        else if (data.type === "showMarketplace") {
             showMarketplace();
         } else if (data.type === "action") {
             if (data.action === "moveSelectionToGrid") {
@@ -1475,9 +1501,9 @@ var PropertiesTool = function (opts) {
 
                         // If any of the natural dimensions are not 0, resize
                         if (properties.type === "Model" && naturalDimensions.x === 0 && naturalDimensions.y === 0 &&
-                                naturalDimensions.z === 0) {
+                            naturalDimensions.z === 0) {
                             Window.alert("Cannot reset entity to its natural dimensions: Model URL" +
-                                         " is invalid or the model has not yet been loaded.");
+                                " is invalid or the model has not yet been loaded.");
                         } else {
                             Entities.editEntity(selectionManager.selections[i], {
                                 dimensions: properties.naturalDimensions
@@ -1515,13 +1541,14 @@ var PropertiesTool = function (opts) {
                     }
                 }
             }
+
         }
     });
 
     return that;
 };
 
-var PopupMenu = function () {
+var PopupMenu = function() {
     var self = this;
 
     var MENU_ITEM_HEIGHT = 21;
@@ -1547,9 +1574,9 @@ var PopupMenu = function () {
         blue: 128
     };
 
-    self.onSelectMenuItem = function () {};
+    self.onSelectMenuItem = function() {};
 
-    self.addMenuItem = function (name) {
+    self.addMenuItem = function(name) {
         var id = Overlays.addOverlay("text", {
             text: name,
             backgroundAlpha: 1.0,
@@ -1570,13 +1597,13 @@ var PopupMenu = function () {
         return id;
     };
 
-    self.updateMenuItemText = function (id, newText) {
+    self.updateMenuItemText = function(id, newText) {
         Overlays.editOverlay(id, {
             text: newText
         });
     };
 
-    self.setPosition = function (x, y) {
+    self.setPosition = function(x, y) {
         for (var key in overlayInfo) {
             Overlays.editOverlay(key, {
                 x: x,
@@ -1586,12 +1613,12 @@ var PopupMenu = function () {
         }
     };
 
-    self.onSelected = function () {};
+    self.onSelected = function() {};
 
     var pressingOverlay = null;
     var hoveringOverlay = null;
 
-    self.mousePressEvent = function (event) {
+    self.mousePressEvent = function(event) {
         if (event.isLeftButton) {
             var overlay = Overlays.getOverlayAtPoint({
                 x: event.x,
@@ -1608,7 +1635,7 @@ var PopupMenu = function () {
             return false;
         }
     };
-    self.mouseMoveEvent = function (event) {
+    self.mouseMoveEvent = function(event) {
         if (visible) {
             var overlay = Overlays.getOverlayAtPoint({
                 x: event.x,
@@ -1631,7 +1658,7 @@ var PopupMenu = function () {
         }
         return false;
     };
-    self.mouseReleaseEvent = function (event) {
+    self.mouseReleaseEvent = function(event) {
         var overlay = Overlays.getOverlayAtPoint({
             x: event.x,
             y: event.y
@@ -1650,7 +1677,7 @@ var PopupMenu = function () {
 
     var visible = false;
 
-    self.setVisible = function (newVisible) {
+    self.setVisible = function(newVisible) {
         if (newVisible !== visible) {
             visible = newVisible;
             for (var key in overlayInfo) {
@@ -1660,10 +1687,10 @@ var PopupMenu = function () {
             }
         }
     };
-    self.show = function () {
+    self.show = function() {
         self.setVisible(true);
     };
-    self.hide = function () {
+    self.hide = function() {
         self.setVisible(false);
     };
 
@@ -1684,7 +1711,7 @@ var PopupMenu = function () {
 
 var propertyMenu = new PopupMenu();
 
-propertyMenu.onSelectMenuItem = function (name) {
+propertyMenu.onSelectMenuItem = function(name) {
 
     if (propertyMenu.marketplaceID) {
         showMarketplace(propertyMenu.marketplaceID);
@@ -1696,7 +1723,7 @@ var showMenuItem = propertyMenu.addMenuItem("Show in Marketplace");
 var propertiesTool = new PropertiesTool();
 var particleExplorerTool = new ParticleExplorerTool();
 var selectedParticleEntity = 0;
-entityListTool.webView.webEventReceived.connect(function (data) {
+entityListTool.webView.webEventReceived.connect(function(data) {
     data = JSON.parse(data);
     if (data.type === "selectionUpdate") {
         var ids = data.entityIds;
@@ -1717,7 +1744,7 @@ entityListTool.webView.webEventReceived.connect(function (data) {
                 selectedParticleEntity = ids[0];
                 particleExplorerTool.setActiveParticleEntity(ids[0]);
 
-                particleExplorerTool.webView.webEventReceived.connect(function (data) {
+                particleExplorerTool.webView.webEventReceived.connect(function(data) {
                     data = JSON.parse(data);
                     if (data.messageType === "page_loaded") {
                         particleExplorerTool.webView.emitScriptEvent(JSON.stringify(particleData));
@@ -1730,3 +1757,30 @@ entityListTool.webView.webEventReceived.connect(function (data) {
         }
     }
 });
+
+var registrationPoint = null;
+
+function createRegistrationPointOverlay(data) {
+    deleteRegistrationPointOverlay();
+    var overlayProps = {
+        position:Entities.getEntityProperties(data.entityID).position,
+        // position: getRegistrationOffset(data),
+        parentID:data.entityID,
+        size: 0.15,
+        color: {
+            red: 0,
+            green: 0,
+            blue: 255
+        },
+        alpha: 0.5,
+        drawInFront: true,
+        solid: true
+    };
+
+    registrationPoint = Overlays.addOverlay("sphere", overlayProps);
+}
+
+function deleteRegistrationPointOverlay() {
+    Overlays.deleteOverlay(registrationPoint);
+    registrationPoint=null;
+}

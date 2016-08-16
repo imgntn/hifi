@@ -104,16 +104,24 @@ SelectionManager = (function() {
         return that.selections.length > 0;
     };
 
+    that.lastSelections=[];
+
     that.setSelections = function(entityIDs) {
+        var lastString = that.lastSelections.toString();
         that.selections = [];
         for (var i = 0; i < entityIDs.length; i++) {
             var entityID = entityIDs[i];
             that.selections.push(entityID);
         }
+        var currentString = that.selections.toString();
+        if (lastString !== currentString) {
+            deleteRegistrationPointOverlay();
+        }
 
+        that.lastSelections = that.selections;
         that._update();
     };
-
+    
     that.addEntity = function(entityID, toggleSelection) {
         if (entityID) {
             var idx = -1;
@@ -142,8 +150,10 @@ SelectionManager = (function() {
     };
 
     that.clearSelections = function() {
+        print('clearing selections')
         that.selections = [];
         that._update();
+        deleteRegistrationPointOverlay();
     };
 
     that._update = function() {

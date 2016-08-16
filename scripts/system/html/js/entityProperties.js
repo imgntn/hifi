@@ -333,6 +333,7 @@ function loaded() {
         var elParentID = document.getElementById("property-parent-id");
         var elParentJointIndex = document.getElementById("property-parent-joint-index");
 
+        var elShowRegistration = document.getElementById("input-showRegistration");
         var elRegistrationX = document.getElementById("property-reg-x");
         var elRegistrationY = document.getElementById("property-reg-y");
         var elRegistrationZ = document.getElementById("property-reg-z");
@@ -533,7 +534,7 @@ function loaded() {
 
                         disableProperties();
                     } else {
-    
+                        console.log('got event bridge event')
 
                         properties = data.selections[0].properties;
 
@@ -567,6 +568,7 @@ function loaded() {
                         elParentID.value = properties.parentID;
                         elParentJointIndex.value = properties.parentJointIndex;
 
+                        
                         elRegistrationX.value = properties.registrationPoint.x.toFixed(4);
                         elRegistrationY.value = properties.registrationPoint.y.toFixed(4);
                         elRegistrationZ.value = properties.registrationPoint.z.toFixed(4);
@@ -828,8 +830,27 @@ function loaded() {
         elRegistrationY.addEventListener('change', registrationChangeFunction);
         elRegistrationZ.addEventListener('change', registrationChangeFunction);
 
-        var rotationChangeFunction = createEmitVec3PropertyUpdateFunction(
-            'rotation', elRotationX, elRotationY, elRotationZ);
+        elShowRegistration.addEventListener('click', function() {
+                console.log('SHOW REGISTRATION POINT')
+                var data = {
+                    type: "registrationPoint",
+                    action: 'createRegistration',
+                    entityID: elID.textContent,
+                    registration: {
+                        x: elRegistrationX.value,
+                        y: elRegistrationY.value,
+                        z: elRegistrationZ.value
+                    }
+                };
+
+            EventBridge.emitWebEvent(JSON.stringify(data));
+
+        });
+
+        var rotationChangeFunction = function() {
+            createEmitVec3PropertyUpdateFunction(
+                'rotation', elRotationX, elRotationY, elRotationZ);
+        }
         elRotationX.addEventListener('change', rotationChangeFunction);
         elRotationY.addEventListener('change', rotationChangeFunction);
         elRotationZ.addEventListener('change', rotationChangeFunction);
