@@ -64,12 +64,6 @@ QJsonValue Procedural::getProceduralData(const QString& proceduralJson) {
 }
 
 Procedural::Procedural() {
-    _opaqueState->setCullMode(gpu::State::CULL_NONE);
-    _opaqueState->setDepthTest(true, true, gpu::LESS_EQUAL);
-    _opaqueState->setBlendFunction(false,
-        gpu::State::SRC_ALPHA, gpu::State::BLEND_OP_ADD, gpu::State::INV_SRC_ALPHA,
-        gpu::State::FACTOR_ALPHA, gpu::State::BLEND_OP_ADD, gpu::State::ONE);
-
     _transparentState->setCullMode(gpu::State::CULL_NONE);
     _transparentState->setDepthTest(true, true, gpu::LESS_EQUAL);
     _transparentState->setBlendFunction(true,
@@ -113,6 +107,11 @@ bool Procedural::parseUrl(const QUrl& shaderUrl) {
         }
         _networkShader.reset();
         return false;
+    }
+
+    // If the URL hasn't changed, don't mark the shader as dirty
+    if (_shaderUrl == shaderUrl) {
+        return true;
     }
 
     _shaderUrl = shaderUrl;
