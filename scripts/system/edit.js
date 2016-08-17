@@ -143,7 +143,6 @@ function showMarketplace(marketplaceID) {
     if (marketplaceID) {
         url = url + "/items/" + marketplaceID;
     }
-    print("setting marketplace URL to " + url);
     marketplaceWindow.setURL(url);
     marketplaceWindow.setVisible(true);
     marketplaceWindow.raise();
@@ -187,7 +186,6 @@ var toolBar = (function() {
         }
 
         selectionManager.clearSelections();
-        print('clear selections on create')
         entityListTool.sendUpdate();
         selectionManager.setSelections([entityID]);
 
@@ -467,7 +465,6 @@ var toolBar = (function() {
             grid.setEnabled(false);
             propertiesTool.setVisible(false);
             selectionManager.clearSelections();
-            print('clearing selections in setactive from  notactive')
             cameraManager.disable();
             selectionDisplay.triggerMapping.disable();
         } else {
@@ -703,7 +700,6 @@ function mouseClickEvent(event) {
         result = findClickedEntity(event);
         if (result === null || result === undefined) {
             if (!event.isShifted) {
-                print('clear selection on nothing click')
                 selectionManager.clearSelections();
             }
             return;
@@ -1368,7 +1364,6 @@ var PropertiesTool = function(opts) {
         var data = {
             type: 'update'
         };
-        print('SELECTION UPDATE')
         var selections = [];
         for (var i = 0; i < selectionManager.selections.length; i++) {
             var entity = {};
@@ -1441,9 +1436,7 @@ var PropertiesTool = function(opts) {
         } 
 
         else if (data.type === "registrationPoint") {
-            print('GOT A REGISTRATION MESSAGE!!')
             if (data.action === "createRegistration") {
-                print('ACTION IS CREATE')
                 createRegistrationPointOverlay(data);
             }
             if (data.action === "deleteRegistration") {
@@ -1764,15 +1757,14 @@ function createRegistrationPointOverlay(data) {
     deleteRegistrationPointOverlay();
     var overlayProps = {
         position:Entities.getEntityProperties(data.entityID).position,
-        // position: getRegistrationOffset(data),
         parentID:data.entityID,
         size: 0.15,
         color: {
-            red: 0,
-            green: 0,
-            blue: 255
+            red: 255,
+            green: 255,
+            blue: 0
         },
-        alpha: 0.5,
+        alpha: 0.9,
         drawInFront: true,
         solid: true
     };

@@ -534,7 +534,6 @@ function loaded() {
 
                         disableProperties();
                     } else {
-                        console.log('got event bridge event')
 
                         properties = data.selections[0].properties;
 
@@ -831,16 +830,10 @@ function loaded() {
         elRegistrationZ.addEventListener('change', registrationChangeFunction);
 
         elShowRegistration.addEventListener('click', function() {
-                console.log('SHOW REGISTRATION POINT')
                 var data = {
                     type: "registrationPoint",
                     action: 'createRegistration',
-                    entityID: elID.textContent,
-                    registration: {
-                        x: elRegistrationX.value,
-                        y: elRegistrationY.value,
-                        z: elRegistrationZ.value
-                    }
+                    entityID: elID.textContent
                 };
 
             EventBridge.emitWebEvent(JSON.stringify(data));

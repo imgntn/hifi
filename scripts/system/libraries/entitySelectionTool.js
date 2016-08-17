@@ -1534,7 +1534,6 @@ SelectionDisplay = (function() {
             visible: rotationOverlaysVisible
         });
 
-        // TODO: we have not implemented the rotating handle/controls yet... so for now, these handles are hidden
         Overlays.editOverlay(yawHandle, {
             visible: rotateHandlesVisible,
             position: yawCorner,
@@ -3595,7 +3594,7 @@ SelectionDisplay = (function() {
             var result = Overlays.findRayIntersection(pickRay);
 
             if (result.intersects) {
-                var properties = Entities.getEntityProperties(selectionManager.selections[0]);
+               
                 var center = pitchCenter;
                 var zero = pitchZero;
                 var centerToZero = Vec3.subtract(center, zero);
@@ -3757,7 +3756,7 @@ SelectionDisplay = (function() {
             var result = Overlays.findRayIntersection(pickRay);
 
             if (result.intersects) {
-                var properties = Entities.getEntityProperties(selectionManager.selections[0]);
+         
                 var center = rollCenter;
                 var zero = rollZero;
                 var centerToZero = Vec3.subtract(center, zero);
