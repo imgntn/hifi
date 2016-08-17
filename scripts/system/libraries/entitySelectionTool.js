@@ -3611,18 +3611,23 @@ SelectionDisplay = (function() {
                     y: 0,
                     z: 0
                 });
-
+                 var reposition = SelectionManager.selections.length > 1;
                 for (var i = 0; i < SelectionManager.selections.length; i++) {
                     var entityID = SelectionManager.selections[i];
                     var properties = Entities.getEntityProperties(entityID);
                     var initialProperties = SelectionManager.savedProperties[entityID];
-                    var dPos = Vec3.subtract(initialProperties.position, initialPosition);
-                    dPos = Vec3.multiplyQbyV(pitchChange, dPos);
 
-                    Entities.editEntity(entityID, {
-                        position: Vec3.sum(initialPosition, dPos),
+                    var newProperties = {
                         rotation: Quat.multiply(pitchChange, initialProperties.rotation),
-                    });
+                    };
+                    if (reposition) {
+
+                        var dPos = Vec3.subtract(initialProperties.position, initialPosition);
+                        dPos = Vec3.multiplyQbyV(pitchChange, dPos);
+                        newProperties.position = Vec3.sum(initialPosition, dPos);
+                    }
+
+                 Entities.editEntity(entityID, newProperties);
                 }
 
                 updateRotationDegreesOverlay(angleFromZero, pitchHandleRotation, pitchCenter);
@@ -3773,17 +3778,23 @@ SelectionDisplay = (function() {
                     y: 0,
                     z: angleFromZero
                 });
+                var reposition = SelectionManager.selections.length > 1;
                 for (var i = 0; i < SelectionManager.selections.length; i++) {
                     var entityID = SelectionManager.selections[i];
                     var properties = Entities.getEntityProperties(entityID);
                     var initialProperties = SelectionManager.savedProperties[entityID];
-                    var dPos = Vec3.subtract(initialProperties.position, initialPosition);
-                    dPos = Vec3.multiplyQbyV(rollChange, dPos);
 
-                    Entities.editEntity(entityID, {
-                        position: Vec3.sum(initialPosition, dPos),
+                         var newProperties = {
                         rotation: Quat.multiply(rollChange, initialProperties.rotation),
-                    });
+                    };
+                    if (reposition) {
+
+                        var dPos = Vec3.subtract(initialProperties.position, initialPosition);
+                        dPos = Vec3.multiplyQbyV(rollChange, dPos);
+                        newProperties.position = Vec3.sum(initialPosition, dPos);
+                    }
+
+                    Entities.editEntity(entityID, newProperties);
                 }
 
                 updateRotationDegreesOverlay(angleFromZero, rollHandleRotation, rollCenter);
