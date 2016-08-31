@@ -778,8 +778,10 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer) :
 
     // enable mouse tracking; otherwise, we only get drag events
     _glWidget->setMouseTracking(true);
+    // Make sure the window is set to the correct size by processing the pending events
+    QCoreApplication::processEvents();
+    _glWidget->createContext();
     _glWidget->makeCurrent();
-    _glWidget->initializeGL();
 
     initializeGL();
     // Make sure we don't time out during slow operations at startup
@@ -1220,7 +1222,6 @@ Application::Application(int& argc, char** argv, QElapsedTimer& startupTimer) :
     _defaultSkyboxAmbientTexture = textureCache->getImageTexture(skyboxAmbientUrl, NetworkTexture::CUBE_TEXTURE, { { "generateIrradiance", true } });
 
     _defaultSkybox->setCubemap(_defaultSkyboxTexture);
-    _defaultSkybox->setColor({ 1.0, 1.0, 1.0 });
 
     EntityItem::setEntitiesShouldFadeFunction([this]() {
         SharedNodePointer entityServerNode = DependencyManager::get<NodeList>()->soloNodeOfType(NodeType::EntityServer);
@@ -1484,7 +1485,8 @@ void Application::initializeGL() {
 
     _glWidget->makeCurrent();
     _chromiumShareContext = new OffscreenGLCanvas();
-    _chromiumShareContext->create(_glWidget->context()->contextHandle());
+    _chromiumShareContext->setObjectName("ChromiumShareContext");
+    _chromiumShareContext->create(_glWidget->qglContext());
     _chromiumShareContext->makeCurrent();
     qt_gl_set_global_share_context(_chromiumShareContext->getContext());
 
@@ -1530,7 +1532,8 @@ void Application::initializeGL() {
     _idleLoopStdev.reset();
 
     _offscreenContext = new OffscreenGLCanvas();
-    _offscreenContext->create(_glWidget->context()->contextHandle());
+    _offscreenContext->setObjectName("MainThreadContext");
+    _offscreenContext->create(_glWidget->qglContext());
     _offscreenContext->makeCurrent();
 
     // update before the first render
@@ -1552,7 +1555,7 @@ void Application::initializeUi() {
 
 
     auto offscreenUi = DependencyManager::get<OffscreenUi>();
-    offscreenUi->create(_glWidget->context()->contextHandle());
+    offscreenUi->create(_glWidget->qglContext());
 
     auto rootContext = offscreenUi->getRootContext();
 
@@ -4327,8 +4330,9 @@ namespace render {
                 sceneKeyLight->setIntensity(DEFAULT_SKYBOX_INTENSITY);
                 sceneKeyLight->setAmbientIntensity(DEFAULT_SKYBOX_AMBIENT_INTENSITY);
                 sceneKeyLight->setDirection(DEFAULT_SKYBOX_DIRECTION);
-                // fall through: render a skybox, if available
+                // fall through: render a skybox (if available), or the defaults (if requested)
            }
+
             case model::SunSkyStage::SKY_BOX: {
                 auto skybox = skyStage->getSkybox();
                 if (!skybox->empty()) {
@@ -4336,25 +4340,32 @@ namespace render {
                     skybox->render(batch, args->getViewFrustum());
                     break;
                 }
-                // fall through: render defaults, if available
+                // fall through: render defaults (if requested)
             }
+
             case model::SunSkyStage::SKY_DEFAULT_AMBIENT_TEXTURE: {
                 if (Menu::getInstance()->isOptionChecked(MenuOption::DefaultSkybox)) {
                     auto scene = DependencyManager::get<SceneScriptingInterface>()->getStage();
                     auto sceneKeyLight = scene->getKeyLight();
                     auto defaultSkyboxAmbientTexture = qApp->getDefaultSkyboxAmbientTexture();
-                    // do not set the ambient sphere - it peaks too high, and causes flashing when turning
+                    // set the ambient sphere uniformly - the defaultSkyboxAmbientTexture has peaks that cause flashing when turning
+                    sceneKeyLight->setAmbientSphere(DependencyManager::get<TextureCache>()->getWhiteTexture()->getIrradiance());
                     sceneKeyLight->setAmbientMap(defaultSkyboxAmbientTexture);
+                    // fall through: render defaults skybox
+                } else {
+                    break;
                 }
-                // fall through: render defaults, if available
             }
+
             case model::SunSkyStage::SKY_DEFAULT_TEXTURE:
                 if (Menu::getInstance()->isOptionChecked(MenuOption::DefaultSkybox)) {
                     qApp->getDefaultSkybox()->render(batch, args->getViewFrustum());
                 }
+                break;
+
+            // Any other cases require no extra rendering
             case model::SunSkyStage::NO_BACKGROUND:
             default:
-                // this line intentionally left blank
                 break;
         }
     }
@@ -5666,7 +5677,7 @@ MainWindow* Application::getPrimaryWindow() {
 }
 
 QOpenGLContext* Application::getPrimaryContext() {
-    return _glWidget->context()->contextHandle();
+    return _glWidget->qglContext();
 }
 
 bool Application::makeRenderingContextCurrent() {

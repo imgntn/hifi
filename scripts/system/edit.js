@@ -803,7 +803,7 @@ function setupModelMenus() {
             menuName: "Edit",
             menuItemName: "Delete",
             shortcutKeyEvent: {
-                text: "backspace"
+                text: "delete"
             },
             afterItem: "Entities",
             grouping: "Advanced"
@@ -1215,7 +1215,7 @@ Controller.keyReleaseEvent.connect(function (event) {
         cameraManager.keyReleaseEvent(event);
     }
     // since sometimes our menu shortcut keys don't work, trap our menu items here also and fire the appropriate menu items
-    if (event.text === "BACKSPACE" || event.text === "DELETE") {
+    if (event.text === "DELETE") {
         deleteSelectedEntities();
     } else if (event.text === "ESC") {
         selectionManager.clearSelections();
@@ -1369,7 +1369,13 @@ var PropertiesTool = function (opts) {
     });
 
     webView.webEventReceived.connect(function (data) {
-        data = JSON.parse(data);
+        try {
+            data = JSON.parse(data);
+        }
+        catch(e) {
+            print('Edit.js received web event that was not valid json.')
+            return;
+        }
         var i, properties, dY, diff, newPosition;
         if (data.type === "print") {
             if (data.message) {
@@ -1418,7 +1424,9 @@ var PropertiesTool = function (opts) {
             pushCommandForSelections();
             selectionManager._update();
         } else if(data.type === 'saveUserData'){
-            Entities.editEntity(data.id, data.properties)
+            //the event bridge and json parsing handle our avatar id string differently.
+            var actualID = data.id.split('"')[1];
+            Entities.editEntity(actualID, data.properties);
         } else if (data.type === "showMarketplace") {
             showMarketplace();
         } else if (data.type === "action") {
